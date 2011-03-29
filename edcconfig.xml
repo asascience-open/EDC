@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<configuration>
+
+	<!--DISPLAY_TYPE: MUST BE AN INTEGER VALUE.
+	Choose from: GENERAL=0, ESRI=1, OILMAP=2
+	-->
+	<DISPLAY_TYPE>0</DISPLAY_TYPE>
+	
+	<!--OUTPUT_TO_FILE: MUST BE A BOOLEAN VALUE.
+	If true, system output (and errors) will be directed to a log file.
+	If false, they will be written to the console/terminal.
+	-->
+	<OUTPUT_TO_FILE>false</OUTPUT_TO_FILE>
+	
+	<!--CLOSE_AFTER_PROCESSING: MUST BE A BOOLEAN VALUE.
+	If true, the application will close after processing a dataset.
+	If false, the application will remain open until it is closed maually.
+	-->
+	<CLOSE_AFTER_PROCESSING>false</CLOSE_AFTER_PROCESSING>
+	
+	<!--USE_SUBDIRECTORIES: MUST BE A BOOLEAN VALUE.
+	If true, a subdirectory with the same name as the dataset will be created.
+	If false, all data will be placed in the indicated (or default) output directory.
+	-->
+	<USE_SUBDIRECTORIES>false</USE_SUBDIRECTORIES>
+	
+	<!--MAKE_POINTER: MUST BE A BOOLEAN VALUE.
+	If true, the NcPointer.xml file will be created in the indicated (or default) output directory.
+	If false, the NcPointer.xml file will not be created.
+	-->
+	<MAKE_POINTER>false</MAKE_POINTER>
+	
+	<!--OUTPUT_LOCATION: MUST BE A STRING VALUE.
+	This string will be used for all output data. If it is blank, data will be placed
+	one directory above the EDC.jar file.  If the indicated directory does not exist,
+	the user will be notified and asked if they would like to create the directory.
+	-->
+	<OUTPUT_LOCATION>C:\Dev\EDC\EDC_Standalone\output</OUTPUT_LOCATION>
+	
+	<!--ALLOW_FILE_REPLACEMENT:  MUST BE A BOOLEAN VALUE.
+	If true, if the choosen output file name exists, the user will be asked if they want
+	to replace the existing file or not.
+	If false, if the choosen output file name exists, the user will be unable to replace the
+	file.
+	NOTE: If the DISPLAY_TYPE is ESRI, this value will always be false.
+	-->
+	<ALLOW_FILE_REPLACEMENT>true</ALLOW_FILE_REPLACEMENT>
+	
+	<!--USE_VARIABLE_NAME_FOR_OUTPUT: MUST BE A BOOLEAN VALUE.
+	If true, the name of the first variable selected will be used as the default output name.
+	If false, the description (long_name) of the first variable selected will be used as the default
+	output name.
+	-->
+	<USE_VARIABLE_NAME_FOR_OUTPUT>false</USE_VARIABLE_NAME_FOR_OUTPUT>
+	
+	<!--HEAP_SIZE: MUST BE AN INTEGER VALUE.
+	This is the runtime data area from which memory for all class instances and arrays is allocated.-->
+	<HEAP_SIZE>512</HEAP_SIZE>
+	
+</configuration>
