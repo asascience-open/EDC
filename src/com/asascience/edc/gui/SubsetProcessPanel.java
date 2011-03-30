@@ -938,9 +938,9 @@ public class SubsetProcessPanel extends JPanel {
 			}
 			if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {
 				if (selPanel.isMakeRaster()) {
-					// if longer, trim the name down to the first 9 characters
-					if (outname.length() > 9) {
-						outname = outname.substring(0, 8);
+					// If longer, trim the name down to the first 8 characters
+					if (outname.length() > 8) {
+						outname = outname.substring(0, 7);
 					}
 				}
 			}
