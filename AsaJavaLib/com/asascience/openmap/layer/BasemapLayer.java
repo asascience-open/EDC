@@ -15,6 +15,7 @@ import com.bbn.openmap.event.ProjectionEvent;
 import com.bbn.openmap.layer.shape.ShapeLayer;
 import com.bbn.openmap.omGraphics.DrawingAttributes;
 import com.bbn.openmap.proj.Projection;
+import java.io.File;
 
 /**
  * 
@@ -37,8 +38,10 @@ public class BasemapLayer extends ShapeLayer {
 		this.setProperties(lyrProps);
 		this.setAddAsBackground(true);
 		this.setVisible(true);
+    this.setRemovable(false);
 	}
 
+  @Override
 	public void projectionChanged(ProjectionEvent e) {
 		Projection p = e.getProjection();
 		if (this.projID.equals(p.getProjectionID())) {
@@ -50,16 +53,21 @@ public class BasemapLayer extends ShapeLayer {
 		DrawingAttributes da = this.getDrawingAttributes();
 		Properties lyrProps = new Properties();
 		lyrProps = this.getProperties(lyrProps);
-		if (scale < 2000000f) {
-			lyrProps.put("shapeFile", dataDir + "highResCoast.shp");
-		} else if (scale < 10000000f) {
-			lyrProps.put("shapeFile", dataDir + "medResCoast.shp");
-		} else {
-			lyrProps.put("shapeFile", dataDir + "lowResCoast.shp");
+    // lowResCoast.shp should always be there.  Replace with different
+    // coastlines if the files exist.
+    lyrProps.put("shapeFile", dataDir + "lowResCoast.shp");
+    if (scale < 10000000f) {
+      if (new File(dataDir + "medResCoast.shp").exists()) {
+        lyrProps.put("shapeFile", dataDir + "medResCoast.shp");
+      }
+      if (scale < 2000000f) {
+        if (new File(dataDir + "highResCoast.shp").exists()) {
+          lyrProps.put("shapeFile", dataDir + "highResCoast.shp");
+        }
+      }
 		}
 		this.setProperties(lyrProps);
 		this.setDrawingAttributes(da);
-
 		super.projectionChanged(e);
 	}
 }

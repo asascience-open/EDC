@@ -8,6 +8,7 @@
  */
 package com.asascience.openmap.ui;
 
+import com.asascience.openmap.layer.BasemapLayer;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -138,20 +139,7 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
 		// appName = System.getProperty("user.dir");
 
 		// add the basemap
-		basemapLayer = new ShapeLayer();
-		lyrProps = new Properties();
-		lyrProps.put("prettyName", "Basemap");
-		lyrProps.put("lineColor", "000000");
-		lyrProps.put("fillColor", "666666");// BDDE83
-		String basemapLoc = dataDir + "dcwpo-browse.shp";
-		if (!new File(basemapLoc).exists()) {
-			basemapLoc = dataDir + "lowResCoast.shp";
-		}
-		lyrProps.put("shapeFile", basemapLoc);
-		basemapLayer.setProperties(lyrProps);
-		basemapLayer.setAddAsBackground(true);
-		basemapLayer.setVisible(true);
-		basemapLayer.setRemovable(false);
+		basemapLayer = new BasemapLayer(dataDir);
 
 		tools = new OMToolSet();
 		toolPanel = new ToolPanel();
