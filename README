@@ -1,0 +1,29 @@
+commit 7ef85314496b9e714c6a731442af6c16aa46759b
+Author: Kyle Wilcox <kwilcox@asascience.com>
+Date:   Wed Mar 30 12:20:43 2011 -0400
+
+    Issue #5: Default file name can have no special characters or spaces
+    
+    https://github.com/asascience/EDC/issues#issue/5
+
+commit 5dddaef7c1f425397082a3fca568d18af56c9b69
+Author: Kyle Wilcox <kwilcox@asascience.com>
+Date:   Wed Mar 30 12:20:02 2011 -0400
+
+    Issue #4: Reduce the default file name for raster data by one character
+    
+    https://github.com/asascience/EDC/issues#issue/4
+
+commit dc29c21a9c498a1a5e05c8b7dc42a0e65fd825b9
+Author: Kyle Wilcox <kwilcox@asascience.com>
+Date:   Wed Mar 30 12:18:47 2011 -0400
+
+    Issue #1: Higher resolution coastline
+    
+    https://github.com/asascience/EDC/issues#issue/1
+
+commit 85538809e43103215f68d36b4684ba0fdca7da3e
+Author: Kyle Wilcox <kwilcox@asascience.com>
+Date:   Tue Mar 29 12:01:41 2011 -0400
+
+    Initial commit of EDS with NetCDF-Java 4.2
