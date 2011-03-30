@@ -66,6 +66,9 @@ import com.asascience.openmap.utilities.GeoConstraints;
 import com.asascience.ui.IndeterminateProgressDialog;
 import com.asascience.utilities.FileMonitor;
 import com.asascience.utilities.Utils;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
+import java.util.Random;
 
 /**
  * 
@@ -532,6 +535,83 @@ public class SubsetProcessPanel extends JPanel {
 		}
 	}
 
+  /*
+   *  Removes all special characters and spaces from a layer name
+   */
+  private String createSuitableLayerName(String name) {
+
+    // Generate a random name if it is null or blank
+    if ((name == null) || (name.isEmpty())) {
+      Random generator = new Random();
+      Integer rand = (Integer)generator.nextInt(10);
+      return "Output_" + rand.toString();
+    }
+
+    final StringBuilder result = new StringBuilder();
+    final StringCharacterIterator iterator = new StringCharacterIterator(name);
+    char character = iterator.current();
+    while (character != CharacterIterator.DONE ){
+      if (character == '.') {
+        result.append("_");
+      }
+      else if (character == ',') {
+        result.append("_");
+      }
+      else if (character == '\\') {
+        result.append("");
+      }
+      else if (character == '?') {
+        result.append("");
+      }
+      else if (character == '*') {
+        result.append("");
+      }
+      else if (character == '+') {
+        result.append("");
+      }
+      else if (character == '&') {
+        result.append("");
+      }
+      else if (character == ':') {
+        result.append("");
+      }
+      else if (character == '{') {
+        result.append("");
+      }
+      else if (character == '}') {
+        result.append("");
+      }
+      else if (character == '[') {
+        result.append("");
+      }
+      else if (character == ']') {
+        result.append("");
+      }
+      else if (character == '(') {
+        result.append("");
+      }
+      else if (character == ')') {
+        result.append("");
+      }
+      else if (character == '^') {
+        result.append("");
+      }
+      else if (character == '$') {
+        result.append("");
+      }
+      else if (character == ' ') {
+        result.append("");
+      }
+      else {
+        //the char is not a special one
+        //add it to the result as is
+        result.append(character);
+      }
+      character = iterator.next();
+    }
+    return result.toString();
+  }
+
 	private boolean rasterNameOk(String name) {
 		if (name.contains(" ")) {
 			return false;
@@ -927,14 +1007,11 @@ public class SubsetProcessPanel extends JPanel {
 				// alter default name
 				if (Configuration.USE_VARIABLE_NAME_FOR_OUTPUT) {
 					// just the variable name
-					outname = inname.substring(1, inname.indexOf("]"));
+					outname = createSuitableLayerName(inname.substring(1, inname.indexOf("]")));
 				} else {
 					// the description with underscores
-					outname = selPanel.getFullDescriptionFromShortDescription(inname).replace(" ", "_");
+          outname = createSuitableLayerName(selPanel.getFullDescriptionFromShortDescription(inname));
 				}
-			}
-			if (outname == null) {
-				outname = "outname";
 			}
 			if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {
 				if (selPanel.isMakeRaster()) {
@@ -948,10 +1025,10 @@ public class SubsetProcessPanel extends JPanel {
 			File f;
 			if (Configuration.USE_SUBDIRECTORIES) {
 				f = Utils.createIncrementalName(homeDir, outname, null);
-				outname = f.getName();
+				outname = createSuitableLayerName(f.getName());
 			} else {
 				f = Utils.createIncrementalName(homeDir, outname, ".nc");
-				outname = f.getName().replace(".nc", "");
+				outname = createSuitableLayerName(f.getName().replace(".nc", ""));
 			}
 
 			do {
@@ -959,71 +1036,63 @@ public class SubsetProcessPanel extends JPanel {
 
 				outname = (String) JOptionPane.showInputDialog(mainFrame, "Enter a name for the output file:",
 					"Output Name", JOptionPane.OK_CANCEL_OPTION, null, null, outname);
-				// System.err.println(outname);
-				// check to see if the name is empty or cancel was clicked
 
+				// If Cancal was clicked, outname would be null
 				if (outname == null) {// cancel
 					return;
 				}
-				if (outname.equals("")) {
-					rept = true;
-				}
-				if (rept) {
-					JOptionPane.showMessageDialog(mainFrame, "Name cannot be blank", "Invalid Name",
-						JOptionPane.WARNING_MESSAGE);
-				} else {
 
-					if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {// ESRI
-						if (selPanel.isMakeRaster()) {
-							// if a raster - check to make sure none of the
-							// raster naming rules were violated
-							if (!rasterNameOk(outname)) {
-								JOptionPane.showMessageDialog(null, "The name contains illegal characters "
-									+ "or is too long.\nThe maximum allowable size is 10 characters.\n"
-									+ "Special characters (i.e. @, #, $, \"space\", etc.) are not allowed.",
-									"Invalid Name", JOptionPane.WARNING_MESSAGE);
-								skip = true;
-							}
-						}
-					}
+        // Cancel was not clicked, set the outname
+        outname = createSuitableLayerName(outname);
 
-					if (!skip) {
-						if (Configuration.USE_SUBDIRECTORIES) {
-							f = new File(homeDir + File.separator + outname);
-						} else {
-							f = new File(homeDir + File.separator + outname + ".nc");
-						}
+        if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {// ESRI
+          if (selPanel.isMakeRaster()) {
+            if (!rasterNameOk(outname)) {
+              JOptionPane.showMessageDialog(null, "The name contains illegal characters "
+                + "or is too long.\nThe maximum allowable size is 10 characters.\n"
+                + "Special characters (i.e. @, #, $, \"space\", etc.) are not allowed.",
+                "Invalid Name", JOptionPane.WARNING_MESSAGE);
+              skip = true;
+            }
+          }
+        }
 
-						if (f.exists()) {
-							if (Configuration.ALLOW_FILE_REPLACEMENT) {
-								int i = JOptionPane.showConfirmDialog(mainFrame,
-									"An output file with this name already exists." + "\nDo you wish to replace it?",
-									"Duplicate Name", JOptionPane.YES_NO_OPTION);
-								if (i == JOptionPane.YES_OPTION) {
-									// System.err.println(f.getParentFile().getAbsolutePath());
-									if (Configuration.USE_SUBDIRECTORIES) {
-										Utils.deleteDirectory(f);
-									} else {
-										f.delete();
-									}
+        if (!skip) {
+          if (Configuration.USE_SUBDIRECTORIES) {
+            f = new File(homeDir + File.separator + outname);
+          } else {
+            f = new File(homeDir + File.separator + outname + ".nc");
+          }
 
-									// f.delete();
-									cont = true;
-								} else {
-									cont = false;
-								}
-							} else {
-								JOptionPane.showMessageDialog(mainFrame,
-									"An output file with this name already exists."
-										+ "\nPlease select a different name to continue.", "Duplicate Name",
-									JOptionPane.OK_OPTION);
-								cont = false;
-							}
-						} else {
-							cont = true;
-						}
-					}
-				}
+          if (f.exists()) {
+            if (Configuration.ALLOW_FILE_REPLACEMENT) {
+              int i = JOptionPane.showConfirmDialog(mainFrame,
+                "An output file with this name already exists." + "\nDo you wish to replace it?",
+                "Duplicate Name", JOptionPane.YES_NO_OPTION);
+              if (i == JOptionPane.YES_OPTION) {
+                // System.err.println(f.getParentFile().getAbsolutePath());
+                if (Configuration.USE_SUBDIRECTORIES) {
+                  Utils.deleteDirectory(f);
+                } else {
+                  f.delete();
+                }
+
+                // f.delete();
+                cont = true;
+              } else {
+                cont = false;
+              }
+            } else {
+              JOptionPane.showMessageDialog(mainFrame,
+                "An output file with this name already exists."
+                  + "\nPlease select a different name to continue.", "Duplicate Name",
+                JOptionPane.OK_OPTION);
+              cont = false;
+            }
+          } else {
+            cont = true;
+          }
+        }
 			} while (!cont);
 
 			if (f != null) {
