@@ -18,8 +18,10 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package com.asascience.edc.threddsui;
+package com.asascience.edc.ui;
 
+import com.asascience.edu.ui.sos.SOSComboBox;
+import com.asascience.edc.ui.da.DAComboBox;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -140,7 +142,7 @@ public class ASACatalogChooser extends JPanel {
 	private ASACatalogTreeView tree;
 	private HtmlBrowser htmlViewer;
 	private FileManager fileChooser;
-	private JSplitPane split;
+	private JSplitPane splitCatalog;
 	private JLabel statusLabel;
 	private JPanel buttPanel;
 	private JLabel sourceText;
@@ -195,11 +197,13 @@ public class ASACatalogChooser extends JPanel {
 			daListBox = new DAComboBox(prefs);
 			sosListBox = new SOSComboBox(prefs);
 
-			// top panel buttons
+			/*
+       * Catalog URL "Connect" Button
+       */
+
 			btnCatConnect = new JButton("Connect");
 			btnCatConnect.setToolTipText("Read the selected catalog");
 			btnCatConnect.addActionListener(new ActionListener() {
-
 				public void actionPerformed(ActionEvent evt) {
 					String catalogURL = (String) catListBox.getSelectedItem();
 					tree.setCatalog(catalogURL.trim()); // will get "Catalog"
@@ -208,74 +212,10 @@ public class ASACatalogChooser extends JPanel {
 				}
 			});
 
-			// David Added sos panel button
-			btnSOS = new JButton("Connect");
-			btnSOS.setToolTipText("Read the selected SOS");
-			btnSOS.addActionListener(new ActionListener() {
-
-				public void actionPerformed(ActionEvent evt) {
-
-					SosData myData = null;
-					try {
-						
-						Utils.showBusyCursor(ASACatalogChooser.this);
-						
-						myData = new SosData();
-						String sosURL = (String) sosListBox.getSelectedItem();
-
-
-						myData.setmyUrl(sosURL);
-
-						myData.setHomeDir(odapInterface.getHomeDir());
-						
-						// statusLabel.setText("Testing SOS URL...");
-						//
-						// if (!SosData.checkSOS()) {
-						// System.out.println("Can't Ping URL!");
-						// JOptionPane.showConfirmDialog((Component) topPanel,
-						// "Bad SOS URL", "ASA",
-						// JOptionPane.OK_CANCEL_OPTION,
-						// JOptionPane.ERROR_MESSAGE);
-						//
-						// statusLabel.setText("Not Connected");
-						//
-						// return;
-						// }
-						//
-						// statusLabel.setText("URL is valid, Connecting to Service");
-
-						// // Can't fix status label - does not change on click?
-						// statusLabel.setText("Connecting to Service and Reading data");
-						// ASACatalogChooser.this.repaint();
-
-						boolean test = myData.sosGetCapabilities();
-						if (!test) {
-							System.out.println("Can't Read SOS service!");
-							JOptionPane.showConfirmDialog((Component) topPanel, "Bad SOS Connection", "ASA",
-								JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
-
-							statusLabel.setText("Not Connected");
-
-							return;
-						}
-
-						statusLabel.setText("Connected to SOS!");
-
-					} finally {
-						
-						Utils.hideBusyCursor(ASACatalogChooser.this);
-						
-					}
-						SosGui mygiu = new SosGui(ASACatalogChooser.this);
-						mygiu.sosAction(myData); // will get "Catalog"
-						// property change event if
-						// ok
-
-				}
-			});
-
-			// NEW
-			btnDirAccess = new JButton("Direct Access...");
+      /*
+       * Direct Access URL "Connect" Button
+       */
+			btnDirAccess = new JButton("Connect");
 			btnDirAccess.setToolTipText("Enter a dataset url for direct access");
 			ActionListener al = new ActionListener() {
 
@@ -318,6 +258,42 @@ public class ASACatalogChooser extends JPanel {
 					}
 				}
 			};
+
+      /*
+       * SOS "Connect" Button
+       */
+			btnSOS = new JButton("Connect");
+			btnSOS.setToolTipText("Read the selected SOS");
+			btnSOS.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					SosData myData = null;
+					try {
+						Utils.showBusyCursor(ASACatalogChooser.this);
+
+            String sosURL = (String) sosListBox.getSelectedItem();
+
+						myData = new SosData();
+						myData.setmyUrl(sosURL);
+						myData.setHomeDir(odapInterface.getHomeDir());
+
+						if (!myData.sosGetCapabilities()) {
+							System.out.println("Can't Read SOS service!");
+							JOptionPane.showConfirmDialog((Component) topPanel, "Bad SOS Connection", "ASA",
+								JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+
+							statusLabel.setText("Not Connected");
+							return;
+						}
+					} finally {
+						Utils.hideBusyCursor(ASACatalogChooser.this);
+					}
+          statusLabel.setText("Connected to SOS!");
+          SosGui mygiu = new SosGui(ASACatalogChooser.this);
+          mygiu.sosAction(myData);
+				}
+			});
+
+      
 			ActionListener cal = com.asascience.utilities.BusyCursorActions.createListener(
 				odapInterface.getMainFrame(), al);
 			btnDirAccess.addActionListener(cal);
@@ -327,7 +303,7 @@ public class ASACatalogChooser extends JPanel {
 			JPanel topButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
 			topButtons.add(btnCatConnect);
 			topButtons.add(btnDirAccess);
-			topButtons.add(btnSOS); // David Added
+			topButtons.add(btnSOS);
 
 			// topPanel = new JPanel(new BorderLayout());
 			// topPanel.add(new JLabel("Catalog URL"), BorderLayout.WEST);
@@ -339,8 +315,6 @@ public class ASACatalogChooser extends JPanel {
 			ActionListener radioListener = new ActionListener() {
 
 				public void actionPerformed(ActionEvent ae) {
-					// "enable" boolean: if true - enable cat & disable da
-					// if false - disable cat & enable da
 					boolean enable = true;
 					String cmd = ae.getActionCommand();
 					if (cmd.equals("cat")) {
@@ -350,7 +324,7 @@ public class ASACatalogChooser extends JPanel {
 						btnDirAccess.setEnabled(!enable);
 						sosListBox.setEnabled(!enable);
 						btnSOS.setEnabled(!enable);
-						// enable = true;
+            //splitCatalog.setVisible(enable);
 					} else if (cmd.equals("da")) {
 						catListBox.setEnabled(!enable);
 						btnCatConnect.setEnabled(!enable);
@@ -358,7 +332,7 @@ public class ASACatalogChooser extends JPanel {
 						btnDirAccess.setEnabled(enable);
 						sosListBox.setEnabled(!enable);
 						btnSOS.setEnabled(!enable);
-						// enable = false;
+            //splitCatalog.setVisible(!enable);
 					} else if (cmd.equals("sos")) {
 						catListBox.setEnabled(!enable);
 						btnCatConnect.setEnabled(!enable);
@@ -366,14 +340,8 @@ public class ASACatalogChooser extends JPanel {
 						btnDirAccess.setEnabled(!enable);
 						sosListBox.setEnabled(enable);
 						btnSOS.setEnabled(enable);
+            //splitCatalog.setVisible(!enable);
 					}
-
-					// catListBox.setEnabled(enable);
-					// btnCatConnect.setEnabled(enable);
-					// daListBox.setEnabled(!enable);
-					// btnDirAccess.setEnabled(!enable);
-					// sosListBox.setEnabled(!enable);
-					// btnSOS.setEnabled(!enable);
 				}
 			};
 
@@ -401,16 +369,6 @@ public class ASACatalogChooser extends JPanel {
 										}
 									}
 								}
-								// for(int i = 0; i < catListBox.getItemCount();
-								// i++){
-								// String item =
-								// catListBox.getItemAt(i).toString();
-								// for(String rem : remItems){
-								// if(rem.equals(item)){
-								// catListBox.removeItemAt(i);
-								// }
-								// }
-								// }
 							}
 							dia.dispose();
 
@@ -422,7 +380,6 @@ public class ASACatalogChooser extends JPanel {
 			});
 			topPanel.add(catListBox, "growx");
 			topPanel.add(btnCatConnect, "wrap");
-			// topPanel.add(edit, "wrap");
 
 			JRadioButton rbDaUrl = new JRadioButton("Direct Access URL:");
 			rbDaUrl.setActionCommand("da");
@@ -447,18 +404,6 @@ public class ASACatalogChooser extends JPanel {
 										}
 									}
 								}
-								// java.util.List<String> remItems =
-								// dia.getItemsToRemove();
-								// for(int i = 0; i < daListBox.getItemCount();
-								// i++){
-								// String item =
-								// daListBox.getItemAt(i).toString();
-								// for(String rem : remItems){
-								// if(rem.equals(item)){
-								// daListBox.removeItemAt(i);
-								// }
-								// }
-								// }
 							}
 							dia.dispose();
 
@@ -503,18 +448,6 @@ public class ASACatalogChooser extends JPanel {
 										}
 									}
 								}
-								// java.util.List<String> remItems =
-								// dia.getItemsToRemove();
-								// for(int i = 0; i < daListBox.getItemCount();
-								// i++){
-								// String item =
-								// daListBox.getItemAt(i).toString();
-								// for(String rem : remItems){
-								// if(rem.equals(item)){
-								// daListBox.removeItemAt(i);
-								// }
-								// }
-								// }
 							}
 							dia.dispose();
 
@@ -527,8 +460,6 @@ public class ASACatalogChooser extends JPanel {
 			topPanel.add(rbDaSOS);
 			topPanel.add(sosListBox, "growx");
 			topPanel.add(btnSOS);
-
-			// end David Added
 
 			ButtonGroup rbGroup = new ButtonGroup();
 			rbGroup.add(rbCatUrl);
@@ -694,12 +625,6 @@ public class ASACatalogChooser extends JPanel {
 			}
 		});
 
-		// splitter
-		split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, tree, htmlViewer);
-		if (prefs != null) {
-			split.setDividerLocation(prefs.getInt(HDIVIDER, 400));
-		}
-
 		// status label
 		JPanel statusPanel = new JPanel(new BorderLayout());
 		statusLabel = new JLabel("not connected");
@@ -754,12 +679,18 @@ public class ASACatalogChooser extends JPanel {
 		ActionListener cursorAl = BusyCursorActions.createListener(odapInterface.getMainFrame(), al);
 		acceptButton.addActionListener(cursorAl);
 
+
+    // splitter
+    splitCatalog = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, tree, htmlViewer);
+    if (prefs != null) {
+      splitCatalog.setDividerLocation(prefs.getInt(HDIVIDER, 400));
+    }
 		// put it all together
 		setLayout(new BorderLayout());
 		if (showComboChooser) {
 			add(topPanel, BorderLayout.NORTH);
 		}
-		add(split, BorderLayout.CENTER);
+		add(splitCatalog, BorderLayout.CENTER);
 
 		if (showOpenButton) {
 			JPanel botPanel = new JPanel(new BorderLayout());
@@ -813,7 +744,7 @@ public class ASACatalogChooser extends JPanel {
 			// sosFileChooser.save();
 			// }
 
-			prefs.putInt(HDIVIDER, split.getDividerLocation());
+			prefs.putInt(HDIVIDER, splitCatalog.getDividerLocation());
 		}
 	}
 

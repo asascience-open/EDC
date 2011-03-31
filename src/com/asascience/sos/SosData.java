@@ -84,7 +84,7 @@ public class SosData {
 	public SosData() {
 
 	}
-
+  
 	public void setmyUrl(String url) {
 		this.myUrl = url;
 	}
@@ -158,9 +158,8 @@ public class SosData {
 			outputter.output(ndbcDoc, writer);
 			float mysize = writer.toString().length();
 			System.out.println("Size of SOS capabilities request (mB)= ~" + mysize / 1000000.0);
-
 		} catch (IOException e) {
-			System.out.println("couldnt get the size of the xml document");
+			System.out.println("Could not get the size of the xml document");
 		}
 
 		stopwatch.reset();
@@ -231,20 +230,16 @@ public class SosData {
 					System.out.println("================================= Date Error ===================================");
 					System.out.println("Observation Data before 1990 is not available through this client at this time.");
 					System.out.println("================================================================================");
-					
 				}
-				
-				
 			}
-
 			parseTime = stopwatch.seconds();
 			System.out.println("Seconds to parse SOS capabilities: " + parseTime);
 			System.out.println("Parsed SOS capabilities, found: " + sensorList.size() + " valid sensors!");
 
 			return true;
-		} else
+		} else {
 			return false;
-
+    }
 	}
 
 	@SuppressWarnings("unchecked")
