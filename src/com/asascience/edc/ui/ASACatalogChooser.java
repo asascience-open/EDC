@@ -267,16 +267,16 @@ public class ASACatalogChooser extends JPanel {
 			btnSOS.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent evt) {
 					SosData myData = null;
+          String sosURL = "";
 					try {
 						Utils.showBusyCursor(ASACatalogChooser.this);
 
-            String sosURL = (String) sosListBox.getSelectedItem();
+            sosURL = (String) sosListBox.getSelectedItem();
 
-						myData = new SosData();
-						myData.setmyUrl(sosURL);
-						myData.setHomeDir(odapInterface.getHomeDir());
+						myData = new SosData(sosURL);
+            boolean testCapParse = myData.parseSosGetCapabilities();
 
-						if (!myData.sosGetCapabilities()) {
+						if (!testCapParse) {
 							System.out.println("Can't Read SOS service!");
 							JOptionPane.showConfirmDialog((Component) topPanel, "Bad SOS Connection", "ASA",
 								JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
@@ -286,10 +286,12 @@ public class ASACatalogChooser extends JPanel {
 						}
 					} finally {
 						Utils.hideBusyCursor(ASACatalogChooser.this);
+            myData.getData().setHomeDir(odapInterface.getHomeDir());
 					}
+          if (odapInterface.openSOSDataset(myData)) {
+            sosListBox.addItem(sosURL);
+          }
           statusLabel.setText("Connected to SOS!");
-          SosGui mygiu = new SosGui(ASACatalogChooser.this);
-          mygiu.sosAction(myData);
 				}
 			});
 
@@ -324,7 +326,6 @@ public class ASACatalogChooser extends JPanel {
 						btnDirAccess.setEnabled(!enable);
 						sosListBox.setEnabled(!enable);
 						btnSOS.setEnabled(!enable);
-            //splitCatalog.setVisible(enable);
 					} else if (cmd.equals("da")) {
 						catListBox.setEnabled(!enable);
 						btnCatConnect.setEnabled(!enable);
@@ -332,7 +333,6 @@ public class ASACatalogChooser extends JPanel {
 						btnDirAccess.setEnabled(enable);
 						sosListBox.setEnabled(!enable);
 						btnSOS.setEnabled(!enable);
-            //splitCatalog.setVisible(!enable);
 					} else if (cmd.equals("sos")) {
 						catListBox.setEnabled(!enable);
 						btnCatConnect.setEnabled(!enable);
@@ -340,7 +340,6 @@ public class ASACatalogChooser extends JPanel {
 						btnDirAccess.setEnabled(!enable);
 						sosListBox.setEnabled(enable);
 						btnSOS.setEnabled(enable);
-            //splitCatalog.setVisible(!enable);
 					}
 				}
 			};

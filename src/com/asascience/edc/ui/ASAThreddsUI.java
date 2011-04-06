@@ -7,7 +7,7 @@
  * Copyright 2007.  All rights reserved.
  */
 
-package com.asascience.edu.ui.thredds;
+package com.asascience.edc.ui;
 
 import com.asascience.edc.ui.ASAThreddsDatasetChooser;
 import java.beans.PropertyChangeEvent;

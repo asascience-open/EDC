@@ -25,6 +25,7 @@ import ucar.nc2.Variable;
 import ucar.nc2.dt.grid.GeoGrid;
 
 import com.asascience.edc.nc.NetcdfConstraints;
+import com.asascience.sos.SosProcessPanel;
 import com.asascience.ui.CheckBoxList;
 
 /**
@@ -34,7 +35,7 @@ import com.asascience.ui.CheckBoxList;
 public class SelectionPanelBase extends JPanel {
 
 	protected boolean hasGeoGrids;
-	protected SubsetProcessPanel parentSpp;
+	protected JPanel parentSpp;
 	protected NetcdfConstraints constraints;
 	private List<GeoGrid> localGeoGrids;
 	private List<Variable> localVariables;
@@ -73,6 +74,16 @@ public class SelectionPanelBase extends JPanel {
 	 * @param parent
 	 */
 	public SelectionPanelBase(String borderTitle, NetcdfConstraints cons, SubsetProcessPanel parent) {
+		super(new MigLayout("fill"));
+
+		TitledBorder tb = BorderFactory.createTitledBorder(borderTitle);
+		tb.setTitleJustification(TitledBorder.CENTER);
+		this.setBorder(tb);
+		this.constraints = cons;
+		this.parentSpp = parent;
+	}
+
+  public SelectionPanelBase(String borderTitle, NetcdfConstraints cons, SosProcessPanel parent) {
 		super(new MigLayout("fill"));
 
 		TitledBorder tb = BorderFactory.createTitledBorder(borderTitle);

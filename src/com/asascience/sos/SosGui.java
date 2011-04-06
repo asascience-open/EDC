@@ -10,20 +10,12 @@ package com.asascience.sos;
 
 import gov.noaa.pmel.swing.JSlider2Date;
 import gov.noaa.pmel.util.GeoDate;
-import gov.noaa.pmel.util.TimeRange;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,7 +24,6 @@ import java.util.List;
 import java.util.TimeZone;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 
@@ -42,12 +33,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.border.Border;
-import javax.swing.border.EtchedBorder;
 
 import net.miginfocom.swing.MigLayout;
 
-import org.softsmithy.lib.swing.CellRenderer;
 import org.softsmithy.lib.swing.JDoubleField;
 
 import com.asascience.components.JCheckBoxList;
@@ -59,15 +47,12 @@ import com.asascience.components.JCheckBoxList;
 public class SosGui {
 
 	// Program plan:
-	// 0) Build GUI
-	// 1) Enter AOI
-	// Time
-	// LAT/LON
-	// 2) GetCapabilites
-	// ParseAOI
-	// DescribeSensor
-	// 3) Select Data from Sensor(s)
-	// 4) Get Data
+	// 0) Parse GetCap
+  // 1) Show GUI with dots for stations
+  // 2) Enter AOI (draw with mouse)
+	// 3) Enter Time
+  // 4) Call GetObservation to get Data
+	// 4) Output in desired format
 
 	/**
 	 * GetCapabilities - This function returns metadata about this service. (Not
@@ -122,7 +107,7 @@ public class SosGui {
 
 		this.myData=myData;
 		
-		bndsNESW = myData.getNESW();
+		bndsNESW = myData.getData().getNESW();
 
 		mainPane = new JDialog();
 		mainPane.setTitle("SOS Data Connector");
@@ -159,7 +144,7 @@ public class SosGui {
 		// "gap 0, gapleft 20, center, wrap");
 		timePanel.add(dateSlider, "gap 0, grow, center");
 
-		dateSlider.setRange(myData.getStartTime(), myData.getEndTime());
+		dateSlider.setRange(myData.getData().getStartTime(), myData.getData().getEndTime());
 		GeoDate tempDate = new GeoDate();
 		tempDate.setDate(tempDate.getDate() -10);
 		dateSlider.setStartValue(tempDate);
@@ -201,7 +186,7 @@ public class SosGui {
 		varBoxList = new JCheckBoxList();
 		varBoxList.setBorder(BorderFactory.createLineBorder(Color.black));
 
-		String[] myVars = myData.getvarNames();
+		String[] myVars = myData.getData().getvarNames();
 
 		// List<ItemListener> itemListenerList = new ArrayList<ItemListener>();
 		boxList = new ArrayList<JCheckBox>();
@@ -237,7 +222,7 @@ public class SosGui {
 				if (validateInput()) {
 
 					System.out.println("Go Get The Data!");
-					SosGui.this.myData.sosGetObservations();
+					SosGui.this.myData.getData().getObservations();
 				}
 
 				// dataPanel.setEnabled(true);
@@ -364,9 +349,9 @@ public class SosGui {
 		}
 
 		// Determine which sensors to select!
-		myData.setSelectedSensors(NESW, startDate, endDate, selectedVars);
+		myData.getData().setSelectedSensors(NESW, startDate, endDate, selectedVars);
 
-		System.out.println("Number of selected sensors: " + myData.getSelectedSensorCnt());
+		System.out.println("Number of selected sensors: " + myData.getData().getSelectedSensorCnt());
 
 		int[] numVars = myData.getSelectedVarCnt();
 
@@ -376,7 +361,7 @@ public class SosGui {
 			System.out.println("Number of " + selectedVars.get(ind) + " sensors found: " + numVars[ind]);
 		}
 
-		if (myData.getSelectedSensorCnt() < 1) {
+		if (myData.getData().getSelectedSensorCnt() < 1) {
 			JOptionPane.showConfirmDialog((Component) mainPane,
 				"The selected area did not contain any sensors with the selected varaibles",
 				"Invlaid Variable Selection", JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
@@ -385,7 +370,7 @@ public class SosGui {
 
 		// Generate message for joption pane
 		String[] message = new String[cnt + 2];
-		message[0] = "Number of selected sensors: " + myData.getSelectedSensorCnt();
+		message[0] = "Number of selected sensors: " + myData.getData().getSelectedSensorCnt();
 		for (int ind = 0; ind < cnt; ind++) {
 
 			message[ind + 1] = "Number of " + selectedVars.get(ind) + " sensors found: " + numVars[ind];

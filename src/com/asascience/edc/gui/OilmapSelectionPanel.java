@@ -310,11 +310,11 @@ public class OilmapSelectionPanel extends SelectionPanelBase {
 			CoordinateAxis1D time1;
 			CoordinateAxis1D time2;
 
-			coordSys1 = parentSpp.getGridByName(g1, true).getCoordinateSystem();
+			coordSys1 = ((SubsetProcessPanel)parentSpp).getGridByName(g1, true).getCoordinateSystem();
 			vert1 = coordSys1.getVerticalAxis();
 			time1 = coordSys1.getTimeAxis1D();
 
-			coordSys2 = parentSpp.getGridByName(g2, true).getCoordinateSystem();
+			coordSys2 = ((SubsetProcessPanel)parentSpp).getGridByName(g2, true).getCoordinateSystem();
 			vert2 = coordSys2.getVerticalAxis();
 			time2 = coordSys2.getTimeAxis1D();
 
@@ -423,7 +423,7 @@ public class OilmapSelectionPanel extends SelectionPanelBase {
 		String[] vars = new String[] { cbUVar.getSelectedItem().toString(), cbVVar.getSelectedItem().toString() };
 		if (!vars[0].equals(vars[1])) {
 			for (String vName : vars) {
-				grid = parentSpp.getGridByName(vName, true);
+				grid = ((SubsetProcessPanel)parentSpp).getGridByName(vName, true);
 				coordSys = grid.getCoordinateSystem();
 				vert = coordSys.getVerticalAxis();
 

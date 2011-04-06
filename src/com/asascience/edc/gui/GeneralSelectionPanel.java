@@ -124,7 +124,7 @@ public class GeneralSelectionPanel extends SelectionPanelBase {
 			String propName = e.getPropertyName();
 			String vName = (String) e.getOldValue();
 
-			GridCoordSystem coordSys = parentSpp.getGridByName(vName, true).getCoordinateSystem();
+			GridCoordSystem coordSys = ((SubsetProcessPanel)parentSpp).getGridByName(vName, true).getCoordinateSystem();
 			CoordinateAxis1D vert = coordSys.getVerticalAxis();
 
 			if (propName.equals(CheckBoxList.ADDED)) {
@@ -157,7 +157,7 @@ public class GeneralSelectionPanel extends SelectionPanelBase {
 			} else if (propName.equals(CheckBoxList.REMOVED)) {
 				boolean keepVerts = false;
 				for (String s : getCblVars().getSelectedItems()) {
-					vert = parentSpp.getGridByName(s, true).getCoordinateSystem().getVerticalAxis();
+					vert = ((SubsetProcessPanel)parentSpp).getGridByName(s, true).getCoordinateSystem().getVerticalAxis();
 					if (vert != null) {
 						keepVerts = true;
 						constraints.setTrimByDim(vert.getName());

@@ -326,7 +326,7 @@ public class EsriSelectionPanel extends SelectionPanelBase {
 
 			// get the grid for the selected variable
 			// GeoGrid grid = parentSpp.getGridByName(vName);
-			GridCoordSystem coordSys = parentSpp.getGridByName(vName, true).getCoordinateSystem();
+			GridCoordSystem coordSys = ((SubsetProcessPanel)parentSpp).getGridByName(vName, true).getCoordinateSystem();
 			CoordinateAxis1D vert;// = coordSys.getVerticalAxis();
 
 			vert = coordSys.getVerticalAxis();
@@ -559,7 +559,7 @@ public class EsriSelectionPanel extends SelectionPanelBase {
 
 					boolean keepVerts = false;
 					for (String s : getCblVars().getSelectedItems()) {
-						vert = parentSpp.getGridByName(s, true).getCoordinateSystem().getVerticalAxis();
+						vert = ((SubsetProcessPanel)parentSpp).getGridByName(s, true).getCoordinateSystem().getVerticalAxis();
 						if (vert != null) {
 							keepVerts = true;
 							constraints.setTrimByDim(vert.getName());

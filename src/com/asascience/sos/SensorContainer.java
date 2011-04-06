@@ -29,7 +29,7 @@ public class SensorContainer {
 	private String name;
 	private String gmlName;
 	private String description;
-	List<VariableContainer> varList = null;
+	public List<VariableContainer> varList = null;
 	private Date startTime;
 	private Date endTime;
 	private SimpleDateFormat dateFormatter = null;
@@ -41,6 +41,10 @@ public class SensorContainer {
 		TimeZone tz = TimeZone.getTimeZone("GMT");
 		dateFormatter.setTimeZone(tz);
 	}
+
+  public List<VariableContainer> getVarList() {
+    return varList;
+  }
 
 	public Date getStartTime() {
 		return startTime;

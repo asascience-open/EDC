@@ -78,7 +78,7 @@ import com.asascience.edc.nc.io.NcProperties;
 import com.asascience.edc.particle.ParticleOutputLayer;
 import com.asascience.edc.particle.ParticleOutputReader;
 import com.asascience.edc.ui.ASAThreddsDatasetChooser;
-import com.asascience.edu.ui.thredds.ASAThreddsUI;
+import com.asascience.edc.ui.ASAThreddsUI;
 import com.asascience.openmap.layer.TimeLayer;
 import com.asascience.openmap.layer.VectorLayer;
 import com.asascience.openmap.layer.nc.grid.GenericGridLayer;
@@ -87,12 +87,15 @@ import com.asascience.openmap.ui.OMLayerPanel;
 import com.asascience.openmap.ui.OMTimeSlider;
 import com.asascience.openmap.utilities.MapUtils;
 import com.asascience.openmap.utilities.listener.VectorInterrogationPropertyListener;
+import com.asascience.sos.SosData;
+import com.asascience.sos.SosProcessPanel;
 import com.asascience.ui.ErrorDisplayDialog;
 import com.asascience.ui.ImagePanel;
 import com.asascience.ui.JCloseableTabbedPane;
 import com.asascience.utilities.Utils;
 import com.asascience.utilities.exception.InitializationFailedException;
 import com.bbn.openmap.Layer;
+import java.lang.reflect.Array;
 
 /**
  * 
@@ -107,6 +110,7 @@ public class OpendapInterface {
 	private ASAThreddsUI threddsUI = null;
 	private ASAThreddsDatasetChooser datasetChooser = null;
 	private SubsetProcessPanel spPanel = null;
+  private SosProcessPanel sosPanel = null;
 	private JTextArea jta = null;
 	private ThreddsDataFactory threddsDataFactory = new ThreddsDataFactory();
 	private PreferencesExt prefs = null;
@@ -645,6 +649,28 @@ public class OpendapInterface {
 		}
 	}
 
+  public boolean openSOSDataset(SosData sosData) {
+    try {
+      constraints = new NetcdfConstraints();
+      sosPanel = new SosProcessPanel((PreferencesExt) prefs, fileChooser,
+                                      this, constraints, sosData, homeDir, sysDir);
+      if (!sosPanel.initData()) {
+        return false;
+      }
+
+      int i = tabbedPane.indexOfTab("SOS - Subset & Process");
+      if (i != -1) {
+        tabbedPane.removeTabAt(i);
+      }
+      tabbedPane.addTabClose("SOS - Subset & Process", sosPanel);
+      tabbedPane.setSelectedComponent(sosPanel);
+      return true;
+    } catch (Exception ex) {
+			ex.printStackTrace();
+		}
+    return false;
+  }
+
 	public boolean openDataset(NetcdfDataset ncd) {
 		try {
 			if (ncd != null) {
@@ -665,7 +691,7 @@ public class OpendapInterface {
 					}
 					// tabbedPane.setComponentAt(1, spPanel);//set the second
 					// tab to the link panel
-					tabbedPane.addTabClose("Subset & Process", spPanel);
+					tabbedPane.addTabClose("Grid - Subset & Process", spPanel);
 					// makeComponent("Subset & Process");
 
 					// spPanel.setConstraints(constraints);
