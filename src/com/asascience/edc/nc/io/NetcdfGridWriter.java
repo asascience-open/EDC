@@ -296,26 +296,29 @@ public class NetcdfGridWriter {
 					List<CoordinateAxis> axes = gcs.getCoordinateAxes();
 					for (int j = 0; j < axes.size(); j++) {
 						CoordinateAxis axis = axes.get(j);
+            // Don't carry over RunTime dimension!
+            if (!axis.getAxisType().equals(AxisType.RunTime)) {
+              // make sure the varname and dim name match
+              // ONLY if a single dimension...prevents Lat(ny nx) vars
+              // from being buggered....
+              if (axis.getDimensions().size() == 1) {
+                Dimension dim = axis.getDimension(0);
+                if (dim == null) {
+                  dim = axis.getDimension(0);
+                }
+                //System.err.println("Dim name: " + dim.getName());
+                //System.err.println("Axis name: " + axis.getName());
+                if (!dim.getName().equals(axis.getName())) {
+                  axis.setName(dim.getName());
+                  cons.setTVar(axis.getName());
+                }
+              }
 
-						// make sure the varname and dim name match
-						// ONLY if a single dimension...prevents Lat(ny nx) vars
-						// from being buggered....
-						if (axis.getDimensions().size() == 1) {
-              // WHAT?????
-							Dimension dim = axis.getDimension(0);
-							if (dim == null) {
-								dim = axis.getDimension(0);
-							}
-							if (!dim.getName().equals(axis.getName())) {
-								axis.setName(dim.getName());
-								cons.setTVar(axis.getName());
-							}
-						}
-
-						if (!varNames.contains(axis.getName())) {
-							varNames.add(axis.getName());
-							varList.add(axis);
-						}
+              if (!varNames.contains(axis.getName())) {
+                varNames.add(axis.getName());
+                varList.add(axis);
+              }
+            }
 					}
 
 					// Structure parentStructure = gridV.getParentStructure();
