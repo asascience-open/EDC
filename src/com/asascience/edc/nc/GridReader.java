@@ -30,6 +30,7 @@ import ucar.nc2.dt.grid.GridDataset;
 import ucar.unidata.util.Parameter;
 
 import com.asascience.edc.nc.io.NetcdfGridWriter;
+import thredds.inventory.FeatureCollectionConfig.FmrcDatasetType;
 import ucar.nc2.constants.FeatureType;
 import ucar.nc2.dt.GridDataset.Gridset;
 import ucar.nc2.dt.GridDatatype;
@@ -60,7 +61,7 @@ public class GridReader extends NcReaderBase {
 		super(NetcdfDataset.acquireDataset(filename, null), cons);
 		Formatter errlog = new Formatter();
     CancelTask cancelTask = null;
-    gds = (GridDataset)FeatureDatasetFactoryManager.open(FeatureType.GRID, getNcfile().getLocation(), cancelTask, errlog);
+    gds = (GridDataset)FeatureDatasetFactoryManager.open(FeatureType.GRID, ncFile.getLocation(), cancelTask, errlog);
 		// RandomAccessFile raf = new RandomAccessFile(filename, "r");
 		// long len = raf.length();
 		// initialize();
@@ -85,7 +86,9 @@ public class GridReader extends NcReaderBase {
 		Formatter errlog = new Formatter();
     CancelTask cancelTask = null;
 		//gds = (GridDataset) TypedDatasetFactory.open(thredds.catalog.DataType.GRID, ncd, this, errlog);
-    gds = (GridDataset)FeatureDatasetFactoryManager.open(FeatureType.GRID, getNcfile().getLocation(), cancelTask, errlog);
+    gds = (GridDataset)FeatureDatasetFactoryManager.open(FeatureType.GRID, ncFile.getLocation(), cancelTask, errlog);
+    //gds = GridDataset.open(ncd.getLocation());
+
 		// String loc = ncd.getLocation().replace("dods", "http");
 		// RandomAccessFile raf = new RandomAccessFile(loc, "r");
 		// long len = raf.length();
