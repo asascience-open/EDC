@@ -36,7 +36,6 @@ import thredds.catalog.InvCatalogFactory;
 import thredds.catalog.InvCatalogImpl;
 import ucar.nc2.ui.widget.ProgressMonitorTask;
 import ucar.nc2.ui.widget.ProgressMonitor;
-import ucar.nc2.util.net.HttpClientManager;
 
 /**
  * A subclass of InvCatalogFactory that allows the reading of a catalog to be
@@ -170,7 +169,7 @@ public class ASACatalogFactoryCancellable extends InvCatalogFactory {
 				m = new GetMethod(catalogName);
 				m.setFollowRedirects(true);
 
-				HttpClient client = HttpClientManager.getHttpClient();
+				HttpClient client = new HttpClient();
 				client.executeMethod(m);
 				InputStream stream = m.getResponseBodyAsStream();
 				catalog = ASACatalogFactoryCancellable.super.readXML(stream, catalogURI);
