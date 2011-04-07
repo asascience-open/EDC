@@ -96,6 +96,7 @@ import com.asascience.utilities.Utils;
 import com.asascience.utilities.exception.InitializationFailedException;
 import com.bbn.openmap.Layer;
 import java.lang.reflect.Array;
+import ucar.nc2.ft.FeatureDatasetFactoryManager;
 
 /**
  * 
@@ -459,7 +460,7 @@ public class OpendapInterface {
 				// TODO Auto-generated catch block
 				ErrorDisplayDialog.showErrorDialog("Error Loading Dataset", e);
 			}
-		} else {
+    } else {
 			VectorLayer l = MapUtils.obtainVectorLayer(ncPath);
 			if (l != null) {
 				omPanel.getLayerHandler().addLayer(l);
@@ -960,17 +961,21 @@ public class OpendapInterface {
 				System.err.println("Wants Viewer");
 
 				showInViewer(threddsDataFactory.openDataset(invDataset, true, null, null));
+        
 				return;
 			}
 
 			// TODO: takes forever for very large datasets....
 			// otherwise do the datatype thing -
-			ThreddsDataFactory.Result threddsData = threddsDataFactory.openFeatureDataset(invDataset, null);
-			if (threddsData == null) {
+			//ThreddsDataFactory.Result threddsData = threddsDataFactory.openFeatureDataset(invDataset, null);
+      NetcdfDataset ncdata = threddsDataFactory.openDataset(invDataset,true,null,null);
+      
+			if (ncdata == null) {
 				JOptionPane.showMessageDialog(null, "Unknown datatype");
 				return;
 			}
-			setThreddsDatatype(threddsData);
+			//setThreddsDatatype(threddsData);
+      setThreddsDatatype(ncdata);
 
 		} catch (IOException ioe) {
 			JOptionPane.showMessageDialog(null, "Error on setThreddsDataset = " + ioe.getMessage());
@@ -992,9 +997,10 @@ public class OpendapInterface {
 		}
 
 		try {
-			ThreddsDataFactory.Result threddsData = threddsDataFactory.openFeatureDataset(invAccess, null);
-			setThreddsDatatype(threddsData);
-
+      NetcdfDataset ncdata = threddsDataFactory.openDataset(invAccess,true,null,null);
+      setThreddsDatatype(ncdata);
+			//ThreddsDataFactory.Result threddsData = threddsDataFactory.openFeatureDataset(invAccess, null);
+			//setThreddsDatatype(threddsData);
 		} catch (IOException ioe) {
 			JOptionPane.showMessageDialog(null, "Error on setThreddsDataset = " + ioe.getMessage());
 		}
@@ -1005,8 +1011,10 @@ public class OpendapInterface {
 	private void setThreddsDatatype(String dataset) {
 
 		try {
-			ThreddsDataFactory.Result threddsData = threddsDataFactory.openFeatureDataset(dataset, null);
-			setThreddsDatatype(threddsData);
+      NetcdfDataset ncdata = threddsDataFactory.openDataset(dataset,true,null,null);
+      setThreddsDatatype(ncdata);
+			//ThreddsDataFactory.Result threddsData = threddsDataFactory.openFeatureDataset(dataset, null);
+			//setThreddsDatatype(threddsData);
 
 		} catch (IOException ioe) {
 			JOptionPane.showMessageDialog(null, "Error on setThreddsDataset = " + ioe.getMessage());
@@ -1015,27 +1023,33 @@ public class OpendapInterface {
 	}
 
 	// jump to the appropriate tab based on datatype of threddsData
-	private void setThreddsDatatype(ThreddsDataFactory.Result threddsData) {
+  //private void setThreddsDatatype(ThreddsDataFactory.Result threddsData) {}
+	private void setThreddsDatatype(NetcdfDataset ncdataset) {
 
-		if (threddsData.fatalError) {
+		if (ncdataset == null) {
 			System.err.println("Is a Fatal Error");
-			JOptionPane.showMessageDialog(null, "Can't open dataset:/n" + threddsData.errLog);
+			JOptionPane.showMessageDialog(null, "Can't open dataset:" + ncdataset.getLocation());
 			return;
 		}
 
-		if (threddsData.featureType == FeatureType.GRID) {
+    FeatureType featureType = FeatureDatasetFactoryManager.findFeatureType(ncdataset);
+
+		if (featureType == FeatureType.GRID) {
 			System.err.println("Is a Grid");
 			// System.err.println("OpendapInterface: Before getNetcdfFile(): " +
 			// System.currentTimeMillis());
-			ncd = (NetcdfDataset) threddsData.featureDataset.getNetcdfFile();
+			//ncd = (NetcdfDataset) threddsData.featureDataset.getNetcdfFile();
+
+      //
+
 			// System.err.println("OpendapInterface: After getNetcdfFile(): " +
 			// System.currentTimeMillis());
-			System.err.println("Dataset Name: " + ncd.getTitle());
-			System.err.println("Dataset Location: " + ncd.getLocation());
+			System.err.println("Dataset Name: " + ncdataset.getTitle());
+			System.err.println("Dataset Location: " + ncdataset.getLocation());
 
 			// System.err.println("OpendapInterface: Before openDataset(): " +
 			// System.currentTimeMillis());
-			openDataset(ncd);
+			openDataset(ncdataset);
 			// System.err.println("OpendapInterface: After openDataset(): " +
 			// System.currentTimeMillis());
 			// if(ncd != null){
@@ -1073,26 +1087,26 @@ public class OpendapInterface {
 			// threddsData.tds.getNetcdfFile());
 			// tabbedPane.setSelectedComponent(gridPanel);
 
-		} else if (threddsData.featureType == FeatureType.IMAGE) {
+		} else if (featureType == FeatureType.IMAGE) {
 			System.err.println("Is an Image");
 			// makeComponent("Images");
 			// imagePanel.setImageLocation(threddsData.imageURL);
 			// tabbedPane.setSelectedComponent(imagePanel);
 
-		} else if (threddsData.featureType == FeatureType.RADIAL) {
+		} else if (featureType == FeatureType.RADIAL) {
 			System.err.println("Is a Radial");
 			// makeComponent("Radial");
 			// radialPanel.setDataset((RadialDatasetSweep) threddsData.tds);
 			// tabbedPane.setSelectedComponent(radialPanel);
 
-		} else if (threddsData.featureType == FeatureType.POINT) {
+		} else if (featureType == FeatureType.POINT) {
 			System.err.println("Is a Point");
 			// makeComponent("PointObs");
 			// pointObsPanel.setPointObsDataset((PointObsDataset)
 			// threddsData.tds);
 			// tabbedPane.setSelectedComponent(pointObsPanel);
 
-		} else if (threddsData.featureType == FeatureType.STATION) {
+		} else if (featureType == FeatureType.STATION) {
 			System.err.println("Is a Station");
 			// makeComponent("StationObs");
 			// stationObsPanel.setStationObsDataset((StationObsDataset)
