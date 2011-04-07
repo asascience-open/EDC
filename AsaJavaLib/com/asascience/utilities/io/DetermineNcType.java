@@ -10,6 +10,7 @@ package com.asascience.utilities.io;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -153,12 +154,18 @@ public class DetermineNcType {
 
 	public static boolean isNCOM(NetcdfFile ncfile) {
 		Attribute a = ncfile.findGlobalAttributeIgnoreCase("generating_model");
+    ArrayList varNames = getVarNames(ncfile);
 		if (a != null) {
 			if (a.getStringValue().toLowerCase().contains("ncom")) {
-				return true;
+        // Only return true if the NCOM datasaet has vectors (u and v)
+        ArrayList checkNames = new ArrayList(2);
+        checkNames.add("water_u");
+        checkNames.add("water_v");
+        if (varNames.containsAll(checkNames)) {
+          return true;
+        }
 			}
 		}
-		ArrayList varNames = getVarNames(ncfile);
 		/** Do not check depth - the file may not have it... */
 		// if(!varNames.contains("depth")){
 		// return false;
