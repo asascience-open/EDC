@@ -162,11 +162,11 @@ public class NetcdfGridWriter {
 							// use only the time indicated by the trimByIndex
 							timeRange = new Range(trimByIndex, trimByIndex);
 						}
-						levelRange = null;// use all levels
+						levelRange = null; // use all levels
 					}
 
 					if (cons.isUseAllValues()) {// if use all levels == true
-						levelRange = null;
+						levelRange = null; // use all levels
 					}
 
 					// List<Dimension> ds = grid.getDimensions();
@@ -261,7 +261,8 @@ public class NetcdfGridWriter {
 
               // Carry over all of the attributes, excluding those that may
               // reference an old coordinate system.  This may have changed due
-              // to al antitude variable being removed.
+              // to an altitude variable being removed.
+              // Also make sure the Time variable is correct.
               for (Attribute a : (List<Attribute>) gridV.getAttributes()) {
                 if ((!a.getName().equalsIgnoreCase("coordinates")) && (!a.getName().equalsIgnoreCase("_CoordinateAxes"))) {
                   newGridV.addAttribute(a);
@@ -269,7 +270,7 @@ public class NetcdfGridWriter {
 							}
               Attribute correctCoords = new Attribute("coordinates",newGridV.getDimensionsString());
               newGridV.addAttribute(correctCoords);
-
+              
 							newGridV.setCachedData(arrV, false);
 							gridV = new Variable(newGridV);
 						}
