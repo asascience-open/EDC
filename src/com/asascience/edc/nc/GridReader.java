@@ -30,12 +30,8 @@ import ucar.nc2.dt.grid.GridDataset;
 import ucar.unidata.util.Parameter;
 
 import com.asascience.edc.nc.io.NetcdfGridWriter;
-import thredds.inventory.FeatureCollectionConfig.FmrcDatasetType;
 import ucar.nc2.constants.FeatureType;
-import ucar.nc2.dt.GridDataset.Gridset;
 import ucar.nc2.dt.GridDatatype;
-import ucar.nc2.dt.TypedDataset;
-import ucar.nc2.dt.TypedDatasetFactoryIF;
 import ucar.nc2.util.CancelTask;
 
 /**

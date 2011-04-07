@@ -32,6 +32,7 @@ import ucar.unidata.geoloc.LatLonRect;
 
 import com.asascience.edc.ArcType;
 import com.asascience.edc.nc.NetcdfConstraints;
+import ucar.nc2.constants.AxisType;
 
 /**
  * 
