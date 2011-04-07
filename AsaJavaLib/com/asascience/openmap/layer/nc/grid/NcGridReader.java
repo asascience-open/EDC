@@ -80,10 +80,10 @@ public class NcGridReader {
 	private void loadFile(String ncPath) {
 		try {
       setNcfile(NetcdfDataset.acquireDataset(ncPath, null));
-      //Formatter errlog = new Formatter();
-      //CancelTask cancelTask = null;
-      //gridDataset = (GridDataset)FeatureDatasetFactoryManager.open(FeatureType.GRID, getNcfile().getLocation(), cancelTask, errlog);
-      gridDataset = GridDataset.open(ncPath);
+      Formatter errlog = new Formatter();
+      CancelTask cancelTask = null;
+      gridDataset = (GridDataset)FeatureDatasetFactoryManager.open(FeatureType.GRID, getNcfile().getLocation(), cancelTask, errlog);
+      //gridDataset = GridDataset.open(ncPath);
 
 			if (gridDataset != null) {
 				initialize();
