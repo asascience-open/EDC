@@ -18,12 +18,6 @@
 	-->
 	<CLOSE_AFTER_PROCESSING>false</CLOSE_AFTER_PROCESSING>
 	
-	<!--USE_SUBDIRECTORIES: MUST BE A BOOLEAN VALUE.
-	If true, a subdirectory with the same name as the dataset will be created.
-	If false, all data will be placed in the indicated (or default) output directory.
-	-->
-	<USE_SUBDIRECTORIES>true</USE_SUBDIRECTORIES>
-	
 	<!--MAKE_POINTER: MUST BE A BOOLEAN VALUE.
 	If true, the NcPointer.xml file will be created in the indicated (or default) output directory.
 	If false, the NcPointer.xml file will not be created.

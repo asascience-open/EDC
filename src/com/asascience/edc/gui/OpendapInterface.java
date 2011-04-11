@@ -73,6 +73,7 @@ import ucar.util.prefs.PreferencesExt;
 import ucar.util.prefs.XMLStore;
 
 import com.asascience.edc.Configuration;
+import com.asascience.edc.History;
 import com.asascience.edc.nc.NetcdfConstraints;
 import com.asascience.edc.nc.io.NcProperties;
 import com.asascience.edc.particle.ParticleOutputLayer;
@@ -1209,7 +1210,7 @@ public class OpendapInterface {
 			public void run() {
 				// read and apply the parameters from the configuration file
 				Configuration.initialize(System.getProperty("user.dir") + File.separator + "edcconfig.xml");
-
+        History.initialize(System.getProperty("user.dir") + File.separator + "history.txt");
 				if (Configuration.OUTPUT_TO_FILE) {
 					try {
 						// String outloc = "systemoutput.log";

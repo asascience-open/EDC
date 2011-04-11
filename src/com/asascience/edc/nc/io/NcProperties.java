@@ -113,12 +113,7 @@ public class NcProperties {
 		// xmlFile.getAbsolutePath());
 		XMLOutputter out = new XMLOutputter();
 
-		String outTo;
-		if (Configuration.USE_SUBDIRECTORIES) {
-			outTo = xmlFile.getParentFile().getParent();
-		} else {
-			outTo = xmlFile.getParent();
-		}
+		String outTo = outTo = xmlFile.getParent();
 
 		// if(lastFile.equals("null")) outTo = xmlFile.getParent();
 

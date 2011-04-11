@@ -56,6 +56,7 @@ import ucar.util.prefs.PreferencesExt;
 
 import com.asascience.edc.ArcType;
 import com.asascience.edc.Configuration;
+import com.asascience.edc.History;
 import com.asascience.edc.nc.GridReader;
 import com.asascience.edc.nc.NcReaderBase;
 import com.asascience.edc.nc.NetcdfConstraints;
@@ -66,6 +67,7 @@ import com.asascience.openmap.utilities.GeoConstraints;
 import com.asascience.ui.IndeterminateProgressDialog;
 import com.asascience.utilities.FileMonitor;
 import com.asascience.utilities.Utils;
+import java.awt.FileDialog;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.Random;
@@ -918,19 +920,13 @@ public class SubsetProcessPanel extends JPanel {
 					// TODO: processing cancelled - perform actions to "reset"
 					System.err.println("Processing cancelled by user.");
 					File f = new File(ncOutPath);
-					if (Configuration.USE_SUBDIRECTORIES) {
-						if (f.getParentFile().getName().equals(f.getName().replace(".nc", ""))) {
-							Utils.deleteDirectory(f.getParentFile());
-						}
-					} else {
-						if (f.exists()) {
-							f.delete();
-							f = new File(f.getName().replace(".nc", ".xml"));
-							if (f.exists()) {
-								f.delete();
-							}
-						}
-					}
+          if (f.exists()) {
+            f.delete();
+            f = new File(f.getName().replace(".nc", ".xml"));
+            if (f.exists()) {
+              f.delete();
+            }
+          }
 				}
 
 				// "suggest" that the garbage collector clean-up
@@ -1023,13 +1019,8 @@ public class SubsetProcessPanel extends JPanel {
 			}
 
 			File f;
-			if (Configuration.USE_SUBDIRECTORIES) {
-				f = Utils.createIncrementalName(homeDir, outname, null);
-				outname = createSuitableLayerName(f.getName());
-			} else {
-				f = Utils.createIncrementalName(homeDir, outname, ".nc");
-				outname = createSuitableLayerName(f.getName().replace(".nc", ""));
-			}
+      f = Utils.createIncrementalName(homeDir, outname, ".nc");
+      outname = createSuitableLayerName(f.getName().replace(".nc", ""));
 
 			do {
 				skip = false;
@@ -1038,7 +1029,7 @@ public class SubsetProcessPanel extends JPanel {
 					"Output Name", JOptionPane.OK_CANCEL_OPTION, null, null, outname);
 
 				// If Cancal was clicked, outname would be null
-				if (outname == null) {// cancel
+				if (outname == null) {
 					return;
 				}
 
@@ -1057,12 +1048,19 @@ public class SubsetProcessPanel extends JPanel {
           }
         }
 
+        FileDialog outputPath = new FileDialog(mainFrame, "Save .nc and .xml file here...", FileDialog.SAVE);
+        outputPath.setDirectory(homeDir);
+        outputPath.setFile(outname + ".nc");
+        outputPath.setVisible(true);
+        homeDir = outputPath.getDirectory();
+        String userOutname = outputPath.getFile().replace(".nc", "");
+
+        if (!userOutname.equals(outname)) {
+          outname = createSuitableLayerName(userOutname);
+        }
+
         if (!skip) {
-          if (Configuration.USE_SUBDIRECTORIES) {
-            f = new File(homeDir + File.separator + outname);
-          } else {
-            f = new File(homeDir + File.separator + outname + ".nc");
-          }
+          f = new File(homeDir + File.separator + outname + ".nc");
 
           if (f.exists()) {
             if (Configuration.ALLOW_FILE_REPLACEMENT) {
@@ -1070,14 +1068,7 @@ public class SubsetProcessPanel extends JPanel {
                 "An output file with this name already exists." + "\nDo you wish to replace it?",
                 "Duplicate Name", JOptionPane.YES_NO_OPTION);
               if (i == JOptionPane.YES_OPTION) {
-                // System.err.println(f.getParentFile().getAbsolutePath());
-                if (Configuration.USE_SUBDIRECTORIES) {
-                  Utils.deleteDirectory(f);
-                } else {
-                  f.delete();
-                }
-
-                // f.delete();
+                f.delete();
                 cont = true;
               } else {
                 cont = false;
@@ -1096,26 +1087,14 @@ public class SubsetProcessPanel extends JPanel {
 			} while (!cont);
 
 			if (f != null) {
-				if (Configuration.USE_SUBDIRECTORIES) {
-					if (!f.mkdirs()) {
-						System.err.println("SubsetProcessPanel.ProcesDataListener: " + "Could not make directory \""
-							+ f.getAbsolutePath() + "\"");
-					}
-				} else {
-					try {
-						f.createNewFile();
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
+        try {
+          f.createNewFile();
+        } catch (Exception ex) {
+          ex.printStackTrace();
+        }
 			}
 
-			ncOutPath = "";
-			if (Configuration.USE_SUBDIRECTORIES) {
-				ncOutPath = f.getAbsolutePath() + File.separator + outname + ".nc";
-			} else {
-				ncOutPath = f.getAbsolutePath();
-			}
+      ncOutPath = f.getAbsolutePath();
 
 			IndeterminateProgressDialog pd = new IndeterminateProgressDialog(mainFrame, "Progress", new ImageIcon(Utils
 				.getImageResource("ASA.png", SubsetProcessPanel.class)));
@@ -1323,6 +1302,10 @@ public class SubsetProcessPanel extends JPanel {
 
 					props.writeFile();
 					firePropertyChange("done", null, ncPath);
+
+          // Write text file to track locations
+          History.addEntry(outname, ncPath.replace(".nc",".xml"));
+          
 				} else if (runOK == NetcdfGridWriter.CANCELLED_PROCESS) {
 					firePropertyChange("cancel", false, true);
 				} else if (runOK == NetcdfGridWriter.UNDEFINED_ERROR) {

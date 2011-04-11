@@ -26,7 +26,6 @@ public class Configuration {
 	public static int DISPLAY_TYPE = DisplayType.GENERAL;
 	public static boolean OUTPUT_TO_FILE = true;
 	public static boolean CLOSE_AFTER_PROCESSING = true;
-	public static boolean USE_SUBDIRECTORIES = true;
 	public static boolean MAKE_POINTER = true;
 	public static String OUTPUT_LOCATION = "";
 	public static boolean ALLOW_FILE_REPLACEMENT = false;
@@ -52,9 +51,6 @@ public class Configuration {
 			if (root.getChild("CLOSE_AFTER_PROCESSING") != null) {
 				CLOSE_AFTER_PROCESSING = Boolean.parseBoolean(root.getChildText("CLOSE_AFTER_PROCESSING"));
 			}
-			if (root.getChild("USE_SUBDIRECTORIES") != null) {
-				USE_SUBDIRECTORIES = Boolean.parseBoolean(root.getChildText("USE_SUBDIRECTORIES"));
-			}
 			if (root.getChild("MAKE_POINTER") != null) {
 				MAKE_POINTER = Boolean.parseBoolean(root.getChildText("MAKE_POINTER"));
 			}
@@ -77,7 +73,6 @@ public class Configuration {
 			System.err.println("  DISPLAY_TYPE: " + DISPLAY_TYPE);
 			System.err.println("  OUTPUT_TO_FILE: " + OUTPUT_TO_FILE);
 			System.err.println("  CLOSE_AFTER_PROCESSING: " + CLOSE_AFTER_PROCESSING);
-			System.err.println("  USE_SUBDIRECTORIES: " + USE_SUBDIRECTORIES);
 			System.err.println("  MAKE_POINTER: " + MAKE_POINTER);
 			System.err.println("  OUTPUT_LOCATION: " + OUTPUT_LOCATION);
 			System.err.println("  ALLOW_FILE_REPLACEMENT: " + ALLOW_FILE_REPLACEMENT);
