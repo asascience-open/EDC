@@ -6,7 +6,6 @@
  *
  * Created on Feb 20, 2009 @ 11:45:43 AM
  */
-
 package com.asascience.edc.gui;
 
 import java.awt.event.ActionEvent;
@@ -34,127 +33,123 @@ import com.asascience.utilities.Utils;
  * 
  * @author CBM <cmueller@asascience.com>
  */
-
 public class CustomChartFrame extends JFrame {
 
-	private final PropertyChangeSupport propertyChangeSupport;
+  private final PropertyChangeSupport propertyChangeSupport;
+  /** The chart panel. */
+  private ChartPanel chartPanel;
+  private StatsPanel statsPanel;
+  private JComboBox cbChartType;
+  private JComboBox cbDataGrids;
 
-	/** The chart panel. */
-	private ChartPanel chartPanel;
-	private StatsPanel statsPanel;
-	private JComboBox cbChartType;
-	private JComboBox cbDataGrids;
+  /**
+   * Creates a custom chart frame with statistics.
+   *
+   * @param title
+   *            - the title of the frame
+   * @param chart
+   *            - the chart to place in the chart panel
+   * @param stats
+   *            - the statistics to display below the chart
+   * @param grids
+   *            - the available analysis grid names
+   */
+  public CustomChartFrame(String title, JFreeChart chart, HashMap<String, Double> stats, List<String> grids) {
+    this(title, chart, stats, grids, false);
+  }
 
-	/**
-	 * Creates a custom chart frame with statistics.
-	 * 
-	 * @param title
-	 *            - the title of the frame
-	 * @param chart
-	 *            - the chart to place in the chart panel
-	 * @param stats
-	 *            - the statistics to display below the chart
-	 * @param grids
-	 *            - the available analysis grid names
-	 */
-	public CustomChartFrame(String title, JFreeChart chart, HashMap<String, Double> stats, List<String> grids) {
-		this(title, chart, stats, grids, false);
-	}
+  /**
+   * Creates a custom chart frame with statistics.
+   *
+   * @param title
+   *            - the title of the frame
+   * @param chart
+   *            - the chart to place in the chart panel
+   * @param stats
+   *            - the statistics to display below the chart
+   * @param grids
+   *            - the available analysis grid names
+   * @param scrollPane
+   *            - determines if the chart should be placed in a JScrollPane
+   */
+  public CustomChartFrame(String title, JFreeChart chart, HashMap<String, Double> stats, List<String> grids,
+          boolean scrollPane) {
+    super(title);
+    propertyChangeSupport = new PropertyChangeSupport(this);
 
-	/**
-	 * Creates a custom chart frame with statistics.
-	 * 
-	 * @param title
-	 *            - the title of the frame
-	 * @param chart
-	 *            - the chart to place in the chart panel
-	 * @param stats
-	 *            - the statistics to display below the chart
-	 * @param grids
-	 *            - the available analysis grid names
-	 * @param scrollPane
-	 *            - determines if the chart should be placed in a JScrollPane
-	 */
-	public CustomChartFrame(String title, JFreeChart chart, HashMap<String, Double> stats, List<String> grids,
-		boolean scrollPane) {
-		super(title);
-		propertyChangeSupport = new PropertyChangeSupport(this);
+    setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+    JPanel pnl = new JPanel(new MigLayout("fill"));
 
-		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		JPanel pnl = new JPanel(new MigLayout("fill"));
+    pnl.add(new JLabel("Chart Type:"), "center, split 4");
+    cbChartType = new JComboBox();
+    cbChartType.addItem("Timeseries");
+    cbChartType.addItem("Histogram");
+    cbChartType.addActionListener(new ActionListener() {
 
-		pnl.add(new JLabel("Chart Type:"), "center, split 4");
-		cbChartType = new JComboBox();
-		cbChartType.addItem("Timeseries");
-		cbChartType.addItem("Histogram");
-		cbChartType.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        propertyChangeSupport.firePropertyChange("chartType", cbChartType.getSelectedIndex(), null);
+      }
+    });
+    pnl.add(cbChartType);
 
-			public void actionPerformed(ActionEvent e) {
-				propertyChangeSupport.firePropertyChange("chartType", cbChartType.getSelectedIndex(), null);
-			}
+    pnl.add(new JLabel("Data Grid:"));
+    cbDataGrids = new JComboBox();
+    for (String s : grids) {
+      cbDataGrids.addItem(s);
+    }
+    cbDataGrids.addActionListener(new ActionListener() {
 
-		});
-		pnl.add(cbChartType);
+      public void actionPerformed(ActionEvent e) {
+        propertyChangeSupport.firePropertyChange("gridChange", cbDataGrids.getSelectedItem().toString(), null);
+      }
+    });
+    pnl.add(cbDataGrids, "wrap");
 
-		pnl.add(new JLabel("Data Grid:"));
-		cbDataGrids = new JComboBox();
-		for (String s : grids) {
-			cbDataGrids.addItem(s);
-		}
-		cbDataGrids.addActionListener(new ActionListener() {
+    this.chartPanel = new ChartPanel(chart);
+    this.statsPanel = new StatsPanel(stats);
+    pnl.add(this.chartPanel, "grow, wrap");
+    pnl.add(this.statsPanel, "center");
 
-			public void actionPerformed(ActionEvent e) {
-				propertyChangeSupport.firePropertyChange("gridChange", cbDataGrids.getSelectedItem().toString(), null);
-			}
+    if (scrollPane) {
+      setContentPane(new JScrollPane(pnl));
+    } else {
+      setContentPane(pnl);
+    }
+  }
 
-		});
-		pnl.add(cbDataGrids, "wrap");
+  /**
+   * Returns the chart panel for the frame.
+   *
+   * @return The chart panel.
+   */
+  public ChartPanel getChartPanel() {
+    return this.chartPanel;
+  }
 
-		this.chartPanel = new ChartPanel(chart);
-		this.statsPanel = new StatsPanel(stats);
-		pnl.add(this.chartPanel, "grow, wrap");
-		pnl.add(this.statsPanel, "center");
+  /**
+   * Returns the stats panel for the frame.
+   *
+   * @return The stats panel.
+   */
+  public StatsPanel getStatsPanel() {
+    return this.statsPanel;
+  }
 
-		if (scrollPane) {
-			setContentPane(new JScrollPane(pnl));
-		} else {
-			setContentPane(pnl);
-		}
-	}
+  /**
+   * Sets the selected analysis grid.
+   *
+   */
+  public void setSelectedGrid(String gridName) {
+    if (Utils.comboBoxContains(cbDataGrids.getModel(), gridName)) {
+      cbDataGrids.setSelectedItem(gridName);
+    }
+  }
 
-	/**
-	 * Returns the chart panel for the frame.
-	 * 
-	 * @return The chart panel.
-	 */
-	public ChartPanel getChartPanel() {
-		return this.chartPanel;
-	}
+  public void addPropertyChangeListener(PropertyChangeListener listener) {
+    propertyChangeSupport.addPropertyChangeListener(listener);
+  }
 
-	/**
-	 * Returns the stats panel for the frame.
-	 * 
-	 * @return The stats panel.
-	 */
-	public StatsPanel getStatsPanel() {
-		return this.statsPanel;
-	}
-
-	/**
-	 * Sets the selected analysis grid.
-	 * 
-	 */
-	public void setSelectedGrid(String gridName) {
-		if (Utils.comboBoxContains(cbDataGrids.getModel(), gridName)) {
-			cbDataGrids.setSelectedItem(gridName);
-		}
-	}
-
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		propertyChangeSupport.addPropertyChangeListener(listener);
-	}
-
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		propertyChangeSupport.removePropertyChangeListener(listener);
-	}
+  public void removePropertyChangeListener(PropertyChangeListener listener) {
+    propertyChangeSupport.removePropertyChangeListener(listener);
+  }
 }

@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.asascience.sos.types;
 
 /**
@@ -16,5 +15,4 @@ public interface SOSTypeInterface {
   public boolean parseSensors();
 
   public void getObservations();
-
 }

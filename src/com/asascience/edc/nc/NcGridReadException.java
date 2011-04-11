@@ -6,7 +6,6 @@
  * Applied Science Associates, Inc.
  * Copyright 2007.  All rights reserved.
  */
-
 package com.asascience.edc.nc;
 
 /**
@@ -15,15 +14,14 @@ package com.asascience.edc.nc;
  */
 public class NcGridReadException extends Exception {
 
-	/**
-	 * Creates a new instance of NcGridReadException
-	 */
-	public NcGridReadException() {
-		super();
-	}
+  /**
+   * Creates a new instance of NcGridReadException
+   */
+  public NcGridReadException() {
+    super();
+  }
 
-	public NcGridReadException(String s) {
-		super(s);
-	}
-
+  public NcGridReadException(String s) {
+    super(s);
+  }
 }

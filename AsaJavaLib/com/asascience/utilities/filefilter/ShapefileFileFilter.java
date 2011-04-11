@@ -9,7 +9,6 @@
  * Created on Jul 7, 2008, 12:51:01 PM
  *
  */
-
 package com.asascience.utilities.filefilter;
 
 import java.io.File;
@@ -23,24 +22,26 @@ import com.asascience.utilities.Utils;
  * @author cmueller_mac
  */
 public class ShapefileFileFilter extends FileFilter {
-	/** Creates a new instance of GeoTiffFileFilter */
-	public ShapefileFileFilter() {
-	}
 
-	public boolean accept(File f) {
-		if (f.isDirectory())
-			return true;
+  /** Creates a new instance of GeoTiffFileFilter */
+  public ShapefileFileFilter() {
+  }
 
-		String ext = Utils.getExtension(f);
-		if (ext != null) {
-			if (ext.equalsIgnoreCase("shp")) {
-				return true;
-			}
-		}
-		return false;
-	}
+  public boolean accept(File f) {
+    if (f.isDirectory()) {
+      return true;
+    }
 
-	public String getDescription() {
-		return "Shapefiles";
-	}
+    String ext = Utils.getExtension(f);
+    if (ext != null) {
+      if (ext.equalsIgnoreCase("shp")) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public String getDescription() {
+    return "Shapefiles";
+  }
 }

@@ -34,362 +34,361 @@ import com.asascience.ui.CheckBoxList;
  */
 public class SelectionPanelBase extends JPanel {
 
-	protected boolean hasGeoGrids;
-	protected JPanel parentSpp;
-	protected NetcdfConstraints constraints;
-	private List<GeoGrid> localGeoGrids;
-	private List<Variable> localVariables;
-	private boolean makeRaster = true;
-	private boolean makeVector = false;
-	private boolean hasGeoSub = false;
-	private boolean hasTimeSub = false;
-	private int trimByIndex = -1;
-	private String trimByValue = "";
-	private String uVar = "";
-	private String vVar = "";
-	private int surfaceLevel = 0;
-	private boolean vectorType = false;
-	private CheckBoxList cblVars;
-	private boolean useAllLevels;
-	private List<String> varNames = null;
-	private List<String> varDescr = null;
-	public static final int GENERAL = 0;
-	public static final int ESRI = 1;
-	public static final int OILMAP = 2;
-	private int panelType;
+  protected boolean hasGeoGrids;
+  protected JPanel parentSpp;
+  protected NetcdfConstraints constraints;
+  private List<GeoGrid> localGeoGrids;
+  private List<Variable> localVariables;
+  private boolean makeRaster = true;
+  private boolean makeVector = false;
+  private boolean hasGeoSub = false;
+  private boolean hasTimeSub = false;
+  private int trimByIndex = -1;
+  private String trimByValue = "";
+  private String uVar = "";
+  private String vVar = "";
+  private int surfaceLevel = 0;
+  private boolean vectorType = false;
+  private CheckBoxList cblVars;
+  private boolean useAllLevels;
+  private List<String> varNames = null;
+  private List<String> varDescr = null;
+  public static final int GENERAL = 0;
+  public static final int ESRI = 1;
+  public static final int OILMAP = 2;
+  private int panelType;
 
-	public int getPanelType() {
-		return panelType;
-	}
+  public int getPanelType() {
+    return panelType;
+  }
 
-	protected void setPanelType(int pt) {
-		panelType = pt;
-	}
+  protected void setPanelType(int pt) {
+    panelType = pt;
+  }
 
-	/**
-	 * Creates a new instance of SelectionPanelBase
-	 * 
-	 * @param borderTitle
-	 * @param cons
-	 * @param parent
-	 */
-	public SelectionPanelBase(String borderTitle, NetcdfConstraints cons, SubsetProcessPanel parent) {
-		super(new MigLayout("fill"));
+  /**
+   * Creates a new instance of SelectionPanelBase
+   *
+   * @param borderTitle
+   * @param cons
+   * @param parent
+   */
+  public SelectionPanelBase(String borderTitle, NetcdfConstraints cons, SubsetProcessPanel parent) {
+    super(new MigLayout("fill"));
 
-		TitledBorder tb = BorderFactory.createTitledBorder(borderTitle);
-		tb.setTitleJustification(TitledBorder.CENTER);
-		this.setBorder(tb);
-		this.constraints = cons;
-		this.parentSpp = parent;
-	}
+    TitledBorder tb = BorderFactory.createTitledBorder(borderTitle);
+    tb.setTitleJustification(TitledBorder.CENTER);
+    this.setBorder(tb);
+    this.constraints = cons;
+    this.parentSpp = parent;
+  }
 
   public SelectionPanelBase(String borderTitle, NetcdfConstraints cons, SosProcessPanel parent) {
-		super(new MigLayout("fill"));
+    super(new MigLayout("fill"));
 
-		TitledBorder tb = BorderFactory.createTitledBorder(borderTitle);
-		tb.setTitleJustification(TitledBorder.CENTER);
-		this.setBorder(tb);
-		this.constraints = cons;
-		this.parentSpp = parent;
-	}
+    TitledBorder tb = BorderFactory.createTitledBorder(borderTitle);
+    tb.setTitleJustification(TitledBorder.CENTER);
+    this.setBorder(tb);
+    this.constraints = cons;
+    this.parentSpp = parent;
+  }
 
-	public void createPanel() {
-		this.add(variablePanel(), "grow, center");
-	}
+  public void createPanel() {
+    this.add(variablePanel(), "grow, center");
+  }
 
-	public void gridRegularity(boolean isRegular) {
-	}
+  public void gridRegularity(boolean isRegular) {
+  }
 
-	public void addVariables(List<Variable> vars) {
-		for (Variable v : vars) {
-			localVariables.add(v);
-		}
-		setVariables();
-	}
+  public void addVariables(List<Variable> vars) {
+    for (Variable v : vars) {
+      localVariables.add(v);
+    }
+    setVariables();
+  }
 
-	public String getFullDescriptionFromShortDescription(String desc) {
-		return cblVars.getFullDescription(desc);
-	}
+  public String getFullDescriptionFromShortDescription(String desc) {
+    return cblVars.getFullDescription(desc);
+  }
 
-	public String getVarNameFromDescription(String desc) {
-		if (varDescr != null) {
-			String checker;
-			for (int i = 0; i < varDescr.size(); i++) {
-				checker = cblVars.getFullDescription(desc);
-				if (checker != null) {
-					if (checker.equals(varDescr.get(i))) {
-						return varNames.get(i);
-					}
-				}
-			}
-		}
-		return null;
-	}
+  public String getVarNameFromDescription(String desc) {
+    if (varDescr != null) {
+      String checker;
+      for (int i = 0; i < varDescr.size(); i++) {
+        checker = cblVars.getFullDescription(desc);
+        if (checker != null) {
+          if (checker.equals(varDescr.get(i))) {
+            return varNames.get(i);
+          }
+        }
+      }
+    }
+    return null;
+  }
 
-	public void setVariables(List<Variable> vars) {
-		localVariables = vars;
-		setVariables();
-	}
+  public void setVariables(List<Variable> vars) {
+    localVariables = vars;
+    setVariables();
+  }
 
-	public void setVariables() {
-		if (localVariables == null) {
-			return;
-		}
+  public void setVariables() {
+    if (localVariables == null) {
+      return;
+    }
 
-		hasGeoGrids = false;
+    hasGeoGrids = false;
 
-		varNames = new ArrayList();
-		varDescr = new ArrayList();
+    varNames = new ArrayList();
+    varDescr = new ArrayList();
 
-		for (Variable v : localVariables) {
-			varNames.add(v.getName());
-			varDescr.add((v.getDescription().equals("")) ? v.getName() : v.getDescription());
-		}
-		// cblVars.removeAll();
-		cblVars.clearCBList();
+    for (Variable v : localVariables) {
+      varNames.add(v.getName());
+      varDescr.add((v.getDescription().equals("")) ? v.getName() : v.getDescription());
+    }
+    // cblVars.removeAll();
+    cblVars.clearCBList();
 
-		cblVars.makeCBList(varNames, varDescr, true);// orig
-		// cblVars.makeCBList(varDescr, varDescr, true);
+    cblVars.makeCBList(varNames, varDescr, true);// orig
+    // cblVars.makeCBList(varDescr, varDescr, true);
 
-		// remove any existing pcl's
-		PropertyChangeListener[] pcls = getCblVars().getPropertyChangeListeners();
-		for (int i = pcls.length - 1; i >= 0; i--) {
-			getCblVars().removePropertyChangeListener(pcls[i]);
-		}
-	}
+    // remove any existing pcl's
+    PropertyChangeListener[] pcls = getCblVars().getPropertyChangeListeners();
+    for (int i = pcls.length - 1; i >= 0; i--) {
+      getCblVars().removePropertyChangeListener(pcls[i]);
+    }
+  }
 
-	public void addGeoGridVars(List<GeoGrid> geoGrids) {
-		for (GeoGrid g : geoGrids) {
-			localGeoGrids.add(g);
-		}
-		setGeoGridVars();
-	}
+  public void addGeoGridVars(List<GeoGrid> geoGrids) {
+    for (GeoGrid g : geoGrids) {
+      localGeoGrids.add(g);
+    }
+    setGeoGridVars();
+  }
 
-	public void setGeoGridVars(List<GeoGrid> geoGrids) {
-		localGeoGrids = geoGrids;
-		setGeoGridVars();
-	}
+  public void setGeoGridVars(List<GeoGrid> geoGrids) {
+    localGeoGrids = geoGrids;
+    setGeoGridVars();
+  }
 
-	public void setGeoGridVars() {
-		if (localGeoGrids == null) {
-			return;
-		}
+  public void setGeoGridVars() {
+    if (localGeoGrids == null) {
+      return;
+    }
 
-		hasGeoGrids = true;
+    hasGeoGrids = true;
 
-		varNames = new ArrayList();
-		varDescr = new ArrayList();
+    varNames = new ArrayList();
+    varDescr = new ArrayList();
 
-		for (GeoGrid grid : localGeoGrids) {
-			varNames.add(grid.getName());
-			varDescr.add((grid.getDescription().equals("")) ? grid.getName() : grid.getDescription());
-		}
-		// cblVars.removeAll();
-		cblVars.clearCBList();
+    for (GeoGrid grid : localGeoGrids) {
+      varNames.add(grid.getName());
+      varDescr.add((grid.getDescription().equals("")) ? grid.getName() : grid.getDescription());
+    }
+    // cblVars.removeAll();
+    cblVars.clearCBList();
 
-		cblVars.makeCBList(varNames, varDescr, true);// orig
-		// cblVars.makeCBList(varDescr, varDescr);
+    cblVars.makeCBList(varNames, varDescr, true);// orig
+    // cblVars.makeCBList(varDescr, varDescr);
 
-		// remove any existing pcl's
-		PropertyChangeListener[] pcls = getCblVars().getPropertyChangeListeners();
-		for (int i = pcls.length - 1; i >= 0; i--) {
-			getCblVars().removePropertyChangeListener(pcls[i]);
-		}
-	}
+    // remove any existing pcl's
+    PropertyChangeListener[] pcls = getCblVars().getPropertyChangeListeners();
+    for (int i = pcls.length - 1; i >= 0; i--) {
+      getCblVars().removePropertyChangeListener(pcls[i]);
+    }
+  }
 
-	protected JPanel variablePanel() {
-		cblVars = new CheckBoxList(true, true, true);
-		cblVars.setLabelLengthLimit(30);
+  protected JPanel variablePanel() {
+    cblVars = new CheckBoxList(true, true, true);
+    cblVars.setLabelLengthLimit(30);
 
-		JPanel variablePanel = new JPanel(new MigLayout("fill, insets 0"));
-		variablePanel.setBorder(BorderFactory.createTitledBorder("Variables:"));
+    JPanel variablePanel = new JPanel(new MigLayout("fill, insets 0"));
+    variablePanel.setBorder(BorderFactory.createTitledBorder("Variables:"));
 
-		JButton toggleAll = new JButton("Toggle All");
-		toggleAll.addActionListener(new ActionListener() {
+    JButton toggleAll = new JButton("Toggle All");
+    toggleAll.addActionListener(new ActionListener() {
 
-			public void actionPerformed(ActionEvent e) {
-				cblVars.toggleAll();
-			}
-		});
+      public void actionPerformed(ActionEvent e) {
+        cblVars.toggleAll();
+      }
+    });
 
-		// variablePanel.add(toggleAll, "wrap");
+    // variablePanel.add(toggleAll, "wrap");
 
-		JScrollPane varScroll = new JScrollPane();
-		// varScroll.setBorder(BorderFactory.createTitledBorder("Variables:"));
-		varScroll.getVerticalScrollBar().setUnitIncrement(5);
-		varScroll.setViewportView(cblVars);
-		variablePanel.add(varScroll, "grow");
+    JScrollPane varScroll = new JScrollPane();
+    // varScroll.setBorder(BorderFactory.createTitledBorder("Variables:"));
+    varScroll.getVerticalScrollBar().setUnitIncrement(5);
+    varScroll.setViewportView(cblVars);
+    variablePanel.add(varScroll, "grow");
 
-		// return varScroll;
-		return variablePanel;
-	}
+    // return varScroll;
+    return variablePanel;
+  }
 
-	public CheckBoxList getCblVars() {
-		return cblVars;
-	}
+  public CheckBoxList getCblVars() {
+    return cblVars;
+  }
 
-	public void setCblVars(CheckBoxList cblVars) {
-		this.cblVars = cblVars;
-	}
+  public void setCblVars(CheckBoxList cblVars) {
+    this.cblVars = cblVars;
+  }
 
-	public boolean isMakeRaster() {
-		// System.err.println("getting makeRaster: " + this.makeRaster);
-		return this.makeRaster;
-	}
+  public boolean isMakeRaster() {
+    // System.err.println("getting makeRaster: " + this.makeRaster);
+    return this.makeRaster;
+  }
 
-	public void setMakeRaster(boolean makeRaster) {
-		// System.err.println("setting makeRaster: " + this.makeRaster);
-		this.makeRaster = makeRaster;
-	}
+  public void setMakeRaster(boolean makeRaster) {
+    // System.err.println("setting makeRaster: " + this.makeRaster);
+    this.makeRaster = makeRaster;
+  }
+  // <editor-fold defaultstate="collapsed" desc=" Bound Properties ">
+  /**
+   * Holds value of property processEnabled.
+   */
+  private boolean processEnabled;
+  /**
+   * Utility field used by bound properties.
+   */
+  private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
-	// <editor-fold defaultstate="collapsed" desc=" Bound Properties ">
-	/**
-	 * Holds value of property processEnabled.
-	 */
-	private boolean processEnabled;
-	/**
-	 * Utility field used by bound properties.
-	 */
-	private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+  /**
+   * Adds a PropertyChangeListener to the listener list.
+   *
+   * @param l
+   *            The listener to add.
+   */
+  @Override
+  public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+    propertyChangeSupport.addPropertyChangeListener(l);
+  }
 
-	/**
-	 * Adds a PropertyChangeListener to the listener list.
-	 * 
-	 * @param l
-	 *            The listener to add.
-	 */
-	@Override
-	public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
-		propertyChangeSupport.addPropertyChangeListener(l);
-	}
+  /**
+   * Removes a PropertyChangeListener from the listener list.
+   *
+   * @param l
+   *            The listener to remove.
+   */
+  @Override
+  public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+    propertyChangeSupport.removePropertyChangeListener(l);
+  }
 
-	/**
-	 * Removes a PropertyChangeListener from the listener list.
-	 * 
-	 * @param l
-	 *            The listener to remove.
-	 */
-	@Override
-	public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-		propertyChangeSupport.removePropertyChangeListener(l);
-	}
+  /**
+   * Getter for property processEnabled.
+   *
+   * @return Value of property processEnabled.
+   */
+  public boolean isProcessEnabled() {
+    return this.processEnabled;
+  }
 
-	/**
-	 * Getter for property processEnabled.
-	 * 
-	 * @return Value of property processEnabled.
-	 */
-	public boolean isProcessEnabled() {
-		return this.processEnabled;
-	}
+  /**
+   * Setter for property processEnabled.
+   *
+   * @param processEnabled
+   *            New value of property processEnabled.
+   */
+  public void setProcessEnabled(boolean processEnabled) {
+    boolean oldProcessEnabled = this.processEnabled;
+    this.processEnabled = processEnabled;
+    propertyChangeSupport.firePropertyChange("processEnabled", new Boolean(oldProcessEnabled), new Boolean(
+            processEnabled));
+  }
 
-	/**
-	 * Setter for property processEnabled.
-	 * 
-	 * @param processEnabled
-	 *            New value of property processEnabled.
-	 */
-	public void setProcessEnabled(boolean processEnabled) {
-		boolean oldProcessEnabled = this.processEnabled;
-		this.processEnabled = processEnabled;
-		propertyChangeSupport.firePropertyChange("processEnabled", new Boolean(oldProcessEnabled), new Boolean(
-			processEnabled));
-	}
+  // </editor-fold>
+  public List<GeoGrid> getLocalGeoGrids() {
+    return localGeoGrids;
+  }
 
-	// </editor-fold>
-	public List<GeoGrid> getLocalGeoGrids() {
-		return localGeoGrids;
-	}
+  protected void setLocalGeoGrids(List<GeoGrid> localGeoGrids) {
+    this.localGeoGrids = localGeoGrids;
+  }
 
-	protected void setLocalGeoGrids(List<GeoGrid> localGeoGrids) {
-		this.localGeoGrids = localGeoGrids;
-	}
+  public int getTrimByIndex() {
+    return trimByIndex;
+  }
 
-	public int getTrimByIndex() {
-		return trimByIndex;
-	}
+  protected void setTrimByIndex(int trimByIndex) {
+    this.trimByIndex = trimByIndex;
+  }
 
-	protected void setTrimByIndex(int trimByIndex) {
-		this.trimByIndex = trimByIndex;
-	}
+  public String getTrimByValue() {
+    return trimByValue;
+  }
 
-	public String getTrimByValue() {
-		return trimByValue;
-	}
+  protected void setTrimByValue(String trimByValue) {
+    this.trimByValue = trimByValue;
+  }
 
-	protected void setTrimByValue(String trimByValue) {
-		this.trimByValue = trimByValue;
-	}
+  public String getUVar() {
+    return uVar;
+  }
 
-	public String getUVar() {
-		return uVar;
-	}
+  protected void setUVar(String uVar) {
+    this.uVar = uVar;
+  }
 
-	protected void setUVar(String uVar) {
-		this.uVar = uVar;
-	}
+  public String getVVar() {
+    return vVar;
+  }
 
-	public String getVVar() {
-		return vVar;
-	}
+  protected void setVVar(String vVar) {
+    this.vVar = vVar;
+  }
 
-	protected void setVVar(String vVar) {
-		this.vVar = vVar;
-	}
+  public boolean isMakeVector() {
+    return makeVector;
+  }
 
-	public boolean isMakeVector() {
-		return makeVector;
-	}
+  public void setMakeVector(boolean makeVector) {
+    this.makeVector = makeVector;
+  }
 
-	public void setMakeVector(boolean makeVector) {
-		this.makeVector = makeVector;
-	}
+  public boolean isHasGeoSub() {
+    return hasGeoSub;
+  }
 
-	public boolean isHasGeoSub() {
-		return hasGeoSub;
-	}
+  public void setHasGeoSub(boolean hasGeoSub) {
+    this.hasGeoSub = hasGeoSub;
+  }
 
-	public void setHasGeoSub(boolean hasGeoSub) {
-		this.hasGeoSub = hasGeoSub;
-	}
+  public boolean isHasTimeSub() {
+    return hasTimeSub;
+  }
 
-	public boolean isHasTimeSub() {
-		return hasTimeSub;
-	}
+  public void setHasTimeSub(boolean hasTimeSub) {
+    this.hasTimeSub = hasTimeSub;
+  }
 
-	public void setHasTimeSub(boolean hasTimeSub) {
-		this.hasTimeSub = hasTimeSub;
-	}
+  public int getSurfaceLevel() {
+    return surfaceLevel;
+  }
 
-	public int getSurfaceLevel() {
-		return surfaceLevel;
-	}
+  public void setSurfaceLevel(int surfaceLevel) {
+    this.surfaceLevel = surfaceLevel;
+  }
 
-	public void setSurfaceLevel(int surfaceLevel) {
-		this.surfaceLevel = surfaceLevel;
-	}
+  public boolean isVectorType() {
+    return vectorType;
+  }
 
-	public boolean isVectorType() {
-		return vectorType;
-	}
+  public void setVectorType(boolean vectorType) {
+    this.vectorType = vectorType;
+  }
 
-	public void setVectorType(boolean vectorType) {
-		this.vectorType = vectorType;
-	}
+  public List<Variable> getLocalVariables() {
+    return localVariables;
+  }
 
-	public List<Variable> getLocalVariables() {
-		return localVariables;
-	}
+  public void setLocalVariables(List<Variable> localVariables) {
+    this.localVariables = localVariables;
+  }
 
-	public void setLocalVariables(List<Variable> localVariables) {
-		this.localVariables = localVariables;
-	}
+  public boolean isUseAllLevels() {
+    return useAllLevels;
+  }
 
-	public boolean isUseAllLevels() {
-		return useAllLevels;
-	}
-
-	public void setUseAllLevels(boolean useAllLevels) {
-		this.useAllLevels = useAllLevels;
-	}
+  public void setUseAllLevels(boolean useAllLevels) {
+    this.useAllLevels = useAllLevels;
+  }
 }

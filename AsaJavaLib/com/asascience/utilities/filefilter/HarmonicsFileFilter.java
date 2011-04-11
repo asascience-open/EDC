@@ -9,7 +9,6 @@
  * Created on Apr 23, 2008, 4:04:38 PM
  *
  */
-
 package com.asascience.utilities.filefilter;
 
 import java.io.File;
@@ -24,24 +23,25 @@ import com.asascience.utilities.Utils;
  */
 public class HarmonicsFileFilter extends FileFilter {
 
-	/** Creates a new instance of HarmonicsFileFilter */
-	public HarmonicsFileFilter() {
-	}
+  /** Creates a new instance of HarmonicsFileFilter */
+  public HarmonicsFileFilter() {
+  }
 
-	public boolean accept(File f) {
-		if (f.isDirectory())
-			return true;
+  public boolean accept(File f) {
+    if (f.isDirectory()) {
+      return true;
+    }
 
-		String ext = Utils.getExtension(f);
-		if (ext != null) {
-			if (ext.equalsIgnoreCase("thnc")) {
-				return true;
-			}
-		}
-		return false;
-	}
+    String ext = Utils.getExtension(f);
+    if (ext != null) {
+      if (ext.equalsIgnoreCase("thnc")) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-	public String getDescription() {
-		return "Harmonics Files";
-	}
+  public String getDescription() {
+    return "Harmonics Files";
+  }
 }

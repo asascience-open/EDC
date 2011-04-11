@@ -6,7 +6,6 @@
  * Applied Science Associates, Inc.
  * Copyright 2007.  All rights reserved.
  */
-
 package com.asascience.edp.datafile.hydro;
 
 import java.util.GregorianCalendar;
@@ -23,184 +22,182 @@ import com.asascience.utilities.Vector3D;
  */
 public abstract class DataFileBase {
 
-	protected long queryTime = 0;
-	protected String dataFile;
+  protected long queryTime = 0;
+  protected String dataFile;
+  protected GregorianCalendar startCal = null;
+  protected GregorianCalendar endCal = null;
+  protected long timeIncrement = 0l;
+  protected boolean hasBottomDepth = false;
 
-	protected GregorianCalendar startCal = null;
-	protected GregorianCalendar endCal = null;
+  /**
+   * Creates a new instance of DataFileBase
+   *
+   * @param dataFile
+   *            <CODE>String</CODE> The path to the data file
+   */
+  public DataFileBase() {// String dataFile) {
+    // this.dataFile = dataFile;
+  }
 
-	protected long timeIncrement = 0l;
+  protected void loadDataFile() {
+  }
 
-	protected boolean hasBottomDepth = false;
+  ;
 
-	/**
-	 * Creates a new instance of DataFileBase
-	 * 
-	 * @param dataFile
-	 *            <CODE>String</CODE> The path to the data file
-	 */
-	public DataFileBase() {// String dataFile) {
-	// this.dataFile = dataFile;
-	}
+  /**
+   * <CODE>String</CODE> Get the path to the data file
+   *
+   * @return <CODE>String</CODE> The path of the data file
+   */
+  public String getDataFile() {
+    return dataFile;
+  }
 
-	protected void loadDataFile() {
-	};
+  /**
+   * This method ingests the data file string, sets the base property
+   * <CODE>dataFile</CODE> and calls the loadDataFile() method to read the
+   * data.
+   *
+   * @param dataFile
+   *            <CODE>String</CODE> path to the data file.
+   */
+  public void setDataFile(String dataFile) {
+    this.dataFile = dataFile;
+    loadDataFile();
+  }
 
-	/**
-	 * <CODE>String</CODE> Get the path to the data file
-	 * 
-	 * @return <CODE>String</CODE> The path of the data file
-	 */
-	public String getDataFile() {
-		return dataFile;
-	}
+  public void setStartTime(GregorianCalendar startTime) {
+    this.startCal = startTime;
+  }
 
-	/**
-	 * This method ingests the data file string, sets the base property
-	 * <CODE>dataFile</CODE> and calls the loadDataFile() method to read the
-	 * data.
-	 * 
-	 * @param dataFile
-	 *            <CODE>String</CODE> path to the data file.
-	 */
-	public void setDataFile(String dataFile) {
-		this.dataFile = dataFile;
-		loadDataFile();
-	}
+  public GregorianCalendar getStartTime() {
+    return startCal;
+  }
 
-	public void setStartTime(GregorianCalendar startTime) {
-		this.startCal = startTime;
-	}
+  public void setEndTime(GregorianCalendar endTime) {
+    this.endCal = endTime;
+  }
 
-	public GregorianCalendar getStartTime() {
-		return startCal;
-	}
+  public GregorianCalendar getEndTime() {
+    return endCal;
+  }
 
-	public void setEndTime(GregorianCalendar endTime) {
-		this.endCal = endTime;
-	}
+  public void setTimeIncrement(long timeIncrement) {
+    this.timeIncrement = timeIncrement;
+  }
 
-	public GregorianCalendar getEndTime() {
-		return endCal;
-	}
+  public long getTimeIncrement() {
+    return timeIncrement;
+  }
 
-	public void setTimeIncrement(long timeIncrement) {
-		this.timeIncrement = timeIncrement;
-	}
+  public Double[] getLons() {
+    return null;
+  }
 
-	public long getTimeIncrement() {
-		return timeIncrement;
-	}
+  public Double[] getLats() {
+    return null;
+  }
 
-	public Double[] getLons() {
-		return null;
-	}
+  // public double[][] getUVTimeSeries(double lat, double lon){
+  // return getUVTimeSeries(new Vector3D(lon, lat, 0));
+  // }
+  public double[][] getUVTimeSeries(Vector3D position) {
+    return null;
+  }
 
-	public Double[] getLats() {
-		return null;
-	}
+  public double[] getDataTimeseries(String id, Vector3D position) {
+    return null;
+  }
 
-	// public double[][] getUVTimeSeries(double lat, double lon){
-	// return getUVTimeSeries(new Vector3D(lon, lat, 0));
-	// }
+  /**
+   * This method sets the queryTime variable. It should be called PRIOR to
+   * each time iteration and applies to all the particles for that time step.
+   *
+   * @param queryTime
+   *            <CODE>long</CODE> The current time for data retrieval.
+   */
+  public void setQueryTime(long queryTime) {
+    this.queryTime = queryTime;
+  }
 
-	public double[][] getUVTimeSeries(Vector3D position) {
-		return null;
-	}
+  public long getQueryTime() {
+    return this.queryTime;
+  }
 
-	public double[] getDataTimeseries(String id, Vector3D position) {
-		return null;
-	}
+  /**
+   * <CODE>double</CODE> The data value at the specified x, y, z position for
+   * the <CODE>queryTime</CODE>
+   * <P>
+   * Override this method in child classes to provide access to file-type
+   * specific data retrieval methodology.
+   *
+   * @param position
+   *            <CODE>Vector3D</CODE> The position at which data is being
+   *            queried
+   * @return <CODE>double</CODE> The data value at the specified x/y
+   *         coordinate for the <CODE>queryTime</CODE>
+   */
+  public Vector3D getCurrentAt(Vector3D position) {
+    // process the data in the file-specific class
+    return getCurrentAt(this.getQueryTime(), position);
+  }
 
-	/**
-	 * This method sets the queryTime variable. It should be called PRIOR to
-	 * each time iteration and applies to all the particles for that time step.
-	 * 
-	 * @param queryTime
-	 *            <CODE>long</CODE> The current time for data retrieval.
-	 */
-	public void setQueryTime(long queryTime) {
-		this.queryTime = queryTime;
-	}
+  /**
+   * <CODE>double</CODE> The data value at the specified x, y, z position and
+   * time.
+   * <P>
+   * Override this method in child classes to provide access to file-type
+   * specific data retrieval methodology.
+   *
+   * @param position
+   *            <CODE>Vector3D</CODE> The position at which data is being
+   *            queried
+   * @param time
+   *            <CODE>long</CODE> The time constraint
+   * @return <CODE>double</CODE> The data value at the specified x/y
+   *         coordinate and time
+   */
+  public Vector3D getCurrentAt(long time, Vector3D position) {
+    // process the data in the file-specific class
+    return null;
+  }
 
-	public long getQueryTime() {
-		return this.queryTime;
-	}
+  public double getSalinityAt(Vector3D position) {
+    return getSalinityAt(this.getQueryTime(), position);
+  }
 
-	/**
-	 * <CODE>double</CODE> The data value at the specified x, y, z position for
-	 * the <CODE>queryTime</CODE>
-	 * <P>
-	 * Override this method in child classes to provide access to file-type
-	 * specific data retrieval methodology.
-	 * 
-	 * @param position
-	 *            <CODE>Vector3D</CODE> The position at which data is being
-	 *            queried
-	 * @return <CODE>double</CODE> The data value at the specified x/y
-	 *         coordinate for the <CODE>queryTime</CODE>
-	 */
-	public Vector3D getCurrentAt(Vector3D position) {
-		// process the data in the file-specific class
-		return getCurrentAt(this.getQueryTime(), position);
-	}
+  public double getSalinityAt(long time, Vector3D position) {
+    return Double.NaN;
+  }
 
-	/**
-	 * <CODE>double</CODE> The data value at the specified x, y, z position and
-	 * time.
-	 * <P>
-	 * Override this method in child classes to provide access to file-type
-	 * specific data retrieval methodology.
-	 * 
-	 * @param position
-	 *            <CODE>Vector3D</CODE> The position at which data is being
-	 *            queried
-	 * @param time
-	 *            <CODE>long</CODE> The time constraint
-	 * @return <CODE>double</CODE> The data value at the specified x/y
-	 *         coordinate and time
-	 */
-	public Vector3D getCurrentAt(long time, Vector3D position) {
-		// process the data in the file-specific class
-		return null;
-	}
+  public double getTempAt(Vector3D position) {
+    return getTempAt(this.getQueryTime(), position);
+  }
 
-	public double getSalinityAt(Vector3D position) {
-		return getSalinityAt(this.getQueryTime(), position);
-	}
+  public double getTempAt(long time, Vector3D position) {
+    return Double.NaN;
+  }
 
-	public double getSalinityAt(long time, Vector3D position) {
-		return Double.NaN;
-	}
+  public double getBottomDepthAt(Vector3D position) {
+    return getBottomDepthAt(this.getQueryTime(), position);
+  }
 
-	public double getTempAt(Vector3D position) {
-		return getTempAt(this.getQueryTime(), position);
-	}
+  public double getBottomDepthAt(long time, Vector3D position) {
+    return Double.NaN;
+  }
 
-	public double getTempAt(long time, Vector3D position) {
-		return Double.NaN;
-	}
+  public void setHasBottomDepth(boolean hasBottomDepth) {
+    this.hasBottomDepth = hasBottomDepth;
+  }
 
-	public double getBottomDepthAt(Vector3D position) {
-		return getBottomDepthAt(this.getQueryTime(), position);
-	}
+  public boolean isHasBottomDepth() {
+    return hasBottomDepth;
+  }
 
-	public double getBottomDepthAt(long time, Vector3D position) {
-		return Double.NaN;
-	}
-
-	public void setHasBottomDepth(boolean hasBottomDepth) {
-		this.hasBottomDepth = hasBottomDepth;
-	}
-
-	public boolean isHasBottomDepth() {
-		return hasBottomDepth;
-	}
-
-	/**
-	 * Close and/or dispose of any objects to free up space after model run
-	 * completes.
-	 */
-	public void disposeAll() {
-	}
+  /**
+   * Close and/or dispose of any objects to free up space after model run
+   * completes.
+   */
+  public void disposeAll() {
+  }
 }

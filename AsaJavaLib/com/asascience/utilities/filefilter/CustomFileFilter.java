@@ -23,31 +23,31 @@ import com.asascience.utilities.Utils;
  */
 public class CustomFileFilter extends FileFilter {
 
-	private String[] extensions;
-	private String description;
+  private String[] extensions;
+  private String description;
 
-	/** Creates a new instance of GeoTiffFileFilter */
-	public CustomFileFilter(String[] extensions, String description) {
-		this.extensions = extensions;
-		this.description = description;
-	}
+  /** Creates a new instance of GeoTiffFileFilter */
+  public CustomFileFilter(String[] extensions, String description) {
+    this.extensions = extensions;
+    this.description = description;
+  }
 
-	public boolean accept(File f) {
-		if (f.isDirectory()) {
-			return true;
-		}
-		String ext = Utils.getExtension(f);
-		if (ext != null) {
-			for (String s : extensions) {
-				if (s.replace(".", "").equalsIgnoreCase(ext)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+  public boolean accept(File f) {
+    if (f.isDirectory()) {
+      return true;
+    }
+    String ext = Utils.getExtension(f);
+    if (ext != null) {
+      for (String s : extensions) {
+        if (s.replace(".", "").equalsIgnoreCase(ext)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 
-	public String getDescription() {
-		return description;
-	}
+  public String getDescription() {
+    return description;
+  }
 }

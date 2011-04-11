@@ -18,7 +18,6 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
 package com.asascience.edu.ui.sos;
 
 import java.awt.Color;
@@ -85,217 +84,229 @@ import ucar.util.prefs.ui.PrefPanel;
  * @author John Caron
  * @version $Id: ComboBox.java,v 1.6 2005/08/22 01:12:28 caron Exp $
  */
-
 public class SOSComboBox extends JComboBox {
-	private static final String LIST = "SOSComboBoxList";
 
-	private boolean deleting = false;
+  private static final String LIST = "SOSComboBoxList";
+  private boolean deleting = false;
+  private PersistenceManager prefs;
+  private int nkeep = 20;
 
-	private PersistenceManager prefs;
-	private int nkeep = 20;
+  /**
+   * Constructor.
+   *
+   * @param prefs
+   *            get/put list here; may be null.
+   */
+  public SOSComboBox(PersistenceManager prefs) {
+    this(prefs, 20);
+  }
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param prefs
-	 *            get/put list here; may be null.
-	 */
-	public SOSComboBox(PersistenceManager prefs) {
-		this(prefs, 20);
-	}
+  /**
+   * Constructor.
+   *
+   * @param prefs
+   *            get/put list here; may be null.
+   * @param nkeep
+   *            keep this many when you save.
+   */
+  public SOSComboBox(PersistenceManager prefs, int nkeep) {
+    super();
+    this.prefs = prefs;
+    this.nkeep = nkeep;
+    setEditable(true);
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param prefs
-	 *            get/put list here; may be null.
-	 * @param nkeep
-	 *            keep this many when you save.
-	 */
-	public SOSComboBox(PersistenceManager prefs, int nkeep) {
-		super();
-		this.prefs = prefs;
-		this.nkeep = nkeep;
-		setEditable(true);
+    if (prefs != null) {
+      ArrayList list = (ArrayList) prefs.getList(LIST, null);
+      setItemList(list);
+    }
+  }
 
-		if (prefs != null) {
-			ArrayList list = (ArrayList) prefs.getList(LIST, null);
-			setItemList(list);
-		}
-	}
+  public JComponent getDeepEditComponent() {
+    return (JComponent) getEditor().getEditorComponent();
+  }
+  private JPopupMenu popupMenu;
 
-	public JComponent getDeepEditComponent() {
-		return (JComponent) getEditor().getEditorComponent();
-	}
+  public void addContextMenu() {
+    Component editComp = getEditor().getEditorComponent();
+    popupMenu = new JPopupMenu();
+    editComp.addMouseListener(new PopupTriggerListener() {
 
-	private JPopupMenu popupMenu;
+      public void showPopup(java.awt.event.MouseEvent e) {
+        popupMenu.show(SOSComboBox.this, e.getX(), e.getY());
+      }
+    });
 
-	public void addContextMenu() {
-		Component editComp = getEditor().getEditorComponent();
-		popupMenu = new JPopupMenu();
-		editComp.addMouseListener(new PopupTriggerListener() {
-			public void showPopup(java.awt.event.MouseEvent e) {
-				popupMenu.show(SOSComboBox.this, e.getX(), e.getY());
-			}
-		});
+    AbstractAction deleteAction = new AbstractAction() {
 
-		AbstractAction deleteAction = new AbstractAction() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
-				int index = getSelectedIndex();
-				deleting = true;
-				if (index >= 0)
-					removeItemAt(index);
-				deleting = false;
-			}
-		};
-		deleteAction.putValue(Action.NAME, "Delete");
-		popupMenu.add(deleteAction);
+      public void actionPerformed(java.awt.event.ActionEvent e) {
+        int index = getSelectedIndex();
+        deleting = true;
+        if (index >= 0) {
+          removeItemAt(index);
+        }
+        deleting = false;
+      }
+    };
+    deleteAction.putValue(Action.NAME, "Delete");
+    popupMenu.add(deleteAction);
 
-		AbstractAction deleteAllAction = new AbstractAction() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
-				setItemList(new ArrayList());
-			}
-		};
-		deleteAllAction.putValue(Action.NAME, "Delete All");
-		popupMenu.add(deleteAllAction);
+    AbstractAction deleteAllAction = new AbstractAction() {
 
-	}
+      public void actionPerformed(java.awt.event.ActionEvent e) {
+        setItemList(new ArrayList());
+      }
+    };
+    deleteAllAction.putValue(Action.NAME, "Delete All");
+    popupMenu.add(deleteAllAction);
 
-	private static abstract class PopupTriggerListener extends MouseAdapter {
-		public void mouseReleased(MouseEvent e) {
-			if (e.isPopupTrigger())
-				showPopup(e);
-		}
+  }
 
-		public abstract void showPopup(MouseEvent e);
-	}
+  private static abstract class PopupTriggerListener extends MouseAdapter {
 
-	protected void fireActionEvent() {
-		if (deleting)
-			return; // no events while deleting
-		super.fireActionEvent();
-	}
+    public void mouseReleased(MouseEvent e) {
+      if (e.isPopupTrigger()) {
+        showPopup(e);
+      }
+    }
 
-	/**
-	 * Add the item to the top of the list. If it already exists, move it to the
-	 * top.
-	 * 
-	 * @param item
-	 *            to be added.
-	 */
-	public void addItem(Object item) {
-		if (item == null)
-			return;
-		for (int i = 0; i < getItemCount(); i++) {
-			if (item.equals(getItemAt(i))) {
-				if (i == 0)
-					return; // already there
-				removeItemAt(i);
-			}
-		}
+    public abstract void showPopup(MouseEvent e);
+  }
 
-		// add as first in the list
-		insertItemAt(item, 0);
-		setSelectedIndex(0);
-	}
+  protected void fireActionEvent() {
+    if (deleting) {
+      return; // no events while deleting
+    }
+    super.fireActionEvent();
+  }
 
-	/** Save the last n items to PreferencesExt. */
-	public void save() {
-		// System.err.println("Saving DAComboBox");
-		if (prefs != null)
-			prefs.putList(LIST, getItemList());
-	}
+  /**
+   * Add the item to the top of the list. If it already exists, move it to the
+   * top.
+   *
+   * @param item
+   *            to be added.
+   */
+  public void addItem(Object item) {
+    if (item == null) {
+      return;
+    }
+    for (int i = 0; i < getItemCount(); i++) {
+      if (item.equals(getItemAt(i))) {
+        if (i == 0) {
+          return; // already there
+        }
+        removeItemAt(i);
+      }
+    }
 
-	/**
-	 * Use this to obtain the list of items.
-	 * 
-	 * @return ArrayList of items, may be any Object type.
-	 */
-	public ArrayList getItemList() {
-		ArrayList list = new ArrayList();
-		for (int i = 0; i < getItemCount() && i < nkeep; i++)
-			list.add(getItemAt(i));
-		return list;
-	}
+    // add as first in the list
+    insertItemAt(item, 0);
+    setSelectedIndex(0);
+  }
 
-	/**
-	 * Use this to set the list of items.
-	 * 
-	 * @param list
-	 *            of items, may be any Object type.
-	 */
-	public void setItemList(Collection list) {
-		if (list == null)
-			return;
-		setModel(new DefaultComboBoxModel(list.toArray()));
+  /** Save the last n items to PreferencesExt. */
+  public void save() {
+    // System.err.println("Saving DAComboBox");
+    if (prefs != null) {
+      prefs.putList(LIST, getItemList());
+    }
+  }
 
-		if (list.size() > 0)
-			setSelectedIndex(0);
-	}
+  /**
+   * Use this to obtain the list of items.
+   *
+   * @return ArrayList of items, may be any Object type.
+   */
+  public ArrayList getItemList() {
+    ArrayList list = new ArrayList();
+    for (int i = 0; i < getItemCount() && i < nkeep; i++) {
+      list.add(getItemAt(i));
+    }
+    return list;
+  }
 
-	/** Set the number of items to keep */
-	public void setNkeep(int nkeep) {
-		this.nkeep = nkeep;
-	}
+  /**
+   * Use this to set the list of items.
+   *
+   * @param list
+   *            of items, may be any Object type.
+   */
+  public void setItemList(Collection list) {
+    if (list == null) {
+      return;
+    }
+    setModel(new DefaultComboBoxModel(list.toArray()));
 
-	/** Get the number of items to keep */
-	public int getNkeep() {
-		return nkeep;
-	}
+    if (list.size() > 0) {
+      setSelectedIndex(0);
+    }
+  }
 
-	/** Get value from Store, will be an ArrayList or null */
-	protected Object getStoreValue(Object defValue) {
-		if (prefs == null)
-			return defValue;
-		return ((PreferencesExt) prefs).getBean(LIST, defValue);
-	}
+  /** Set the number of items to keep */
+  public void setNkeep(int nkeep) {
+    this.nkeep = nkeep;
+  }
 
-	/** Put new value into Store, must be a List of Strings */
-	protected void setStoreValue(List newValue) {
-		if (prefs != null)
-			prefs.putList(LIST, newValue);
-	}
+  /** Get the number of items to keep */
+  public int getNkeep() {
+    return nkeep;
+  }
 
-	// debug
-	private static long lastEvent;
+  /** Get value from Store, will be an ArrayList or null */
+  protected Object getStoreValue(Object defValue) {
+    if (prefs == null) {
+      return defValue;
+    }
+    return ((PreferencesExt) prefs).getBean(LIST, defValue);
+  }
 
-	public static void main(String args[]) throws IOException {
+  /** Put new value into Store, must be a List of Strings */
+  protected void setStoreValue(List newValue) {
+    if (prefs != null) {
+      prefs.putList(LIST, newValue);
+    }
+  }
+  // debug
+  private static long lastEvent;
 
-		JFrame frame = new JFrame("Test");
-		frame.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				System.exit(0);
-			}
-		});
+  public static void main(String args[]) throws IOException {
 
-		final ComboBox cb = new ComboBox(null);
-		cb.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				System.err.println("**** cb event=" + e);
-				if (e.getActionCommand().equals("comboBoxChanged")) {
-					System.err.println("cb.getSelectedItem=" + cb.getSelectedItem());
-					cb.addItem(cb.getSelectedItem());
-				}
-			}
-		});
-		cb.getEditor().getEditorComponent().setForeground(Color.red);
+    JFrame frame = new JFrame("Test");
+    frame.addWindowListener(new WindowAdapter() {
 
-		/*
-		 * JButton butt = new JButton("accept"); butt.addActionListener( new
-		 * AbstractAction() { public void actionPerformed(ActionEvent e) {
-		 * System.err.println("butt accept"); cb.accept(); } });
-		 */
+      public void windowClosing(WindowEvent e) {
+        System.exit(0);
+      }
+    });
 
-		JPanel main = new JPanel();
-		main.add(cb);
-		// main.add(butt);
+    final ComboBox cb = new ComboBox(null);
+    cb.addActionListener(new ActionListener() {
 
-		frame.getContentPane().add(main);
-		// cb.setPreferredSize(new java.awt.Dimension(500, 200));
+      public void actionPerformed(ActionEvent e) {
+        System.err.println("**** cb event=" + e);
+        if (e.getActionCommand().equals("comboBoxChanged")) {
+          System.err.println("cb.getSelectedItem=" + cb.getSelectedItem());
+          cb.addItem(cb.getSelectedItem());
+        }
+      }
+    });
+    cb.getEditor().getEditorComponent().setForeground(Color.red);
 
-		frame.pack();
-		frame.setLocation(300, 300);
-		frame.setVisible(true);
-	}
+    /*
+     * JButton butt = new JButton("accept"); butt.addActionListener( new
+     * AbstractAction() { public void actionPerformed(ActionEvent e) {
+     * System.err.println("butt accept"); cb.accept(); } });
+     */
 
+    JPanel main = new JPanel();
+    main.add(cb);
+    // main.add(butt);
+
+    frame.getContentPane().add(main);
+    // cb.setPreferredSize(new java.awt.Dimension(500, 200));
+
+    frame.pack();
+    frame.setLocation(300, 300);
+    frame.setVisible(true);
+  }
 }

@@ -20,16 +20,16 @@ import javax.swing.JFrame;
  */
 public class FrameDialog extends JDialog {
 
-	public FrameDialog() {
-	}
+  public FrameDialog() {
+  }
 
-	public JDialog getDialog(JFrame frame, boolean isResizable, boolean isModal) {
-		this.setLocationByPlatform(true);
-		this.setResizable(isResizable);
-		this.setModal(isModal);
-		this.setRootPane(frame.getRootPane());
-		this.setBounds(frame.getBounds());
+  public JDialog getDialog(JFrame frame, boolean isResizable, boolean isModal) {
+    this.setLocationByPlatform(true);
+    this.setResizable(isResizable);
+    this.setModal(isModal);
+    this.setRootPane(frame.getRootPane());
+    this.setBounds(frame.getBounds());
 
-		return this;
-	}
+    return this;
+  }
 }

@@ -9,7 +9,6 @@
  * Created on Mar 18, 2008, 2:54:13 PM
  *
  */
-
 package com.asascience.utilities.exception;
 
 /**
@@ -18,12 +17,12 @@ package com.asascience.utilities.exception;
  */
 public class InitializationFailedException extends Exception {
 
-	/** Creates a new instance of InitializationFailedException */
-	public InitializationFailedException() {
-		super();
-	}
+  /** Creates a new instance of InitializationFailedException */
+  public InitializationFailedException() {
+    super();
+  }
 
-	public InitializationFailedException(String s) {
-		super(s);
-	}
+  public InitializationFailedException(String s) {
+    super(s);
+  }
 }

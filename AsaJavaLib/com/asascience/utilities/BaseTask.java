@@ -19,26 +19,26 @@ import org.jdesktop.swingworker.SwingWorker;
  */
 public class BaseTask extends SwingWorker<Void, Void> {
 
-	private String name;
+  private String name;
 
-	public BaseTask() {
-		super();
-	}
+  public BaseTask() {
+    super();
+  }
 
-	@Override
-	public Void doInBackground() {
-		return null;
-	}
+  @Override
+  public Void doInBackground() {
+    return null;
+  }
 
-	@Override
-	public void done() {
-	}
+  @Override
+  public void done() {
+  }
 
-	public String getName() {
-		return name;
-	}
+  public String getName() {
+    return name;
+  }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  public void setName(String name) {
+    this.name = name;
+  }
 }

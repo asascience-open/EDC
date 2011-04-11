@@ -6,7 +6,6 @@
  * Applied Science Associates, Inc.
  * Copyright 2007.  All rights reserved.
  */
-
 package com.asascience.edp.datafile.hydro;
 
 import java.io.IOException;
@@ -30,120 +29,121 @@ import ucar.nc2.constants.FeatureType;
  */
 public class DataFileSwafs extends DataFileNcGrid {
 
-	private String m_z = "depth";
-	private String m_tau = "tau";
-	private String m_time = "time";
-	private String m_lon = "lon";
-	private String m_lat = "lat";
-	private String m_v = "water_v";
-	private String m_u = "water_u";
-	private String m_temp = "water_temp";
-	private String m_sal = "salinity";
-	private String m_botdep = "botdep";
-	private String m_surfele = "surf_el";
+  private String m_z = "depth";
+  private String m_tau = "tau";
+  private String m_time = "time";
+  private String m_lon = "lon";
+  private String m_lat = "lat";
+  private String m_v = "water_v";
+  private String m_u = "water_u";
+  private String m_temp = "water_temp";
+  private String m_sal = "salinity";
+  private String m_botdep = "botdep";
+  private String m_surfele = "surf_el";
 
-	/** Creates a new instance of DataFileSwafs */
-	public DataFileSwafs() {
-	}
+  /** Creates a new instance of DataFileSwafs */
+  public DataFileSwafs() {
+  }
 
-	protected void loadDataFile() {
-		try {
-			// ncfile = NetcdfFile.open(this.getDataFile());
+  protected void loadDataFile() {
+    try {
+      // ncfile = NetcdfFile.open(this.getDataFile());
       Formatter errlog = new Formatter();
       CancelTask cancelTask = null;
-      GridDataset gds = (GridDataset)FeatureDatasetFactoryManager.open(FeatureType.GRID, getDataFile(), cancelTask, errlog);
+      GridDataset gds = (GridDataset) FeatureDatasetFactoryManager.open(FeatureType.GRID, getDataFile(), cancelTask, errlog);
 
-			if (gds == null)
-				System.out.println("Couldn't open ncfile:\n" + errlog);
-
-			// get the grids
-      for (GridDatatype geo : gds.getGrids()) {
-        geoGrids.add((GeoGrid)geo);
+      if (gds == null) {
+        System.out.println("Couldn't open ncfile:\n" + errlog);
       }
 
-			for (GeoGrid g : geoGrids) {
-				String n = g.getName();
-				// System.out.println(n + " vs " +g.getName());
-				if (n.equals(m_u)) {
-					uGrid = g;
-					// System.out.println("uGrid");
-				} else if (n.equals(m_v)) {
-					vGrid = g;
-					// System.out.println("vGrid");
-				} else if (n.equals(m_temp)) {
-					tGrid = g;
-					// System.out.println("tempGrid");
-				} else if (n.equals(m_sal)) {
-					sGrid = g;
-					// System.out.println("salGrid");
-				} else if (n.equals(m_botdep)) {
-					super.setHasBottomDepth(true);
-					bdGrid = g;
-					// System.out.println("salGrid");
-				} else {
-					// System.out.println("Grid \"" + g.getName() +
-					// "\" not assigned.");
-				}
-			}
+      // get the grids
+      for (GridDatatype geo : gds.getGrids()) {
+        geoGrids.add((GeoGrid) geo);
+      }
 
-			// get the x, y, z & time axes
+      for (GeoGrid g : geoGrids) {
+        String n = g.getName();
+        // System.out.println(n + " vs " +g.getName());
+        if (n.equals(m_u)) {
+          uGrid = g;
+          // System.out.println("uGrid");
+        } else if (n.equals(m_v)) {
+          vGrid = g;
+          // System.out.println("vGrid");
+        } else if (n.equals(m_temp)) {
+          tGrid = g;
+          // System.out.println("tempGrid");
+        } else if (n.equals(m_sal)) {
+          sGrid = g;
+          // System.out.println("salGrid");
+        } else if (n.equals(m_botdep)) {
+          super.setHasBottomDepth(true);
+          bdGrid = g;
+          // System.out.println("salGrid");
+        } else {
+          // System.out.println("Grid \"" + g.getName() +
+          // "\" not assigned.");
+        }
+      }
 
-			/**
-			 * Ensures that a grid that uses all dimensions is selected for the
-			 * initialization.
-			 */
-			int gi = 0;
-			GeoGrid g;
-			do {
-				g = geoGrids.get(gi++);
-				if (gi == geoGrids.size()) {
-					break;
-				}
-			} while (g.getDimensions().size() != gds.getNetcdfDataset().getDimensions().size());
+      // get the x, y, z & time axes
 
-			GridCoordSystem coordSys = g.getCoordinateSystem();
-			// GridCoordSystem coordSys = geoGrids.get(0).getCoordinateSystem();
-			if (coordSys.hasTimeAxis1D()) {
-				timeAxis = coordSys.getTimeAxis1D();
-				tVals = collectTimes(timeAxis.getTimeDates());
+      /**
+       * Ensures that a grid that uses all dimensions is selected for the
+       * initialization.
+       */
+      int gi = 0;
+      GeoGrid g;
+      do {
+        g = geoGrids.get(gi++);
+        if (gi == geoGrids.size()) {
+          break;
+        }
+      } while (g.getDimensions().size() != gds.getNetcdfDataset().getDimensions().size());
 
-				GregorianCalendar c = new GregorianCalendar(TimeZone.getTimeZone("UTC"));// Calendar.getInstance();
-				c.setTime(timeAxis.getTimeDate(0));
-				setStartTime((GregorianCalendar) c.clone());
-				c.setTime(timeAxis.getTimeDate(tVals.length - 1));
-				setEndTime((GregorianCalendar) c.clone());
-				this.setTimeIncrement(tVals[1] - tVals[0]);
-			} else
-				System.err.println("Time Axis is null");
+      GridCoordSystem coordSys = g.getCoordinateSystem();
+      // GridCoordSystem coordSys = geoGrids.get(0).getCoordinateSystem();
+      if (coordSys.hasTimeAxis1D()) {
+        timeAxis = coordSys.getTimeAxis1D();
+        tVals = collectTimes(timeAxis.getTimeDates());
 
-			zAxis = coordSys.getVerticalAxis();
-			if (zAxis != null) {
-				zVals = zAxis.getCoordValues();
-			} else {
-				System.err.println("Vertical Axis is null");
-			}
+        GregorianCalendar c = new GregorianCalendar(TimeZone.getTimeZone("UTC"));// Calendar.getInstance();
+        c.setTime(timeAxis.getTimeDate(0));
+        setStartTime((GregorianCalendar) c.clone());
+        c.setTime(timeAxis.getTimeDate(tVals.length - 1));
+        setEndTime((GregorianCalendar) c.clone());
+        this.setTimeIncrement(tVals[1] - tVals[0]);
+      } else {
+        System.err.println("Time Axis is null");
+      }
 
-			xAxis = (CoordinateAxis1D) coordSys.getXHorizAxis();
-			if (xAxis != null) {
-				xVals = xAxis.getCoordValues();
-			} else {
-				System.err.println("X Axis is null");
-			}
+      zAxis = coordSys.getVerticalAxis();
+      if (zAxis != null) {
+        zVals = zAxis.getCoordValues();
+      } else {
+        System.err.println("Vertical Axis is null");
+      }
 
-			yAxis = (CoordinateAxis1D) coordSys.getYHorizAxis();
-			if (yAxis != null) {
-				yVals = yAxis.getCoordValues();
-			} else {
-				System.err.println("Y Axis is null");
-			}
+      xAxis = (CoordinateAxis1D) coordSys.getXHorizAxis();
+      if (xAxis != null) {
+        xVals = xAxis.getCoordValues();
+      } else {
+        System.err.println("X Axis is null");
+      }
 
-			// System.out.println("x=" + xVals[xVals.length - 1] + " y=" +
-			// yVals[yVals.length - 1] + " z=" + zVals[zVals.length - 1]);
+      yAxis = (CoordinateAxis1D) coordSys.getYHorizAxis();
+      if (yAxis != null) {
+        yVals = yAxis.getCoordValues();
+      } else {
+        System.err.println("Y Axis is null");
+      }
 
-		} catch (IOException ex) {
-			System.out.println("DFS:loadDataFile:");
-			ex.printStackTrace();
-		}
-	}
+      // System.out.println("x=" + xVals[xVals.length - 1] + " y=" +
+      // yVals[yVals.length - 1] + " z=" + zVals[zVals.length - 1]);
 
+    } catch (IOException ex) {
+      System.out.println("DFS:loadDataFile:");
+      ex.printStackTrace();
+    }
+  }
 }

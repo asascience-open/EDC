@@ -9,7 +9,6 @@
  * Created on Mar 25, 2008, 12:35:09 PM
  *
  */
-
 package com.asascience.utilities.exception;
 
 /**
@@ -18,12 +17,12 @@ package com.asascience.utilities.exception;
  */
 public class ProgressBailException extends Exception {
 
-	/** Creates a new instance of InitializationFailedException */
-	public ProgressBailException() {
-		super();
-	}
+  /** Creates a new instance of InitializationFailedException */
+  public ProgressBailException() {
+    super();
+  }
 
-	public ProgressBailException(String s) {
-		super(s);
-	}
+  public ProgressBailException(String s) {
+    super(s);
+  }
 }

@@ -9,7 +9,6 @@
  * Created on Apr 30, 2008, 10:14:53 AM
  *
  */
-
 package com.asascience.edc.gui;
 
 import java.util.Properties;
@@ -41,78 +40,76 @@ import com.bbn.openmap.proj.ProjectionStack;
  * @author CBM <cmueller@asascience.com>
  */
 public class OmPanel extends BasicMapPanel {
-	final Logger logger = LoggerFactory.getLogger(OmPanel.class);
 
-	private String userDir;
+  final Logger logger = LoggerFactory.getLogger(OmPanel.class);
+  private String userDir;
+  private LayerHandler layerHandler;
+  private OMToolSet omTools;
+  private MouseDelegator mouseDelegator;
+  private ToolPanel toolBar;
+  private TimeseriesMouseMode tsmm;
+  private VectorInterrogationMouseMode vimm;
 
-	private LayerHandler layerHandler;
-	private OMToolSet omTools;
-	private MouseDelegator mouseDelegator;
-	private ToolPanel toolBar;
-	private TimeseriesMouseMode tsmm;
-	private VectorInterrogationMouseMode vimm;
+  /**
+   * Creates a new instance of DcpsysOmPanel
+   *
+   * @param userDir
+   */
+  public OmPanel(String userDir) {
+    this.userDir = userDir;
+    String dataDir = Utils.appendSeparator(userDir);
 
-	/**
-	 * Creates a new instance of DcpsysOmPanel
-	 * 
-	 * @param userDir
-	 */
-	public OmPanel(String userDir) {
-		this.userDir = userDir;
-		String dataDir = Utils.appendSeparator(userDir);
+    layerHandler = new LayerHandler();
+    mapHandler.add(layerHandler);
 
-		layerHandler = new LayerHandler();
-		mapHandler.add(layerHandler);
+    omTools = new OMToolSet();
+    toolBar = new ToolPanel();
 
-		omTools = new OMToolSet();
-		toolBar = new ToolPanel();
+    mapHandler.add(omTools);
+    mapHandler.add(toolBar);
 
-		mapHandler.add(omTools);
-		mapHandler.add(toolBar);
+    mouseDelegator = new MouseDelegator(mapBean);
+    mapHandler.add(mouseDelegator);
 
-		mouseDelegator = new MouseDelegator(mapBean);
-		mapHandler.add(mouseDelegator);
+    mapHandler.add(new NavMouseMode3());
+    mapHandler.add(new PanMouseMode2());
+    mapHandler.add(new MeasureMouseMode());
+    mapHandler.add(new InformationMouseMode());
+    tsmm = new TimeseriesMouseMode();
+    // mapHandler.add(tsmm);
+    vimm = new VectorInterrogationMouseMode(true, true, false);
+    mapHandler.add(vimm);
 
-		mapHandler.add(new NavMouseMode3());
-		mapHandler.add(new PanMouseMode2());
-		mapHandler.add(new MeasureMouseMode());
-		mapHandler.add(new InformationMouseMode());
-		tsmm = new TimeseriesMouseMode();
-		// mapHandler.add(tsmm);
-		vimm = new VectorInterrogationMouseMode(true, true, false);
-		mapHandler.add(vimm);
+    mapHandler.add(new StandardMapMouseInterpreter());
+    mapHandler.add(new MouseModeButtonPanel());
+    mapHandler.add(new InformationDelegator());
+    mapHandler.add(new ProjectionStack());
+    mapHandler.add(new ProjectionStackTool());
 
-		mapHandler.add(new StandardMapMouseInterpreter());
-		mapHandler.add(new MouseModeButtonPanel());
-		mapHandler.add(new InformationDelegator());
-		mapHandler.add(new ProjectionStack());
-		mapHandler.add(new ProjectionStackTool());
+    // BasemapLayer basemapLayer = new BasemapLayer(dataDir);
 
-		// BasemapLayer basemapLayer = new BasemapLayer(dataDir);
+    ShapeLayer basemapLayer = new ShapeLayer();
+    Properties lyrProps = new Properties();
+    lyrProps.put("prettyName", "Basemap");
+    lyrProps.put("lineColor", "000000");
+    lyrProps.put("fillColor", "666666");// BDDE83
+    lyrProps.put("shapeFile", dataDir + "lowResCoast.shp");
+    basemapLayer.setProperties(lyrProps);
+    basemapLayer.setAddAsBackground(true);
+    basemapLayer.setVisible(true);
 
-		ShapeLayer basemapLayer = new ShapeLayer();
-		Properties lyrProps = new Properties();
-		lyrProps.put("prettyName", "Basemap");
-		lyrProps.put("lineColor", "000000");
-		lyrProps.put("fillColor", "666666");// BDDE83
-		lyrProps.put("shapeFile", dataDir + "lowResCoast.shp");
-		basemapLayer.setProperties(lyrProps);
-		basemapLayer.setAddAsBackground(true);
-		basemapLayer.setVisible(true);
+    layerHandler.addLayer(basemapLayer);
+  }
 
-		layerHandler.addLayer(basemapLayer);
-	}
+  public LayerHandler getLayerHandler() {
+    return layerHandler;
+  }
 
-	public LayerHandler getLayerHandler() {
-		return layerHandler;
-	}
+  public TimeseriesMouseMode getTsmm() {
+    return tsmm;
+  }
 
-	public TimeseriesMouseMode getTsmm() {
-		return tsmm;
-	}
-
-	public VectorInterrogationMouseMode getVimm() {
-		return vimm;
-	}
-
+  public VectorInterrogationMouseMode getVimm() {
+    return vimm;
+  }
 }

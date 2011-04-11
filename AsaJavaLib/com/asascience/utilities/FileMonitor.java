@@ -22,47 +22,46 @@ import org.jdesktop.swingworker.SwingWorker;
  */
 public class FileMonitor extends SwingWorker {
 
-	private java.io.File file;
-	private Timer t;
-	private long length = 0;
+  private java.io.File file;
+  private Timer t;
+  private long length = 0;
 
-	/** Creates a new instance of FileMonitor */
-	public FileMonitor(String file) {
-		this.file = new java.io.File(file);
-		t = new Timer();
-	}
+  /** Creates a new instance of FileMonitor */
+  public FileMonitor(String file) {
+    this.file = new java.io.File(file);
+    t = new Timer();
+  }
 
-	public void startMonitor() {
-		try {
-			doInBackground();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
+  public void startMonitor() {
+    try {
+      doInBackground();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+  }
 
-	public void stopMonitor() {
-		t.cancel();
-	}
+  public void stopMonitor() {
+    t.cancel();
+  }
 
-	@Override
-	protected Void doInBackground() throws Exception {
-		if (t != null) {
-			t.scheduleAtFixedRate(task, 0, 5);
-		}
-		return null;
-	}
+  @Override
+  protected Void doInBackground() throws Exception {
+    if (t != null) {
+      t.scheduleAtFixedRate(task, 0, 5);
+    }
+    return null;
+  }
+  private TimerTask task = new TimerTask() {
 
-	private TimerTask task = new TimerTask() {
-
-		@Override
-		public void run() {
-			if (file.exists()) {
-				if (file.length() != length) {
-					long oLen = length;
-					length = file.length();
-					firePropertyChange("filelength", oLen, length);
-				}
-			}
-		}
-	};
+    @Override
+    public void run() {
+      if (file.exists()) {
+        if (file.length() != length) {
+          long oLen = length;
+          length = file.length();
+          firePropertyChange("filelength", oLen, length);
+        }
+      }
+    }
+  };
 }

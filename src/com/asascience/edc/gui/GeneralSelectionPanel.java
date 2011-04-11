@@ -6,7 +6,6 @@
  * Applied Science Associates, Inc.
  * Copyright 2007.  All rights reserved.
  */
-
 package com.asascience.edc.gui;
 
 import java.awt.BorderLayout;
@@ -33,159 +32,159 @@ import com.asascience.ui.CheckBoxList;
  * @author CBM
  */
 public class GeneralSelectionPanel extends SelectionPanelBase {
-	private JComboBox cbTrimBy;
-	private JLabel lblTrimBy;
-	private JCheckBox ckNoTrim;
 
-	/**
-	 * Creates a new instance of GeneralSelectionPanel
-	 * 
-	 * @param cons
-	 * @param parent
-	 */
-	public GeneralSelectionPanel(NetcdfConstraints cons, SubsetProcessPanel parent) {
-		this("", cons, parent);
-	}
+  private JComboBox cbTrimBy;
+  private JLabel lblTrimBy;
+  private JCheckBox ckNoTrim;
 
-	public GeneralSelectionPanel(String borderTitle, NetcdfConstraints cons, SubsetProcessPanel parent) {
-		super(borderTitle, cons, parent);
-		setPanelType(SelectionPanelBase.GENERAL);
-		createPanel();
+  /**
+   * Creates a new instance of GeneralSelectionPanel
+   *
+   * @param cons
+   * @param parent
+   */
+  public GeneralSelectionPanel(NetcdfConstraints cons, SubsetProcessPanel parent) {
+    this("", cons, parent);
+  }
 
-		getCblVars().addPropertyChangeListener(new CheckBoxPropertyListener());
-		// getCblVars().addPropertyChangeListener(new PropertyChangeListener(){
-		// public void propertyChange(PropertyChangeEvent e){
-		// System.err.println("propName="+e.getPropertyName());
-		// if(getCblVars().getSelItemsSize() > 0){
-		// setProcessEnabled(true);
-		// }else{
-		// setProcessEnabled(false);
-		// }
-		// }
-		// });
+  public GeneralSelectionPanel(String borderTitle, NetcdfConstraints cons, SubsetProcessPanel parent) {
+    super(borderTitle, cons, parent);
+    setPanelType(SelectionPanelBase.GENERAL);
+    createPanel();
 
-		constraints.setTrimByIndex(-1);
-		constraints.setTrimByDim("null");
-	}
+    getCblVars().addPropertyChangeListener(new CheckBoxPropertyListener());
+    // getCblVars().addPropertyChangeListener(new PropertyChangeListener(){
+    // public void propertyChange(PropertyChangeEvent e){
+    // System.err.println("propName="+e.getPropertyName());
+    // if(getCblVars().getSelItemsSize() > 0){
+    // setProcessEnabled(true);
+    // }else{
+    // setProcessEnabled(false);
+    // }
+    // }
+    // });
 
-	/**
-	 * Builds the panel and initializes the various components.
-	 */
-	@Override
-	public void createPanel() {
-		super.createPanel();
-		this.add(optionsPanel(), BorderLayout.SOUTH);
-	}
+    constraints.setTrimByIndex(-1);
+    constraints.setTrimByDim("null");
+  }
 
-	private JPanel optionsPanel() {
-		JPanel optPnl = new JPanel(new MigLayout());
-		optPnl.setBorder(BorderFactory.createTitledBorder("Options"));
-		cbTrimBy = new JComboBox();
-		cbTrimBy.setEnabled(false);
-		cbTrimBy.addActionListener(new ActionListener() {
+  /**
+   * Builds the panel and initializes the various components.
+   */
+  @Override
+  public void createPanel() {
+    super.createPanel();
+    this.add(optionsPanel(), BorderLayout.SOUTH);
+  }
 
-			public void actionPerformed(ActionEvent e) {
-				int index = cbTrimBy.getSelectedIndex();
-				if (index > -1) {
-					setTrimByIndex(index);
-					setTrimByValue(cbTrimBy.getSelectedItem().toString());
-				}
-			}
-		});
+  private JPanel optionsPanel() {
+    JPanel optPnl = new JPanel(new MigLayout());
+    optPnl.setBorder(BorderFactory.createTitledBorder("Options"));
+    cbTrimBy = new JComboBox();
+    cbTrimBy.setEnabled(false);
+    cbTrimBy.addActionListener(new ActionListener() {
 
-		lblTrimBy = new JLabel("Select Trim Level:");
+      public void actionPerformed(ActionEvent e) {
+        int index = cbTrimBy.getSelectedIndex();
+        if (index > -1) {
+          setTrimByIndex(index);
+          setTrimByValue(cbTrimBy.getSelectedItem().toString());
+        }
+      }
+    });
 
-		ckNoTrim = new JCheckBox("All");
-		ckNoTrim.setEnabled(false);
-		ckNoTrim.addActionListener(new ActionListener() {
+    lblTrimBy = new JLabel("Select Trim Level:");
 
-			public void actionPerformed(ActionEvent e) {
-				if (getCblVars().getSelItemsSize() > 0) {
-					boolean useAll = (ckNoTrim.isSelected()) ? true : false;
-					// if(ckNoTrim.isSelected()){
-					// useAll = true;
-					// }
-					cbTrimBy.setEnabled(!useAll);
-					setUseAllLevels(useAll);
-				}
-			}
-		});
+    ckNoTrim = new JCheckBox("All");
+    ckNoTrim.setEnabled(false);
+    ckNoTrim.addActionListener(new ActionListener() {
 
-		optPnl.add(lblTrimBy);
-		optPnl.add(cbTrimBy);
-		optPnl.add(ckNoTrim);
+      public void actionPerformed(ActionEvent e) {
+        if (getCblVars().getSelItemsSize() > 0) {
+          boolean useAll = (ckNoTrim.isSelected()) ? true : false;
+          // if(ckNoTrim.isSelected()){
+          // useAll = true;
+          // }
+          cbTrimBy.setEnabled(!useAll);
+          setUseAllLevels(useAll);
+        }
+      }
+    });
 
-		return optPnl;
-	}
+    optPnl.add(lblTrimBy);
+    optPnl.add(cbTrimBy);
+    optPnl.add(ckNoTrim);
 
-	class CheckBoxPropertyListener implements PropertyChangeListener {
+    return optPnl;
+  }
 
-		public void propertyChange(PropertyChangeEvent e) {
-			String propName = e.getPropertyName();
-			String vName = (String) e.getOldValue();
+  class CheckBoxPropertyListener implements PropertyChangeListener {
 
-			GridCoordSystem coordSys = ((SubsetProcessPanel)parentSpp).getGridByName(vName, true).getCoordinateSystem();
-			CoordinateAxis1D vert = coordSys.getVerticalAxis();
+    public void propertyChange(PropertyChangeEvent e) {
+      String propName = e.getPropertyName();
+      String vName = (String) e.getOldValue();
 
-			if (propName.equals(CheckBoxList.ADDED)) {
-				double[] zVals = null;
-				String zDesc = null;
+      GridCoordSystem coordSys = ((SubsetProcessPanel) parentSpp).getGridByName(vName, true).getCoordinateSystem();
+      CoordinateAxis1D vert = coordSys.getVerticalAxis();
 
-				// add items to the trim combobox
-				if (vert != null) {
-					zVals = vert.getCoordValues();
-					zDesc = vert.getDescription();
-					if (zDesc == null) {
-						zDesc = "No Description Available";
-					}
+      if (propName.equals(CheckBoxList.ADDED)) {
+        double[] zVals = null;
+        String zDesc = null;
 
-					cbTrimBy.removeAllItems();
-					for (int i = 0; i < zVals.length; i++) {
-						cbTrimBy.addItem(zVals[i]);
-					}
-					if (cbTrimBy.getItemCount() != 0) {
-						cbTrimBy.setEnabled(true);
-						constraints.setTrimByZ(true);
-						constraints.setTrimByDim(vert.getName());
-					} else {
-						cbTrimBy.setEnabled(false);
-						constraints.setTrimByZ(false);
-						constraints.setTrimByDim("null");
-					}
-				}
+        // add items to the trim combobox
+        if (vert != null) {
+          zVals = vert.getCoordValues();
+          zDesc = vert.getDescription();
+          if (zDesc == null) {
+            zDesc = "No Description Available";
+          }
 
-			} else if (propName.equals(CheckBoxList.REMOVED)) {
-				boolean keepVerts = false;
-				for (String s : getCblVars().getSelectedItems()) {
-					vert = ((SubsetProcessPanel)parentSpp).getGridByName(s, true).getCoordinateSystem().getVerticalAxis();
-					if (vert != null) {
-						keepVerts = true;
-						constraints.setTrimByDim(vert.getName());
-					}
-				}
+          cbTrimBy.removeAllItems();
+          for (int i = 0; i < zVals.length; i++) {
+            cbTrimBy.addItem(zVals[i]);
+          }
+          if (cbTrimBy.getItemCount() != 0) {
+            cbTrimBy.setEnabled(true);
+            constraints.setTrimByZ(true);
+            constraints.setTrimByDim(vert.getName());
+          } else {
+            cbTrimBy.setEnabled(false);
+            constraints.setTrimByZ(false);
+            constraints.setTrimByDim("null");
+          }
+        }
 
-				if (!keepVerts) {
-					cbTrimBy.removeAllItems();
-					constraints.setTrimByDim("null");
-				}
+      } else if (propName.equals(CheckBoxList.REMOVED)) {
+        boolean keepVerts = false;
+        for (String s : getCblVars().getSelectedItems()) {
+          vert = ((SubsetProcessPanel) parentSpp).getGridByName(s, true).getCoordinateSystem().getVerticalAxis();
+          if (vert != null) {
+            keepVerts = true;
+            constraints.setTrimByDim(vert.getName());
+          }
+        }
 
-				if (cbTrimBy.getItemCount() == 0) {
-					cbTrimBy.setEnabled(false);
-				}
-			}
+        if (!keepVerts) {
+          cbTrimBy.removeAllItems();
+          constraints.setTrimByDim("null");
+        }
 
-			// ensure that the "noTrim" checkboxe is available if there are
-			// variable(s) selected
-			if (getCblVars().getSelItemsSize() > 0) {
-				ckNoTrim.setEnabled(true);
-			} else {
-				ckNoTrim.setSelected(false);
-				ckNoTrim.setEnabled(false);
-			}
+        if (cbTrimBy.getItemCount() == 0) {
+          cbTrimBy.setEnabled(false);
+        }
+      }
 
-			boolean isEnabled = (getCblVars().getSelItemsSize() == 0) ? false : true;
-			setProcessEnabled(isEnabled);
-		}
+      // ensure that the "noTrim" checkboxe is available if there are
+      // variable(s) selected
+      if (getCblVars().getSelItemsSize() > 0) {
+        ckNoTrim.setEnabled(true);
+      } else {
+        ckNoTrim.setSelected(false);
+        ckNoTrim.setEnabled(false);
+      }
 
-	}
+      boolean isEnabled = (getCblVars().getSelItemsSize() == 0) ? false : true;
+      setProcessEnabled(isEnabled);
+    }
+  }
 }

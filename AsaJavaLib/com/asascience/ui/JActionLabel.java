@@ -26,53 +26,53 @@ import javax.swing.JLabel;
  */
 public class JActionLabel extends JLabel {
 
-	private ActionListener al;
-	private ActionEvent ae;
-	private Color lc;
-	private Color sc;
+  private ActionListener al;
+  private ActionEvent ae;
+  private Color lc;
+  private Color sc;
 
-	/** Creates a new instance of JActionLabel */
-	public JActionLabel(String text, ActionListener actionListener, String actionName, Color labelColor,
-		Color selectColor) {
-		super(text);
-		this.lc = labelColor;
-		this.sc = selectColor;
-		this.setForeground(lc);
-		ae = new ActionEvent(this.getText(), 0, (actionName == null || actionName.equals("")) ? "jactionlabel"
-			: actionName);
-		this.al = actionListener;
-		addMouseListener();
-	}
+  /** Creates a new instance of JActionLabel */
+  public JActionLabel(String text, ActionListener actionListener, String actionName, Color labelColor,
+          Color selectColor) {
+    super(text);
+    this.lc = labelColor;
+    this.sc = selectColor;
+    this.setForeground(lc);
+    ae = new ActionEvent(this.getText(), 0, (actionName == null || actionName.equals("")) ? "jactionlabel"
+            : actionName);
+    this.al = actionListener;
+    addMouseListener();
+  }
 
-	/**
-	 *Adds a feature to the MouseListener attribute of the JLinkLabel object
-	 */
-	public void addMouseListener() {
-		// Add listener for the label clicks
-		addMouseListener(new MouseListener() {
+  /**
+   *Adds a feature to the MouseListener attribute of the JLinkLabel object
+   */
+  public void addMouseListener() {
+    // Add listener for the label clicks
+    addMouseListener(new MouseListener() {
 
-			public void mouseClicked(MouseEvent e) {
-				if (al != null) {
-					al.actionPerformed(ae);
-				}
-			}
+      public void mouseClicked(MouseEvent e) {
+        if (al != null) {
+          al.actionPerformed(ae);
+        }
+      }
 
-			public void mousePressed(MouseEvent e) {
-			}
+      public void mousePressed(MouseEvent e) {
+      }
 
-			public void mouseReleased(MouseEvent e) {
-			}
+      public void mouseReleased(MouseEvent e) {
+      }
 
-			public void mouseEntered(MouseEvent e) {
-				JActionLabel.this.setForeground(sc);
-				setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-			}
+      public void mouseEntered(MouseEvent e) {
+        JActionLabel.this.setForeground(sc);
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+      }
 
-			public void mouseExited(MouseEvent e) {
-				JActionLabel.this.setForeground(Color.BLUE);
-				setCursor(Cursor.getDefaultCursor());
-			}
-		});
+      public void mouseExited(MouseEvent e) {
+        JActionLabel.this.setForeground(Color.BLUE);
+        setCursor(Cursor.getDefaultCursor());
+      }
+    });
 
-	}
+  }
 }

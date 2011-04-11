@@ -6,7 +6,6 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package com.asascience.openmap.layer.asa;
 
 /**
@@ -15,8 +14,7 @@ package com.asascience.openmap.layer.asa;
  */
 public class WixReader {
 
-	/** Creates a new instance of WixReader */
-	public WixReader() {
-	}
-
+  /** Creates a new instance of WixReader */
+  public WixReader() {
+  }
 }

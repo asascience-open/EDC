@@ -24,9 +24,7 @@ package com.asascience.ui;
 // Hill AFB, UT 84056-5843
 //
 // E-Mail POC:  processdash-devel@lists.sourceforge.net
-
 //package net.sourceforge.processdash.ui.lib;
-
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
@@ -54,218 +52,224 @@ import javax.swing.event.ChangeListener;
  */
 public class ProgressDialog extends JDialog {
 
-	public interface Task extends Runnable {
-		String getMessage();
+  public interface Task extends Runnable {
 
-		int getPercentComplete();
+    String getMessage();
 
-		void addChangeListener(ChangeListener l);
-	}
+    int getPercentComplete();
 
-	public interface CancellableTask extends Task {
-	}
+    void addChangeListener(ChangeListener l);
+  }
 
-	public class CancelledException extends Error {
-	}
+  public interface CancellableTask extends Task {
+  }
 
-	private Vector tasks = new Vector();
-	private JLabel messageLabel = null;
-	private JButton closeButton = null;
-	private Component closePanel = null;
-	private JProgressBar progressBar = null;
-	private String completionMessage = null;
-	private boolean cancelled = false;
-	private boolean running = false;
-	private String closeText = "Close";
+  public class CancelledException extends Error {
+  }
+  private Vector tasks = new Vector();
+  private JLabel messageLabel = null;
+  private JButton closeButton = null;
+  private Component closePanel = null;
+  private JProgressBar progressBar = null;
+  private String completionMessage = null;
+  private boolean cancelled = false;
+  private boolean running = false;
+  private String closeText = "Close";
 
-	public ProgressDialog(Frame parent, String title, String message) {
-		super(parent, title, true);
-		init(parent, message);
-	}
+  public ProgressDialog(Frame parent, String title, String message) {
+    super(parent, title, true);
+    init(parent, message);
+  }
 
-	public ProgressDialog(Dialog parent, String title, String message) {
-		super(parent, title, true);
-		init(parent, message);
-	}
+  public ProgressDialog(Dialog parent, String title, String message) {
+    super(parent, title, true);
+    init(parent, message);
+  }
 
-	private void init(Component parent, String message) {
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		if (message == null)
-			message = "Please wait...";
-		messageLabel = new JLabel(message);
-		progressBar = new JProgressBar();
-		getContentPane().add(messageLabel, BorderLayout.NORTH);
-		getContentPane().add(progressBar, BorderLayout.CENTER);
+  private void init(Component parent, String message) {
+    setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+    if (message == null) {
+      message = "Please wait...";
+    }
+    messageLabel = new JLabel(message);
+    progressBar = new JProgressBar();
+    getContentPane().add(messageLabel, BorderLayout.NORTH);
+    getContentPane().add(progressBar, BorderLayout.CENTER);
 
-		closeButton = new JButton("Cancel");
-		closeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (running)
-					cancelled = true;
-				else
-					dispose();
-			}
-		});
-		closePanel = borderComponent(closeButton);
-		closePanel.setVisible(false);
-		getContentPane().add(closePanel, BorderLayout.SOUTH);
+    closeButton = new JButton("Cancel");
+    closeButton.addActionListener(new ActionListener() {
 
-		setSize(200, 75);
-		setResizable(false);
-		// pack();
-		setLocationRelativeTo(parent);
-	}
+      public void actionPerformed(ActionEvent e) {
+        if (running) {
+          cancelled = true;
+        } else {
+          dispose();
+        }
+      }
+    });
+    closePanel = borderComponent(closeButton);
+    closePanel.setVisible(false);
+    getContentPane().add(closePanel, BorderLayout.SOUTH);
 
-	public static ProgressDialog create(Object parent, String title, String message) {
-		if (parent instanceof Frame)
-			return new ProgressDialog((Frame) parent, title, message);
-		else if (parent instanceof Dialog)
-			return new ProgressDialog((Dialog) parent, title, message);
-		else
-			return null;
-	}
+    setSize(200, 75);
+    setResizable(false);
+    // pack();
+    setLocationRelativeTo(parent);
+  }
 
-	private Component borderComponent(Component comp) {
-		Box horizBox = Box.createHorizontalBox();
-		horizBox.add(Box.createHorizontalGlue());
-		horizBox.add(comp);
-		horizBox.add(Box.createHorizontalGlue());
+  public static ProgressDialog create(Object parent, String title, String message) {
+    if (parent instanceof Frame) {
+      return new ProgressDialog((Frame) parent, title, message);
+    } else if (parent instanceof Dialog) {
+      return new ProgressDialog((Dialog) parent, title, message);
+    } else {
+      return null;
+    }
+  }
 
-		Box vertBox = Box.createVerticalBox();
-		vertBox.add(Box.createVerticalStrut(5));
-		vertBox.add(horizBox);
-		vertBox.add(Box.createVerticalStrut(5));
+  private Component borderComponent(Component comp) {
+    Box horizBox = Box.createHorizontalBox();
+    horizBox.add(Box.createHorizontalGlue());
+    horizBox.add(comp);
+    horizBox.add(Box.createHorizontalGlue());
 
-		return vertBox;
-	}
+    Box vertBox = Box.createVerticalBox();
+    vertBox.add(Box.createVerticalStrut(5));
+    vertBox.add(horizBox);
+    vertBox.add(Box.createVerticalStrut(5));
 
-	/**
-	 * Add a task for this dialog to perform.
-	 * 
-	 * All tasks must be added <b>before</b> calling the <code>run()</code>
-	 * method.
-	 */
-	public void addTask(Runnable r) {
-		tasks.add(r);
-	}
+    return vertBox;
+  }
 
-	/**
-	 * Request that a message be displayed when the dialog completes.
-	 * 
-	 * By default, the completion message is <code>null</code>, which tells the
-	 * progress dialog to automatically close upon completion. If a non-null
-	 * completion message is set, when the progress dialog finishes running it
-	 * will not close automatically; instead, it will change the label to
-	 * display the completion message, and replace the progress bar with a
-	 * "Close" button.
-	 */
-	public void setCompletionMessage(String msg) {
-		completionMessage = msg;
-	}
+  /**
+   * Add a task for this dialog to perform.
+   *
+   * All tasks must be added <b>before</b> calling the <code>run()</code>
+   * method.
+   */
+  public void addTask(Runnable r) {
+    tasks.add(r);
+  }
 
-	/**
-	 * State whether the tasks run by this dialog can be cancelled.
-	 * 
-	 * If this parameter is set to true, the progess dialog will display a
-	 * cancel button.
-	 */
-	public void setCancellable(boolean canCancel) {
-		closePanel.setVisible(canCancel);
-		pack();
-	}
+  /**
+   * Request that a message be displayed when the dialog completes.
+   *
+   * By default, the completion message is <code>null</code>, which tells the
+   * progress dialog to automatically close upon completion. If a non-null
+   * completion message is set, when the progress dialog finishes running it
+   * will not close automatically; instead, it will change the label to
+   * display the completion message, and replace the progress bar with a
+   * "Close" button.
+   */
+  public void setCompletionMessage(String msg) {
+    completionMessage = msg;
+  }
 
-	/**
-	 * Set the text that should be used for the cancel button.
-	 */
-	public void setCancelText(String text) {
-		closeButton.setText(text);
-	}
+  /**
+   * State whether the tasks run by this dialog can be cancelled.
+   *
+   * If this parameter is set to true, the progess dialog will display a
+   * cancel button.
+   */
+  public void setCancellable(boolean canCancel) {
+    closePanel.setVisible(canCancel);
+    pack();
+  }
 
-	/**
-	 * Set the text that should be used for the close button.
-	 */
-	public void setCloseText(String text) {
-		this.closeText = text;
-	}
+  /**
+   * Set the text that should be used for the cancel button.
+   */
+  public void setCancelText(String text) {
+    closeButton.setText(text);
+  }
 
-	/**
-	 * Displays the dialog, and runs the tasks in the order they were added.
-	 */
-	public void run() {
-		progressBar.setMaximum(tasks.size() * 100);
-		WorkThread w = new WorkThread();
-		w.start();
-		setVisible(true); // was show() this will block until the work thread
-							// finishes
-	}
+  /**
+   * Set the text that should be used for the close button.
+   */
+  public void setCloseText(String text) {
+    this.closeText = text;
+  }
 
-	public void finished() {
-		tasks.clear();
+  /**
+   * Displays the dialog, and runs the tasks in the order they were added.
+   */
+  public void run() {
+    progressBar.setMaximum(tasks.size() * 100);
+    WorkThread w = new WorkThread();
+    w.start();
+    setVisible(true); // was show() this will block until the work thread
+    // finishes
+  }
 
-		if (completionMessage == null)
-			ProgressDialog.this.dispose();
+  public void finished() {
+    tasks.clear();
 
-		else {
-			messageLabel.setText(completionMessage);
+    if (completionMessage == null) {
+      ProgressDialog.this.dispose();
+    } else {
+      messageLabel.setText(completionMessage);
 
-			getContentPane().remove(progressBar);
-			closeButton.setText(closeText);
-			closePanel.setVisible(true);
-			setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			invalidate();
-			pack();
-		}
-	}
+      getContentPane().remove(progressBar);
+      closeButton.setText(closeText);
+      closePanel.setVisible(true);
+      setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+      invalidate();
+      pack();
+    }
+  }
 
-	private class WorkThread extends Thread implements ChangeListener {
-		private Runnable task;
-		private int i;
+  private class WorkThread extends Thread implements ChangeListener {
 
-		public void run() {
-			running = true;
-			for (i = 0; i < tasks.size(); i++) {// progressBar.setValue(++i*100))
-												// {
-				if (cancelled)
-					break;
+    private Runnable task;
+    private int i;
 
-				try {
-					task = (Runnable) tasks.get(i);
-					// if (task instanceof Task) {
-					// String msg = ((Task) task).getMessage();
-					// progressBar.setString(msg);
-					progressBar.setIndeterminate(true);// makes it a scrolling
-														// dialog...
-					// progressBar.setStringPainted(msg != null);
-					//                        
-					// // System.err.println("To add listener");
-					//                        
-					// ((Task) task).addChangeListener(this);
-					// }
-					task.run();
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
-			}
-			running = false;
-			finished();
-		}
+    public void run() {
+      running = true;
+      for (i = 0; i < tasks.size(); i++) {// progressBar.setValue(++i*100))
+        // {
+        if (cancelled) {
+          break;
+        }
 
-		public void stateChanged(ChangeEvent e) {
-			System.err.println("State changed");
-			if (cancelled && (task instanceof CancellableTask))
-				throw new CancelledException();
+        try {
+          task = (Runnable) tasks.get(i);
+          // if (task instanceof Task) {
+          // String msg = ((Task) task).getMessage();
+          // progressBar.setString(msg);
+          progressBar.setIndeterminate(true);// makes it a scrolling
+          // dialog...
+          // progressBar.setStringPainted(msg != null);
+          //
+          // // System.err.println("To add listener");
+          //
+          // ((Task) task).addChangeListener(this);
+          // }
+          task.run();
+        } catch (Throwable t) {
+          t.printStackTrace();
+        }
+      }
+      running = false;
+      finished();
+    }
 
-			try {
-				System.err.println("In tryblock");
-				int percent = ((Task) task).getPercentComplete() % 100;
-				progressBar.setValue(i * 100 + percent);
+    public void stateChanged(ChangeEvent e) {
+      System.err.println("State changed");
+      if (cancelled && (task instanceof CancellableTask)) {
+        throw new CancelledException();
+      }
 
-				String msg = ((Task) task).getMessage();
-				progressBar.setStringPainted(msg != null);
-				progressBar.setString(msg);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-		}
-	}
+      try {
+        System.err.println("In tryblock");
+        int percent = ((Task) task).getPercentComplete() % 100;
+        progressBar.setValue(i * 100 + percent);
+
+        String msg = ((Task) task).getMessage();
+        progressBar.setStringPainted(msg != null);
+        progressBar.setString(msg);
+      } catch (Exception ex) {
+        ex.printStackTrace();
+      }
+    }
+  }
 }

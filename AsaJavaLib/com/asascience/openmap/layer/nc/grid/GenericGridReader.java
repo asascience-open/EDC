@@ -6,7 +6,6 @@
  *
  * Created on Feb 12, 2009 @ 8:49:11 AM
  */
-
 package com.asascience.openmap.layer.nc.grid;
 
 import java.io.IOException;
@@ -22,152 +21,149 @@ import ucar.nc2.dt.grid.GeoGrid;
  * 
  * @author CBM <cmueller@asascience.com>
  */
-
 public class GenericGridReader extends NcGridReader {
 
-	private static List<String> uNames = new ArrayList<String>();
-	private static List<String> vNames = new ArrayList<String>();
+  private static List<String> uNames = new ArrayList<String>();
+  private static List<String> vNames = new ArrayList<String>();
 
-	static {
-		uNames.add("u");
-		uNames.add("water_u");
-		uNames.add("taugeo");
-		vNames.add("v");
-		vNames.add("water_v");
-		vNames.add("tavgeo");
-	}
+  static {
+    uNames.add("u");
+    uNames.add("water_u");
+    uNames.add("taugeo");
+    vNames.add("v");
+    vNames.add("water_v");
+    vNames.add("tavgeo");
+  }
+  private GeoGrid gU = null;
+  private GeoGrid gV = null;
+  private List<String> dataNames = new ArrayList<String>();
+  private boolean hasUV = false;
 
-	private GeoGrid gU = null;
-	private GeoGrid gV = null;
-	private List<String> dataNames = new ArrayList<String>();
+  public GenericGridReader(String file) {
+    super(file);
 
-	private boolean hasUV = false;
+    String name;
+    for (int i = 0; i < sVars.size(); i++) {
+      name = sVars.get(i).getName();
+      dataNames.add(name);
 
-	public GenericGridReader(String file) {
-		super(file);
+      if (uNames.contains(name.toLowerCase())) {
+        gU = super.getGridByName(name);
+        hasUV = true;
+        uvUnits = gU.getUnitsString();
+      } else if (vNames.contains(name.toLowerCase())) {
+        gV = super.getGridByName(name);
+      }
+    }
 
-		String name;
-		for (int i = 0; i < sVars.size(); i++) {
-			name = sVars.get(i).getName();
-			dataNames.add(name);
+    if (gU == null | gV == null) {
+      System.err.println("GeneralGridReader:Error Retreiving U & V GeoGrids");
+    }
+    scalarNames = new ArrayList<String>();
+    for (String s : dataNames) {
+      if (getGridByName(s) != null) {
+        hasScalars = true;
+        scalarNames.add(s);
+      }
+    }
+  }
 
-			if (uNames.contains(name.toLowerCase())) {
-				gU = super.getGridByName(name);
-				hasUV = true;
-				uvUnits = gU.getUnitsString();
-			} else if (vNames.contains(name.toLowerCase())) {
-				gV = super.getGridByName(name);
-			}
-		}
+  public double[] getFullLats() {
+    return fullLats;
+  }
 
-		if (gU == null | gV == null) {
-			System.err.println("GeneralGridReader:Error Retreiving U & V GeoGrids");
-		}
-		scalarNames = new ArrayList<String>();
-		for (String s : dataNames) {
-			if (getGridByName(s) != null) {
-				hasScalars = true;
-				scalarNames.add(s);
-			}
-		}
-	}
+  public double[] getFullLons() {
+    return fullLons;
+  }
 
-	public double[] getFullLats() {
-		return fullLats;
-	}
+  public String getScalarDescriptionByName(String varName) {
+    GeoGrid g = getGridByName(varName);
+    if (g != null) {
+      return g.getDescription();
+    }
+    return null;
+  }
 
-	public double[] getFullLons() {
-		return fullLons;
-	}
+  public double[] getScalarDataByName(long t, int levelIndex, String varName) {
+    GeoGrid v = getGridByName(varName);
+    if (v != null) {
+      if (t >= getStartTime() & t <= getEndTime()) {
+        try {
+          int tIndex = getTimeIndex(t);
 
-	public String getScalarDescriptionByName(String varName) {
-		GeoGrid g = getGridByName(varName);
-		if (g != null) {
-			return g.getDescription();
-		}
-		return null;
-	}
+          return (double[]) v.readDataSlice(tIndex, levelIndex, -1, -1).get1DJavaArray(double.class);
+        } catch (IOException ex) {
+          Logger.getLogger(NcomReader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+      }
+    }
 
-	public double[] getScalarDataByName(long t, int levelIndex, String varName) {
-		GeoGrid v = getGridByName(varName);
-		if (v != null) {
-			if (t >= getStartTime() & t <= getEndTime()) {
-				try {
-					int tIndex = getTimeIndex(t);
+    return null;
+  }
 
-					return (double[]) v.readDataSlice(tIndex, levelIndex, -1, -1).get1DJavaArray(double.class);
-				} catch (IOException ex) {
-					Logger.getLogger(NcomReader.class.getName()).log(Level.SEVERE, null, ex);
-				}
-			}
-		}
+  public double[] getUVals(double depth) {
+    return getUVals(this.getStartTime(), depth);
+  }
 
-		return null;
-	}
+  public double[] getUVals(long time, double depth) {
+    int indexT = getTimeIndex(time);
+    int indexZ = getZIndexAtValue(depth);
 
-	public double[] getUVals(double depth) {
-		return getUVals(this.getStartTime(), depth);
-	}
+    double[] uVals = new double[]{Double.NaN};
+    if (indexT != -1) {// & indexZ != -1){
+      try {
+        Array a = gU.readYXData(indexT, indexZ).reduce();
+        uVals = (double[]) a.get1DJavaArray(double.class);
+      } catch (IOException ex) {
+        ex.printStackTrace();
+      }
+    } else {
+      System.err.println("GenericGridReader:time or depth index invalid");
+    }
 
-	public double[] getUVals(long time, double depth) {
-		int indexT = getTimeIndex(time);
-		int indexZ = getZIndexAtValue(depth);
+    return uVals;
+  }
 
-		double[] uVals = new double[] { Double.NaN };
-		if (indexT != -1) {// & indexZ != -1){
-			try {
-				Array a = gU.readYXData(indexT, indexZ).reduce();
-				uVals = (double[]) a.get1DJavaArray(double.class);
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-		} else {
-			System.err.println("GenericGridReader:time or depth index invalid");
-		}
+  public double[] getVVals(double depth) {
+    return getVVals(this.getStartTime(), depth);
+  }
 
-		return uVals;
-	}
+  public double[] getVVals(long time, double depth) {
+    int indexT = getTimeIndex(time);
+    int indexZ = getZIndexAtValue(depth);
 
-	public double[] getVVals(double depth) {
-		return getVVals(this.getStartTime(), depth);
-	}
+    double[] vVals = new double[]{Double.NaN};
+    if (indexT != -1) {// & indexZ != -1){
+      try {
+        Array a = gV.readYXData(indexT, indexZ).reduce();
+        vVals = (double[]) a.get1DJavaArray(double.class);
+      } catch (IOException ex) {
+        ex.printStackTrace();
+      }
+    } else {
+      System.err.println("NcomReader:time or depth index invalid");
+    }
 
-	public double[] getVVals(long time, double depth) {
-		int indexT = getTimeIndex(time);
-		int indexZ = getZIndexAtValue(depth);
+    return vVals;
+  }
 
-		double[] vVals = new double[] { Double.NaN };
-		if (indexT != -1) {// & indexZ != -1){
-			try {
-				Array a = gV.readYXData(indexT, indexZ).reduce();
-				vVals = (double[]) a.get1DJavaArray(double.class);
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-		} else {
-			System.err.println("NcomReader:time or depth index invalid");
-		}
+  public int getYIndexAtValue(double val) {
+    return super.getYIndexAtValue(val);
+  }
 
-		return vVals;
-	}
+  public int getXIndexAtValue(double val) {
+    return super.getXIndexAtValue(val);
+  }
 
-	public int getYIndexAtValue(double val) {
-		return super.getYIndexAtValue(val);
-	}
+  public int getZIndexAtValue(double val) {
+    return super.getZIndexAtValue(val);
+  }
 
-	public int getXIndexAtValue(double val) {
-		return super.getXIndexAtValue(val);
-	}
+  public List<String> getScalarNames() {
+    return scalarNames;
+  }
 
-	public int getZIndexAtValue(double val) {
-		return super.getZIndexAtValue(val);
-	}
-
-	public List<String> getScalarNames() {
-		return scalarNames;
-	}
-
-	public boolean isHasUV() {
-		return hasUV;
-	}
+  public boolean isHasUV() {
+    return hasUV;
+  }
 }

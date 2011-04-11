@@ -9,7 +9,6 @@
  * Created on Mar 13, 2008, 1:08:35 PM
  *
  */
-
 package com.asascience.edc.particle;
 
 /**
@@ -17,91 +16,92 @@ package com.asascience.edc.particle;
  * @author CBM <cmueller@asascience.com>
  */
 public class MassParticle {
-	private double lat;
-	private double lon;
-	private double depth;
-	private double mass;
-	private double molecWeight;
-	private boolean onBottom = false;
-	private boolean onLand = false;
 
-	/**
-	 * Creates a new instance of MassParticle
-	 * 
-	 * @param lat
-	 *            The Latitude position of the particle
-	 * @param lon
-	 *            The Longitude position of the particle
-	 * @param depth
-	 *            The Vertical position of the particle
-	 * @param mass
-	 *            The Mass of the particle
-	 * @param molecWeight
-	 *            The Molecular Weight of the chemical
-	 */
-	public MassParticle(double lat, double lon, double depth, double mass, double molecWeight) {
-		this.lat = lat;
-		this.lon = lon;
-		if (lat == -9999999 & lon == -9999999) {
-			onLand = true;
-		}
-		this.depth = depth;
-		if (depth == -9999999) {
-			onBottom = true;
-		}
-		this.mass = mass;
-		this.molecWeight = molecWeight;
-	}
+  private double lat;
+  private double lon;
+  private double depth;
+  private double mass;
+  private double molecWeight;
+  private boolean onBottom = false;
+  private boolean onLand = false;
 
-	public double getLat() {
-		return lat;
-	}
+  /**
+   * Creates a new instance of MassParticle
+   *
+   * @param lat
+   *            The Latitude position of the particle
+   * @param lon
+   *            The Longitude position of the particle
+   * @param depth
+   *            The Vertical position of the particle
+   * @param mass
+   *            The Mass of the particle
+   * @param molecWeight
+   *            The Molecular Weight of the chemical
+   */
+  public MassParticle(double lat, double lon, double depth, double mass, double molecWeight) {
+    this.lat = lat;
+    this.lon = lon;
+    if (lat == -9999999 & lon == -9999999) {
+      onLand = true;
+    }
+    this.depth = depth;
+    if (depth == -9999999) {
+      onBottom = true;
+    }
+    this.mass = mass;
+    this.molecWeight = molecWeight;
+  }
 
-	public void setLat(double lat) {
-		this.lat = lat;
-	}
+  public double getLat() {
+    return lat;
+  }
 
-	public double getLon() {
-		return lon;
-	}
+  public void setLat(double lat) {
+    this.lat = lat;
+  }
 
-	public void setLon(double lon) {
-		this.lon = lon;
-	}
+  public double getLon() {
+    return lon;
+  }
 
-	public double getDepth() {
-		return depth;
-	}
+  public void setLon(double lon) {
+    this.lon = lon;
+  }
 
-	public void setDepth(double depth) {
-		this.depth = depth;
-	}
+  public double getDepth() {
+    return depth;
+  }
 
-	public double getMass() {
-		return mass;
-	}
+  public void setDepth(double depth) {
+    this.depth = depth;
+  }
 
-	public void setMass(double mass) {
-		this.mass = mass;
-	}
+  public double getMass() {
+    return mass;
+  }
 
-	public double getMolecWeight() {
-		return molecWeight;
-	}
+  public void setMass(double mass) {
+    this.mass = mass;
+  }
 
-	public boolean isOnBottom() {
-		return onBottom;
-	}
+  public double getMolecWeight() {
+    return molecWeight;
+  }
 
-	public void setOnBottom(boolean onBottom) {
-		this.onBottom = onBottom;
-	}
+  public boolean isOnBottom() {
+    return onBottom;
+  }
 
-	public boolean isOnLand() {
-		return onLand;
-	}
+  public void setOnBottom(boolean onBottom) {
+    this.onBottom = onBottom;
+  }
 
-	public void setOnLand(boolean onLand) {
-		this.onLand = onLand;
-	}
+  public boolean isOnLand() {
+    return onLand;
+  }
+
+  public void setOnLand(boolean onLand) {
+    this.onLand = onLand;
+  }
 }

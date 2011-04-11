@@ -18,7 +18,6 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
 package com.asascience.utilities;
 
 /**
@@ -43,13 +42,13 @@ package com.asascience.utilities;
  */
 public class XMLPrefsFactory implements java.util.prefs.PreferencesFactory {
 
-	public java.util.prefs.Preferences userRoot() {
-		return XMLPrefs.userRoot;
-	}
+  public java.util.prefs.Preferences userRoot() {
+    return XMLPrefs.userRoot;
+  }
 
-	public java.util.prefs.Preferences systemRoot() {
-		return XMLPrefs.systemRoot;
-	}
+  public java.util.prefs.Preferences systemRoot() {
+    return XMLPrefs.systemRoot;
+  }
 }
 /*
  * Change History: $Log: XMLPrefsFactory.java,v $ Revision 1.2 2004/08/26

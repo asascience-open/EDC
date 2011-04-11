@@ -23,24 +23,24 @@ import com.asascience.utilities.Utils;
  */
 public class NcFileFilter extends FileFilter {
 
-	/** Creates a new instance of NcFileFilter */
-	public NcFileFilter() {
-	}
+  /** Creates a new instance of NcFileFilter */
+  public NcFileFilter() {
+  }
 
-	public boolean accept(File f) {
-		if (f.isDirectory()) {
-			return true;
-		}
-		String ext = Utils.getExtension(f);
-		if (ext != null) {
-			if (ext.equalsIgnoreCase("nc")) {
-				return true;
-			}
-		}
-		return false;
-	}
+  public boolean accept(File f) {
+    if (f.isDirectory()) {
+      return true;
+    }
+    String ext = Utils.getExtension(f);
+    if (ext != null) {
+      if (ext.equalsIgnoreCase("nc")) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-	public String getDescription() {
-		return "NetCDF Files";
-	}
+  public String getDescription() {
+    return "NetCDF Files";
+  }
 }

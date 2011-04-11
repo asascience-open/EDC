@@ -6,7 +6,6 @@
  * Applied Science Associates, Inc.
  * Copyright 2007.  All rights reserved.
  */
-
 package com.asascience.openmap.layer.asa;
 
 /**
@@ -15,8 +14,7 @@ package com.asascience.openmap.layer.asa;
  */
 public class WixVectorLayer {
 
-	/** Creates a new instance of WixVectorLayer */
-	public WixVectorLayer() {
-	}
-
+  /** Creates a new instance of WixVectorLayer */
+  public WixVectorLayer() {
+  }
 }

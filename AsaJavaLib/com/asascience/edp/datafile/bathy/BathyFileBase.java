@@ -9,7 +9,6 @@
  * Created on Mar 21, 2008, 11:26:04 AM
  *
  */
-
 package com.asascience.edp.datafile.bathy;
 
 import com.asascience.utilities.Vector3D;
@@ -20,37 +19,41 @@ import com.asascience.utilities.Vector3D;
  */
 public class BathyFileBase {
 
-	protected String dataFile;
+  protected String dataFile;
 
-	/** Creates a new instance of BathyFileBase */
-	public BathyFileBase() {
-	}
+  /** Creates a new instance of BathyFileBase */
+  public BathyFileBase() {
+  }
 
-	protected void loadDataFile() {
-	};
+  protected void loadDataFile() {
+  }
 
-	protected void releaseBathyFile() {
-	};
+  ;
 
-	public void cleanup() {
-		releaseBathyFile();
-	}
+  protected void releaseBathyFile() {
+  }
 
-	/**
-	 * 
-	 * @param queryPos
-	 * @return
-	 */
-	public double getDepthAtLoc(Vector3D queryPos) {
-		return Double.NaN;
-	}
+  ;
 
-	public String getDataFile() {
-		return dataFile;
-	}
+  public void cleanup() {
+    releaseBathyFile();
+  }
 
-	public void setDataFile(String dataFile) {
-		this.dataFile = dataFile;
-		loadDataFile();
-	}
+  /**
+   *
+   * @param queryPos
+   * @return
+   */
+  public double getDepthAtLoc(Vector3D queryPos) {
+    return Double.NaN;
+  }
+
+  public String getDataFile() {
+    return dataFile;
+  }
+
+  public void setDataFile(String dataFile) {
+    this.dataFile = dataFile;
+    loadDataFile();
+  }
 }

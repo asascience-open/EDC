@@ -18,7 +18,6 @@
  * along with this library; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
 package com.asascience.edc.ui;
 
 import java.awt.BorderLayout;
@@ -97,425 +96,436 @@ import com.asascience.ui.JCloseableTabbedPane;
  * @author John Caron
  * @version $Id: ThreddsDatasetChooser.java 50 2006-07-12 16:30:06Z caron $
  */
-
 public class ASAThreddsDatasetChooser extends JPanel {
-	private final static String FRAME_SIZE = "FrameSize";
-	private ucar.util.prefs.PreferencesExt prefs;
 
-	private EventListenerList listenerList = new EventListenerList();
+  private final static String FRAME_SIZE = "FrameSize";
+  private ucar.util.prefs.PreferencesExt prefs;
+  private EventListenerList listenerList = new EventListenerList();
+  private ASACatalogChooser catalogChooser;
+  private QueryChooser queryChooser;
+  private CatalogSearcher searchChooser;
+  private JCloseableTabbedPane tabbedPane;
+  private boolean doResolve = false; // shoul we resolve Resolver datasets?
+  private boolean pipeOut = true; // send results to standard out
+  private boolean messageOut = false; // send results to popup message
+  private JFrame parentFrame; // need for popup messages
+  private boolean debugResolve = false;
 
-	private ASACatalogChooser catalogChooser;
-	private QueryChooser queryChooser;
-	private CatalogSearcher searchChooser;
-	private JCloseableTabbedPane tabbedPane;
+  /**
+   * Usual Constructor. Create a CatalogChooser and a QueryChooser widget, add
+   * them to a JTabbedPane.
+   *
+   * @param prefs
+   *            persistent storage, may be null
+   * @param tabs
+   *            add panels to this JTabbedPane, may be null if you are using
+   *            as Dialog.
+   * @param parent
+   */
+  public ASAThreddsDatasetChooser(PreferencesExt prefs, JCloseableTabbedPane tabs, OpendapInterface parent) {
+    this(prefs, tabs, parent, false, false);
+  }
 
-	private boolean doResolve = false; // shoul we resolve Resolver datasets?
-	private boolean pipeOut = true; // send results to standard out
-	private boolean messageOut = false; // send results to popup message
-	private JFrame parentFrame; // need for popup messages
+  /**
+   * General Constructor. Create a CatalogChooser and a QueryChooser widget,
+   * add them to a JTabbedPane. Optionally write to stdout and/or pop up event
+   * messsages.
+   *
+   * @param prefs
+   *            persistent storage
+   * @param tabs
+   *            add to this JTabbedPane
+   * @param parent
+   * @param messageOutput
+   *            send selection to popup message
+   * @param pipeOutput
+   */
+  public ASAThreddsDatasetChooser(ucar.util.prefs.PreferencesExt prefs, JCloseableTabbedPane tabs,
+          OpendapInterface parent, boolean pipeOutput, boolean messageOutput) {
 
-	private boolean debugResolve = false;
+    this.prefs = prefs;
+    this.parentFrame = parent.getMainFrame();
+    this.pipeOut = pipeOutput;
+    this.messageOut = messageOutput;
 
-	/**
-	 * Usual Constructor. Create a CatalogChooser and a QueryChooser widget, add
-	 * them to a JTabbedPane.
-	 * 
-	 * @param prefs
-	 *            persistent storage, may be null
-	 * @param tabs
-	 *            add panels to this JTabbedPane, may be null if you are using
-	 *            as Dialog.
-	 * @param parent
-	 */
-	public ASAThreddsDatasetChooser(PreferencesExt prefs, JCloseableTabbedPane tabs, OpendapInterface parent) {
-		this(prefs, tabs, parent, false, false);
-	}
+    // create the catalog chooser
+    PreferencesExt node = (prefs == null) ? null : (PreferencesExt) prefs.node("catChooser");
+    catalogChooser = new ASACatalogChooser(node, true, true, false, parent);
+    catalogChooser.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
 
-	/**
-	 * General Constructor. Create a CatalogChooser and a QueryChooser widget,
-	 * add them to a JTabbedPane. Optionally write to stdout and/or pop up event
-	 * messsages.
-	 * 
-	 * @param prefs
-	 *            persistent storage
-	 * @param tabs
-	 *            add to this JTabbedPane
-	 * @param parent
-	 * @param messageOutput
-	 *            send selection to popup message
-	 * @param pipeOutput
-	 */
-	public ASAThreddsDatasetChooser(ucar.util.prefs.PreferencesExt prefs, JCloseableTabbedPane tabs,
-		OpendapInterface parent, boolean pipeOutput, boolean messageOutput) {
+      public void propertyChange(java.beans.PropertyChangeEvent e) {
 
-		this.prefs = prefs;
-		this.parentFrame = parent.getMainFrame();
-		this.pipeOut = pipeOutput;
-		this.messageOut = messageOutput;
+        if (e.getPropertyName().equals("InvAccess")) {
+          InvAccess qcAccess = (InvAccess) e.getNewValue();
+          if (qcAccess.getService().getServiceType() == ServiceType.QC) { // LOOK
+            // &&
+            // (ds.getDataType()
+            // !=
+            // DataType.STATION))
+            // {
+            queryChooser.setDataset(qcAccess.getDataset());
+            tabbedPane.setSelectedComponent(queryChooser);
+            return;
+          }
 
-		// create the catalog chooser
-		PreferencesExt node = (prefs == null) ? null : (PreferencesExt) prefs.node("catChooser");
-		catalogChooser = new ASACatalogChooser(node, true, true, false, parent);
-		catalogChooser.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-			public void propertyChange(java.beans.PropertyChangeEvent e) {
+          firePropertyChangeEvent(e);
+          return;
+        }
 
-				if (e.getPropertyName().equals("InvAccess")) {
-					InvAccess qcAccess = (InvAccess) e.getNewValue();
-					if (qcAccess.getService().getServiceType() == ServiceType.QC) { // LOOK
-						// &&
-						// (ds.getDataType()
-						// !=
-						// DataType.STATION))
-						// {
-						queryChooser.setDataset(qcAccess.getDataset());
-						tabbedPane.setSelectedComponent(queryChooser);
-						return;
-					}
+        // see if this dataset is really a qc
+        if (e.getPropertyName().equals("Dataset") || e.getPropertyName().equals("File")) {
+          InvDataset ds = (thredds.catalog.InvDataset) e.getNewValue();
+          InvAccess qcAccess = ds.getAccess(ServiceType.QC);
+          if ((qcAccess != null)) { // LOOK && (ds.getDataType() !=
+            // DataType.STATION)) {
 
-					firePropertyChangeEvent(e);
-					return;
-				}
+            // non station data DQC
+            queryChooser.setDataset(ds);
+            tabbedPane.setSelectedComponent(queryChooser);
+            return;
+          }
 
-				// see if this dataset is really a qc
-				if (e.getPropertyName().equals("Dataset") || e.getPropertyName().equals("File")) {
-					InvDataset ds = (thredds.catalog.InvDataset) e.getNewValue();
-					InvAccess qcAccess = ds.getAccess(ServiceType.QC);
-					if ((qcAccess != null)) { // LOOK && (ds.getDataType() !=
-						// DataType.STATION)) {
+          // do we need to resolve it? LOOK what about QC events?
+          qcAccess = ds.getAccess(ServiceType.RESOLVER);
+          if ((qcAccess != null) && doResolve) {
+            resolve(ds);
+            return;
+          }
 
-						// non station data DQC
-						queryChooser.setDataset(ds);
-						tabbedPane.setSelectedComponent(queryChooser);
-						return;
-					}
+          // otherwise send out the info
+          firePropertyChangeEvent(e);
+        }
+      }
+    });
 
-					// do we need to resolve it? LOOK what about QC events?
-					qcAccess = ds.getAccess(ServiceType.RESOLVER);
-					if ((qcAccess != null) && doResolve) {
-						resolve(ds);
-						return;
-					}
+    // DQC
+    node = (prefs == null) ? null : (PreferencesExt) prefs.node("dqc");
+    queryChooser = new QueryChooser(node, true);
+    queryChooser.addPropertyChangeListener(new PropertyChangeListener() {
 
-					// otherwise send out the info
-					firePropertyChangeEvent(e);
-				}
-			}
-		});
+      public void propertyChange(PropertyChangeEvent e) {
+        firePropertyChangeEvent(e);
+      }
+    });
 
-		// DQC
-		node = (prefs == null) ? null : (PreferencesExt) prefs.node("dqc");
-		queryChooser = new QueryChooser(node, true);
-		queryChooser.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent e) {
-				firePropertyChangeEvent(e);
-			}
-		});
+    // panel to search catalog
+    node = (prefs == null) ? null : (PreferencesExt) prefs.node("search");
+    searchChooser = new CatalogSearcher(node);
 
-		// panel to search catalog
-		node = (prefs == null) ? null : (PreferencesExt) prefs.node("search");
-		searchChooser = new CatalogSearcher(node);
+    // the overall UI
+    tabbedPane = (tabs == null) ? new JCloseableTabbedPane() : tabs;
 
-		// the overall UI
-		tabbedPane = (tabs == null) ? new JCloseableTabbedPane() : tabs;
+    tabbedPane.addTabNoClose("Browse", catalogChooser);
+    // tabbedPane.addTab("DQC Chooser", queryChooser);
+    if (ucar.util.prefs.ui.Debug.isSet("System/showTools")) // not ready for
+    // general use
+    {
+      tabbedPane.addTab("Search", searchChooser);
+    }
+    tabbedPane.setSelectedComponent(catalogChooser);
 
-		tabbedPane.addTabNoClose("Browse", catalogChooser);
-		// tabbedPane.addTab("DQC Chooser", queryChooser);
-		if (ucar.util.prefs.ui.Debug.isSet("System/showTools")) // not ready for
-			// general use
-			tabbedPane.addTab("Search", searchChooser);
-		tabbedPane.setSelectedComponent(catalogChooser);
+    setLayout(new BorderLayout());
+    add(tabbedPane, BorderLayout.CENTER);
+  }
 
-		setLayout(new BorderLayout());
-		add(tabbedPane, BorderLayout.CENTER);
-	}
+  /**
+   * Set a dataset filter to be used on all catalogs. To turn off, set to
+   * null.
+   *
+   * @param filter
+   *            DatasetFilter or null
+   */
+  public void setDatasetFilter(DatasetFilter filter) {
+    catalogChooser.setDatasetFilter(filter);
+  }
 
-	/**
-	 * Set a dataset filter to be used on all catalogs. To turn off, set to
-	 * null.
-	 * 
-	 * @param filter
-	 *            DatasetFilter or null
-	 */
-	public void setDatasetFilter(DatasetFilter filter) {
-		catalogChooser.setDatasetFilter(filter);
-	}
+  /**
+   * If you want resolver datasets to be resolved (default false). If true,
+   * may throw "Datasets" event.
+   *
+   * @param doResolve
+   */
+  public void setDoResolve(boolean doResolve) {
+    this.doResolve = doResolve;
+  }
 
-	/**
-	 * If you want resolver datasets to be resolved (default false). If true,
-	 * may throw "Datasets" event.
-	 * 
-	 * @param doResolve
-	 */
-	public void setDoResolve(boolean doResolve) {
-		this.doResolve = doResolve;
-	}
+  /** Get the component QueryChooser */
+  public QueryChooser getQueryChooser() {
+    return queryChooser;
+  }
 
-	/** Get the component QueryChooser */
-	public QueryChooser getQueryChooser() {
-		return queryChooser;
-	}
+  /** Get the component CatalogChooser */
+  public ASACatalogChooser getCatalogChooser() {
+    return catalogChooser;
+  }
 
-	/** Get the component CatalogChooser */
-	public ASACatalogChooser getCatalogChooser() {
-		return catalogChooser;
-	}
+  /** Get the component CatalogSearcher */
+  public CatalogSearcher getSearchChooser() {
+    return searchChooser;
+  }
 
-	/** Get the component CatalogSearcher */
-	public CatalogSearcher getSearchChooser() {
-		return searchChooser;
-	}
+  /** save the state */
+  public void save() {
+    catalogChooser.save();
+    queryChooser.save();
+    searchChooser.save();
+  }
 
-	/** save the state */
-	public void save() {
-		catalogChooser.save();
-		queryChooser.save();
-		searchChooser.save();
-	}
+  private void firePropertyChangeEvent(PropertyChangeEvent event) {
+    // System.err.println("firePropertyChangeEvent "+((InvDatasetImpl)ds).dump());
+    if (pipeOut) {
+      pipeEvent(event);
+    }
+    if (messageOut) {
+      messageEvent(event);
+    }
 
-	private void firePropertyChangeEvent(PropertyChangeEvent event) {
-		// System.err.println("firePropertyChangeEvent "+((InvDatasetImpl)ds).dump());
-		if (pipeOut)
-			pipeEvent(event);
-		if (messageOut)
-			messageEvent(event);
+    // Process the listeners last to first
+    Object[] listeners = listenerList.getListenerList();
+    for (int i = listeners.length - 2; i >= 0; i -= 2) {
+      if (listeners[i] == PropertyChangeListener.class) {
+        ((PropertyChangeListener) listeners[i + 1]).propertyChange(event);
+      }
+    }
+  }
 
-		// Process the listeners last to first
-		Object[] listeners = listenerList.getListenerList();
-		for (int i = listeners.length - 2; i >= 0; i -= 2) {
-			if (listeners[i] == PropertyChangeListener.class) {
-				((PropertyChangeListener) listeners[i + 1]).propertyChange(event);
-			}
-		}
-	}
+  /**
+   * Add a PropertyChangeEvent Listener. Throws a PropertyChangeEvent:
+   * <ul>
+   * <li>propertyName = "Dataset" or "File", getNewValue() = InvDataset
+   * chosen.
+   * <li>propertyName = "Datasets", getNewValue() = InvDataset[] chosen. This
+   * can only happen if you have set doResolve = true, and the resolved
+   * dataset is a list of datasets.
+   * <li>propertyName = "InvAccess" getNewValue() = InvAccess chosen.
+   * </ul>
+   */
+  public void addPropertyChangeListener(PropertyChangeListener l) {
+    listenerList.add(PropertyChangeListener.class, l);
+  }
 
-	/**
-	 * Add a PropertyChangeEvent Listener. Throws a PropertyChangeEvent:
-	 * <ul>
-	 * <li>propertyName = "Dataset" or "File", getNewValue() = InvDataset
-	 * chosen.
-	 * <li>propertyName = "Datasets", getNewValue() = InvDataset[] chosen. This
-	 * can only happen if you have set doResolve = true, and the resolved
-	 * dataset is a list of datasets.
-	 * <li>propertyName = "InvAccess" getNewValue() = InvAccess chosen.
-	 * </ul>
-	 */
-	public void addPropertyChangeListener(PropertyChangeListener l) {
-		listenerList.add(PropertyChangeListener.class, l);
-	}
+  /**
+   * Remove a PropertyChangeEvent Listener.
+   */
+  public void removePropertyChangeListener(PropertyChangeListener l) {
+    listenerList.remove(PropertyChangeListener.class, l);
+  }
 
-	/**
-	 * Remove a PropertyChangeEvent Listener.
-	 */
-	public void removePropertyChangeListener(PropertyChangeListener l) {
-		listenerList.remove(PropertyChangeListener.class, l);
-	}
+  private void messageEvent(java.beans.PropertyChangeEvent e) {
+    StringBuffer buff = new StringBuffer();
+    buff.append("Event propertyName = " + e.getPropertyName());
+    Object newValue = e.getNewValue();
+    if (newValue != null) {
+      buff.append(", class = " + newValue.getClass().getName());
+    }
+    buff.append("\n");
 
-	private void messageEvent(java.beans.PropertyChangeEvent e) {
-		StringBuffer buff = new StringBuffer();
-		buff.append("Event propertyName = " + e.getPropertyName());
-		Object newValue = e.getNewValue();
-		if (newValue != null)
-			buff.append(", class = " + newValue.getClass().getName());
-		buff.append("\n");
+    if (e.getPropertyName().equals("Dataset")) {
+      showDatasetInfo(buff, (thredds.catalog.InvDataset) e.getNewValue());
 
-		if (e.getPropertyName().equals("Dataset")) {
-			showDatasetInfo(buff, (thredds.catalog.InvDataset) e.getNewValue());
+    } else if (e.getPropertyName().equals("Datasets")) {
+      Object[] ds = (Object[]) e.getNewValue();
+      buff.append(" element class = " + ds[0].getClass().getName() + "\n");
 
-		} else if (e.getPropertyName().equals("Datasets")) {
-			Object[] ds = (Object[]) e.getNewValue();
-			buff.append(" element class = " + ds[0].getClass().getName() + "\n");
+      for (int i = 0; i < ds.length; i++) {
+        if (ds[i] instanceof InvDataset) {
+          showDatasetInfo(buff, (InvDataset) ds[i]);
+        }
+      }
+    }
 
-			for (int i = 0; i < ds.length; i++)
-				if (ds[i] instanceof InvDataset)
-					showDatasetInfo(buff, (InvDataset) ds[i]);
-		}
+    try {
+      JOptionPane.showMessageDialog(parentFrame, buff);
+    } catch (HeadlessException he) {
+    }
+  }
 
-		try {
-			JOptionPane.showMessageDialog(parentFrame, buff);
-		} catch (HeadlessException he) {
-		}
-	}
+  private void pipeEvent(java.beans.PropertyChangeEvent e) {
+    StringBuffer buff = new StringBuffer();
 
-	private void pipeEvent(java.beans.PropertyChangeEvent e) {
-		StringBuffer buff = new StringBuffer();
+    if (e.getPropertyName().equals("Dataset")) {
+      getAccessURLs(buff, (thredds.catalog.InvDataset) e.getNewValue());
 
-		if (e.getPropertyName().equals("Dataset")) {
-			getAccessURLs(buff, (thredds.catalog.InvDataset) e.getNewValue());
+    } else if (e.getPropertyName().equals("Datasets")) {
+      Object[] ds = (Object[]) e.getNewValue();
+      for (int i = 0; i < ds.length; i++) {
+        if (ds[i] instanceof InvDataset) {
+          getAccessURLs(buff, (InvDataset) ds[i]);
+        }
+      }
+    }
 
-		} else if (e.getPropertyName().equals("Datasets")) {
-			Object[] ds = (Object[]) e.getNewValue();
-			for (int i = 0; i < ds.length; i++)
-				if (ds[i] instanceof InvDataset)
-					getAccessURLs(buff, (InvDataset) ds[i]);
-		}
+    System.err.println(buff);
+  }
 
-		System.err.println(buff);
-	}
+  private void getAccessURLs(StringBuffer buff, thredds.catalog.InvDataset ds) {
+    Iterator iter = ds.getAccess().iterator();
+    while (iter.hasNext()) {
+      thredds.catalog.InvAccess ac = (thredds.catalog.InvAccess) iter.next();
+      buff.append(ac.getStandardUrlName() + " " + ac.getService().getServiceType() + "\n");
+    }
+  }
 
-	private void getAccessURLs(StringBuffer buff, thredds.catalog.InvDataset ds) {
-		Iterator iter = ds.getAccess().iterator();
-		while (iter.hasNext()) {
-			thredds.catalog.InvAccess ac = (thredds.catalog.InvAccess) iter.next();
-			buff.append(ac.getStandardUrlName() + " " + ac.getService().getServiceType() + "\n");
-		}
-	}
+  private void showDatasetInfo(StringBuffer buff, thredds.catalog.InvDataset ds) {
+    buff.append(" Dataset = " + ds.getName());
+    buff.append(", dataType = " + ds.getDataType() + "\n");
+    Iterator iter = ds.getAccess().iterator();
+    while (iter.hasNext()) {
+      thredds.catalog.InvAccess ac = (thredds.catalog.InvAccess) iter.next();
+      buff.append("  service = " + ac.getService().getServiceType() + ", url = " + ac.getStandardUrlName() + "\n");
+      System.err.println("  url = " + ac.getStandardUrlName());
+    }
+  }
 
-	private void showDatasetInfo(StringBuffer buff, thredds.catalog.InvDataset ds) {
-		buff.append(" Dataset = " + ds.getName());
-		buff.append(", dataType = " + ds.getDataType() + "\n");
-		Iterator iter = ds.getAccess().iterator();
-		while (iter.hasNext()) {
-			thredds.catalog.InvAccess ac = (thredds.catalog.InvAccess) iter.next();
-			buff
-				.append("  service = " + ac.getService().getServiceType() + ", url = " + ac.getStandardUrlName() + "\n");
-			System.err.println("  url = " + ac.getStandardUrlName());
-		}
-	}
+  private void resolve(thredds.catalog.InvDataset ds) {
+    InvAccess resolverAccess;
+    if (null != (resolverAccess = ds.getAccess(ServiceType.RESOLVER))) {
+      String urlName = resolverAccess.getStandardUrlName();
+      if (debugResolve) {
+        System.err.println(" resolve=" + urlName);
+      }
+      try {
+        InvCatalogFactory factory = InvCatalogFactory.getDefaultFactory(true);
+        InvCatalog catalog = factory.readXML(urlName); // should be
+        // asynch ?
+        if (catalog == null) {
+          return;
+        }
+        StringBuilder buff = new StringBuilder();
+        if (!catalog.check(buff)) {
+          javax.swing.JOptionPane.showMessageDialog(this, "Invalid catalog <" + urlName + ">\n"
+                  + buff.toString());
+          if (debugResolve) {
+            System.err.println("Invalid catalog <" + urlName + ">\n" + buff.toString());
+          }
+          return;
+        }
+        InvDataset top = catalog.getDataset();
+        if (top.hasAccess()) {
+          firePropertyChangeEvent(new PropertyChangeEvent(this, "Dataset", null, top));
+        } else {
+          Object[] dsa = top.getDatasets().toArray();
+          firePropertyChangeEvent(new PropertyChangeEvent(this, "Datasets", null, dsa));
+        }
+        return;
 
-	private void resolve(thredds.catalog.InvDataset ds) {
-		InvAccess resolverAccess;
-		if (null != (resolverAccess = ds.getAccess(ServiceType.RESOLVER))) {
-			String urlName = resolverAccess.getStandardUrlName();
-			if (debugResolve)
-				System.err.println(" resolve=" + urlName);
-			try {
-				InvCatalogFactory factory = InvCatalogFactory.getDefaultFactory(true);
-				InvCatalog catalog = factory.readXML(urlName); // should be
-				// asynch ?
-				if (catalog == null)
-					return;
-				StringBuilder buff = new StringBuilder();
-				if (!catalog.check(buff)) {
-					javax.swing.JOptionPane.showMessageDialog(this, "Invalid catalog <" + urlName + ">\n"
-						+ buff.toString());
-					if (debugResolve)
-						System.err.println("Invalid catalog <" + urlName + ">\n" + buff.toString());
-					return;
-				}
-				InvDataset top = catalog.getDataset();
-				if (top.hasAccess())
-					firePropertyChangeEvent(new PropertyChangeEvent(this, "Dataset", null, top));
-				else {
-					Object[] dsa = top.getDatasets().toArray();
-					firePropertyChangeEvent(new PropertyChangeEvent(this, "Datasets", null, dsa));
-				}
-				return;
+      } catch (Exception e) {
+        e.printStackTrace();
+        return;
+      }
+    }
+  }
 
-			} catch (Exception e) {
-				e.printStackTrace();
-				return;
-			}
-		}
-	}
+  /**
+   * Wrap this in a JDialog component.
+   *
+   * @param parent
+   *            put dialog on top of this, may be null
+   * @param title
+   *            dialog window title
+   * @param modal
+   *            is modal
+   */
+  public JDialog makeDialog(JFrame parent, String title, boolean modal) {
+    return new Dialog(parentFrame, title, modal);
+  }
 
-	/**
-	 * Wrap this in a JDialog component.
-	 * 
-	 * @param parent
-	 *            put dialog on top of this, may be null
-	 * @param title
-	 *            dialog window title
-	 * @param modal
-	 *            is modal
-	 */
-	public JDialog makeDialog(JFrame parent, String title, boolean modal) {
-		return new Dialog(parentFrame, title, modal);
-	}
+  private class Dialog extends JDialog {
 
-	private class Dialog extends JDialog {
+    private Dialog(JFrame frame, String title, boolean modal) {
+      super(frame, title, modal);
 
-		private Dialog(JFrame frame, String title, boolean modal) {
-			super(frame, title, modal);
+      // L&F may change
+      UIManager.addPropertyChangeListener(new PropertyChangeListener() {
 
-			// L&F may change
-			UIManager.addPropertyChangeListener(new PropertyChangeListener() {
-				public void propertyChange(PropertyChangeEvent e) {
-					if (e.getPropertyName().equals("lookAndFeel"))
-						SwingUtilities.updateComponentTreeUI(ASAThreddsDatasetChooser.Dialog.this);
-				}
-			});
+        public void propertyChange(PropertyChangeEvent e) {
+          if (e.getPropertyName().equals("lookAndFeel")) {
+            SwingUtilities.updateComponentTreeUI(ASAThreddsDatasetChooser.Dialog.this);
+          }
+        }
+      });
 
-			// add a dismiss button
-			JButton dismissButton = new JButton("Dismiss");
-			// buttPanel.add(dismissButton, null);
+      // add a dismiss button
+      JButton dismissButton = new JButton("Dismiss");
+      // buttPanel.add(dismissButton, null);
 
-			dismissButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					setVisible(false);
-				}
-			});
+      dismissButton.addActionListener(new ActionListener() {
 
-			// add it to contentPane
-			Container cp = getContentPane();
-			cp.setLayout(new BorderLayout());
-			cp.add(ASAThreddsDatasetChooser.this, BorderLayout.CENTER);
-			pack();
-		}
-	}
+        public void actionPerformed(ActionEvent evt) {
+          setVisible(false);
+        }
+      });
 
-	// dummy
-	private class CatalogSearcher extends JPanel {
-		CatalogSearcher(PreferencesExt prefs) {
-		}
+      // add it to contentPane
+      Container cp = getContentPane();
+      cp.setLayout(new BorderLayout());
+      cp.add(ASAThreddsDatasetChooser.this, BorderLayout.CENTER);
+      pack();
+    }
+  }
 
-		void save() {
-		}
-	}
+  // dummy
+  private class CatalogSearcher extends JPanel {
 
-	// /**
-	// * Standalone application.
-	// * @param args recognized values:
-	// * <ul> <li> -usePopup to popup messages </ul>
-	// */
-	// public static void main(String args[]) {
-	// boolean usePopup = false;
-	//
-	// for (int i=0; i<args.length; i++) {
-	// if (args[i].equals("-usePopup"))
-	// usePopup = true;
-	// }
-	//
-	// try {
-	// store = ucar.util.prefs.XMLStore.createFromFile("ThreddsDatasetChooser",
-	// null);
-	// p = store.getPreferences();
-	// } catch (IOException e) {
-	// System.err.println("XMLStore Creation failed "+e);
-	// }
-	//
-	// // put it together in a JFrame
-	// final JFrame parentFrame = new JFrame("Thredds Dataset Chooser");
-	// parentFrame.addWindowListener(new WindowAdapter() {
-	// public void windowClosing(WindowEvent e) {
-	// chooser.save();
-	// Rectangle bounds = parentFrame.getBounds();
-	// p.putBeanObject(FRAME_SIZE, bounds);
-	// try {
-	// store.save();
-	// } catch (IOException ioe) { ioe.printStackTrace(); }
-	//
-	// System.exit(0);
-	// }
-	// });
-	//
-	// chooser = new ASAThreddsDatasetChooser(p, null, parentFrame, true,
-	// usePopup);
-	// chooser.setDoResolve( true);
-	//
-	// //
-	// parentFrame.getContentPane().add(chooser);
-	// Rectangle bounds = (Rectangle) p.getBean(FRAME_SIZE, new Rectangle(50,
-	// 50, 800, 450));
-	// parentFrame.setBounds( bounds);
-	//
-	// parentFrame.pack();
-	// parentFrame.setBounds( bounds);
-	// parentFrame.setVisible(true);
-	// }
-	// private static ASAThreddsDatasetChooser chooser;
-	// private static PreferencesExt p;
-	// private static XMLStore store;
+    CatalogSearcher(PreferencesExt prefs) {
+    }
 
+    void save() {
+    }
+  }
+  // /**
+  // * Standalone application.
+  // * @param args recognized values:
+  // * <ul> <li> -usePopup to popup messages </ul>
+  // */
+  // public static void main(String args[]) {
+  // boolean usePopup = false;
+  //
+  // for (int i=0; i<args.length; i++) {
+  // if (args[i].equals("-usePopup"))
+  // usePopup = true;
+  // }
+  //
+  // try {
+  // store = ucar.util.prefs.XMLStore.createFromFile("ThreddsDatasetChooser",
+  // null);
+  // p = store.getPreferences();
+  // } catch (IOException e) {
+  // System.err.println("XMLStore Creation failed "+e);
+  // }
+  //
+  // // put it together in a JFrame
+  // final JFrame parentFrame = new JFrame("Thredds Dataset Chooser");
+  // parentFrame.addWindowListener(new WindowAdapter() {
+  // public void windowClosing(WindowEvent e) {
+  // chooser.save();
+  // Rectangle bounds = parentFrame.getBounds();
+  // p.putBeanObject(FRAME_SIZE, bounds);
+  // try {
+  // store.save();
+  // } catch (IOException ioe) { ioe.printStackTrace(); }
+  //
+  // System.exit(0);
+  // }
+  // });
+  //
+  // chooser = new ASAThreddsDatasetChooser(p, null, parentFrame, true,
+  // usePopup);
+  // chooser.setDoResolve( true);
+  //
+  // //
+  // parentFrame.getContentPane().add(chooser);
+  // Rectangle bounds = (Rectangle) p.getBean(FRAME_SIZE, new Rectangle(50,
+  // 50, 800, 450));
+  // parentFrame.setBounds( bounds);
+  //
+  // parentFrame.pack();
+  // parentFrame.setBounds( bounds);
+  // parentFrame.setVisible(true);
+  // }
+  // private static ASAThreddsDatasetChooser chooser;
+  // private static PreferencesExt p;
+  // private static XMLStore store;
 }
 
 /*

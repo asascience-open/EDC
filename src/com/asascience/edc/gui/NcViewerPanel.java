@@ -6,7 +6,6 @@
  * Applied Science Associates, Inc.
  * Copyright 2007.  All rights reserved.
  */
-
 package com.asascience.edc.gui;
 
 import java.awt.BorderLayout;
@@ -25,44 +24,46 @@ import ucar.util.prefs.PreferencesExt;
  * @author CBM
  */
 public class NcViewerPanel extends JPanel {
-	private PreferencesExt mainPrefs;
-	private JFrame mainFrame;
-	private DatasetViewer dsViewer;
-	private JScrollPane sp;
-	private NetcdfFile ncfile;
 
-	/**
-	 * Creates a new instance of NcViewerPanel
-	 * 
-	 * @param prefs
-	 * @param parentFrame
-	 */
-	public NcViewerPanel(ucar.util.prefs.PreferencesExt prefs, JFrame parentFrame) {
-		this.mainPrefs = prefs;
-		this.mainFrame = parentFrame;
+  private PreferencesExt mainPrefs;
+  private JFrame mainFrame;
+  private DatasetViewer dsViewer;
+  private JScrollPane sp;
+  private NetcdfFile ncfile;
 
-		initComponents();
-	}
+  /**
+   * Creates a new instance of NcViewerPanel
+   *
+   * @param prefs
+   * @param parentFrame
+   */
+  public NcViewerPanel(ucar.util.prefs.PreferencesExt prefs, JFrame parentFrame) {
+    this.mainPrefs = prefs;
+    this.mainFrame = parentFrame;
 
-	private void initComponents() {
-		setLayout(new BorderLayout());
-		dsViewer = new DatasetViewer(mainPrefs,null);
+    initComponents();
+  }
 
-		sp = new JScrollPane(dsViewer);
-		add(sp);
-	}
+  private void initComponents() {
+    setLayout(new BorderLayout());
+    dsViewer = new DatasetViewer(mainPrefs, null);
 
-	public void setDataset(NetcdfFile ncFile) {
-		try {
-			if (ncfile != null)
-				ncfile.close();
-			ncfile = null;
-		} catch (IOException ioe) {
-		}
-		ncfile = ncFile;
-		if (ncFile != null) {
-			dsViewer.setDataset(ncfile);
-			// setSelectedItem(ncFile.getLocation());
-		}
-	}
+    sp = new JScrollPane(dsViewer);
+    add(sp);
+  }
+
+  public void setDataset(NetcdfFile ncFile) {
+    try {
+      if (ncfile != null) {
+        ncfile.close();
+      }
+      ncfile = null;
+    } catch (IOException ioe) {
+    }
+    ncfile = ncFile;
+    if (ncFile != null) {
+      dsViewer.setDataset(ncfile);
+      // setSelectedItem(ncFile.getLocation());
+    }
+  }
 }

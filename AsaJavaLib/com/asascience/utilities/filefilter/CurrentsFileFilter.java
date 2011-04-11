@@ -6,7 +6,6 @@
  * Applied Science Associates, Inc.
  * Copyright 2007.  All rights reserved.
  */
-
 package com.asascience.utilities.filefilter;
 
 import java.io.File;
@@ -21,25 +20,25 @@ import com.asascience.utilities.Utils;
  */
 public class CurrentsFileFilter extends FileFilter {
 
-	/** Creates a new instance of CurrentsFileFilter */
-	public CurrentsFileFilter() {
-	}
+  /** Creates a new instance of CurrentsFileFilter */
+  public CurrentsFileFilter() {
+  }
 
-	public boolean accept(File f) {
-		if (f.isDirectory())
-			return true;
+  public boolean accept(File f) {
+    if (f.isDirectory()) {
+      return true;
+    }
 
-		String ext = Utils.getExtension(f);
-		if (ext != null) {
-			if (ext.equalsIgnoreCase("nc") || ext.equalsIgnoreCase("cix") || ext.equalsIgnoreCase("bdp")) {
-				return true;
-			}
-		}
-		return false;
-	}
+    String ext = Utils.getExtension(f);
+    if (ext != null) {
+      if (ext.equalsIgnoreCase("nc") || ext.equalsIgnoreCase("cix") || ext.equalsIgnoreCase("bdp")) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-	public String getDescription() {
-		return "Supported Current Files";
-	}
-
+  public String getDescription() {
+    return "Supported Current Files";
+  }
 }

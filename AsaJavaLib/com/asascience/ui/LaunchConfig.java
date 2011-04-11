@@ -25,41 +25,41 @@ import com.asascience.utilities.Utils;
  */
 public class LaunchConfig {
 
-	public static String SYSTEM_DIR = null;
-	public static String USER_DIR = null;
+  public static String SYSTEM_DIR = null;
+  public static String USER_DIR = null;
 
-	public static boolean initialize() {
-		try {
-			String launchDir = Utils.appendSeparator(System.getProperty("user.dir"));
-			if (new File(Utils.appendSeparator(launchDir + "System")).exists()) {
-				launchDir = Utils.appendSeparator(launchDir + "System");
-			}
-			File f = new File(launchDir + "launchconfig.xml");
-			if (!f.exists()) {
-				return false;
-			}
+  public static boolean initialize() {
+    try {
+      String launchDir = Utils.appendSeparator(System.getProperty("user.dir"));
+      if (new File(Utils.appendSeparator(launchDir + "System")).exists()) {
+        launchDir = Utils.appendSeparator(launchDir + "System");
+      }
+      File f = new File(launchDir + "launchconfig.xml");
+      if (!f.exists()) {
+        return false;
+      }
 
-			SYSTEM_DIR = f.getParent();// obtain the startup directory
+      SYSTEM_DIR = f.getParent();// obtain the startup directory
 
-			SAXBuilder in = new SAXBuilder();
-			Document xmlDoc = in.build(f);
+      SAXBuilder in = new SAXBuilder();
+      Document xmlDoc = in.build(f);
 
-			Element root = xmlDoc.getRootElement();
+      Element root = xmlDoc.getRootElement();
 
-			if (root.getChild("USER_DIR") != null) {
-				USER_DIR = root.getChildText("USER_DIR");
-				File nf = new File(USER_DIR);
-				if (nf.exists()) {
-					if (nf.isDirectory()) {
-						return true;
-					}
-				}
-			}
+      if (root.getChild("USER_DIR") != null) {
+        USER_DIR = root.getChildText("USER_DIR");
+        File nf = new File(USER_DIR);
+        if (nf.exists()) {
+          if (nf.isDirectory()) {
+            return true;
+          }
+        }
+      }
 
-			return false;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		return false;
-	}
+      return false;
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return false;
+  }
 }

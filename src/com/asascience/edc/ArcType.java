@@ -6,7 +6,6 @@
  * Applied Science Associates, Inc.
  * Copyright 2007.  All rights reserved.
  */
-
 package com.asascience.edc;
 
 /**
@@ -16,20 +15,21 @@ package com.asascience.edc;
  * @author CBM
  */
 public enum ArcType {
-	/**
-	 * The dataset should become a raster in ArcGIS.
-	 */
-	RASTER,
-	/**
-	 * The dataset should become a feature in ArcGIS.
-	 */
-	FEATURE,
-	/**
-	 * The dataset should become a feature using vectors in ArcGIS.
-	 */
-	VECTOR,
-	/**
-	 * The dataset will not be automatically ingested into ArcGIS.
-	 */
-	NULL
+
+  /**
+   * The dataset should become a raster in ArcGIS.
+   */
+  RASTER,
+  /**
+   * The dataset should become a feature in ArcGIS.
+   */
+  FEATURE,
+  /**
+   * The dataset should become a feature using vectors in ArcGIS.
+   */
+  VECTOR,
+  /**
+   * The dataset will not be automatically ingested into ArcGIS.
+   */
+  NULL
 }

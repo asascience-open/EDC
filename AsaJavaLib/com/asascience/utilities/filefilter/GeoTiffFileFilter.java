@@ -9,7 +9,6 @@
  * Created on Mar 25, 2008, 2:14:45 PM
  *
  */
-
 package com.asascience.utilities.filefilter;
 
 import java.io.File;
@@ -24,24 +23,25 @@ import com.asascience.utilities.Utils;
  */
 public class GeoTiffFileFilter extends FileFilter {
 
-	/** Creates a new instance of GeoTiffFileFilter */
-	public GeoTiffFileFilter() {
-	}
+  /** Creates a new instance of GeoTiffFileFilter */
+  public GeoTiffFileFilter() {
+  }
 
-	public boolean accept(File f) {
-		if (f.isDirectory())
-			return true;
+  public boolean accept(File f) {
+    if (f.isDirectory()) {
+      return true;
+    }
 
-		String ext = Utils.getExtension(f);
-		if (ext != null) {
-			if (ext.equalsIgnoreCase("tif")) {
-				return true;
-			}
-		}
-		return false;
-	}
+    String ext = Utils.getExtension(f);
+    if (ext != null) {
+      if (ext.equalsIgnoreCase("tif")) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-	public String getDescription() {
-		return "GeoTIFF Files";
-	}
+  public String getDescription() {
+    return "GeoTIFF Files";
+  }
 }

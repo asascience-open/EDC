@@ -9,7 +9,6 @@
  * Created on Mar 12, 2008, 4:30:00 PM
  *
  */
-
 package com.asascience.openmap.utilities;
 
 import java.awt.geom.Point2D;
@@ -26,308 +25,298 @@ import com.bbn.openmap.proj.Length;
  */
 public class GriddedOutputInfo {
 
-	public static final double ND_VALUE = -9999999.0d;
+  public static final double ND_VALUE = -9999999.0d;
+  private static double oDx = 0;
+  private static double oDy = 0;
+  private static double oDz = 0;
+  private double deltaX = 0;
+  private double deltaY = 0;
+  private double deltaZ = 0;
+  private int nCellsX = 0;
+  private int nCellsY = 0;
+  private int nCellsZ = 1;
+  private int nTimes;
+  private boolean useFloatingGrid;
+  private static boolean useNumCells;
 
-	private static double oDx = 0;
-	private static double oDy = 0;
-	private static double oDz = 0;
-	private double deltaX = 0;
-	private double deltaY = 0;
-	private double deltaZ = 0;
-	private int nCellsX = 0;
-	private int nCellsY = 0;
-	private int nCellsZ = 1;
+  // private double[] latVals;
+  // private double[] lonVals;
+  // private double[] depthVals;
+  /**
+   * Creates a new instance of GriddedOutputInfo
+   *
+   * @param args
+   */
+  public GriddedOutputInfo(double[] args) {
+    setGridDimensions(args);
+  }
 
-	private int nTimes;
+  /**
+   * Creates a new instance of GriddedOutputInfo
+   *
+   * @param deltaArgs
+   * @param ncellArgs
+   */
+  public GriddedOutputInfo(double[] deltaArgs, int[] ncellArgs) {
+    setGridDimensions(deltaArgs, ncellArgs);
+  }
 
-	private boolean useFloatingGrid;
-	private static boolean useNumCells;
+  public double[] calculateLats(LatLonRect llr) {
+    double[] lats = new double[nCellsY];
 
-	// private double[] latVals;
-	// private double[] lonVals;
-	// private double[] depthVals;
+    double lat = llr.getLatMin();
+    for (int i = 0; i < nCellsY; i++) {
+      lats[i] = lat + (deltaY * 0.5);
+      lat = lat + deltaY;
+    }
 
-	/**
-	 * Creates a new instance of GriddedOutputInfo
-	 * 
-	 * @param args
-	 */
-	public GriddedOutputInfo(double[] args) {
-		setGridDimensions(args);
-	}
+    return lats;
+  }
 
-	/**
-	 * Creates a new instance of GriddedOutputInfo
-	 * 
-	 * @param deltaArgs
-	 * @param ncellArgs
-	 */
-	public GriddedOutputInfo(double[] deltaArgs, int[] ncellArgs) {
-		setGridDimensions(deltaArgs, ncellArgs);
-	}
+  public double[] calculateLons(LatLonRect llr) {
+    double[] lons = new double[nCellsX];
 
-	public double[] calculateLats(LatLonRect llr) {
-		double[] lats = new double[nCellsY];
+    double lon = llr.getLonMin();
+    for (int i = 0; i < nCellsX; i++) {
+      lons[i] = lon + (deltaX * 0.5);
+      lon = lon + deltaX;
+    }
 
-		double lat = llr.getLatMin();
-		for (int i = 0; i < nCellsY; i++) {
-			lats[i] = lat + (deltaY * 0.5);
-			lat = lat + deltaY;
-		}
+    return lons;
+  }
 
-		return lats;
-	}
+  public double[] calculateDepths(double[] depthRange) {
+    double[] depths = new double[nCellsZ];
 
-	public double[] calculateLons(LatLonRect llr) {
-		double[] lons = new double[nCellsX];
+    double depth = depthRange[0];// depthRange[0] == surface(top)
+    for (int i = 0; i < nCellsZ; i++) {
+      depths[i] = depth - (deltaZ * 0.5);
+      depth = depth - deltaZ;
+    }
 
-		double lon = llr.getLonMin();
-		for (int i = 0; i < nCellsX; i++) {
-			lons[i] = lon + (deltaX * 0.5);
-			lon = lon + deltaX;
-		}
+    return depths;
+  }
 
-		return lons;
-	}
+  public String toString2() {
+    return "DeltaXY [" + getDeltaX() + ", " + getDeltaY() + "] " + "#CellsXY [" + getNCellsX() + ", "
+            + getNCellsY() + "]";
+  }
 
-	public double[] calculateDepths(double[] depthRange) {
-		double[] depths = new double[nCellsZ];
+  public void setGridDimensions(double[] args) {
+    if (args.length != 6) {
+      throw new ArrayIndexOutOfBoundsException(
+              "There must be 6 members in the array in the order {dx, dy, dz, numcellsx, numcellsy, numcellsz}");
+    }
+    setDeltaX(args[0]);
+    setDeltaY(args[1]);
+    setDeltaZ(args[2]);
+    setNCellsX((int) args[3]);
+    setNCellsY((int) args[4]);
+    setNCellsZ((int) args[5]);
+  }
 
-		double depth = depthRange[0];// depthRange[0] == surface(top)
-		for (int i = 0; i < nCellsZ; i++) {
-			depths[i] = depth - (deltaZ * 0.5);
-			depth = depth - deltaZ;
-		}
+  public void setGridDimensions(double[] deltaArgs, int[] ncellArgs) {
+    if (deltaArgs.length != 3) {
+      throw new ArrayIndexOutOfBoundsException("There must be 3 members in the array in the order {dx, dy, dz}");
+    }
+    if (ncellArgs.length != 3) {
+      throw new ArrayIndexOutOfBoundsException(
+              "There must be 3 members in the array in the order {numcellsx, numcellsy, numcellsz}");
+    }
+    setDeltaX(deltaArgs[0]);
+    setDeltaY(deltaArgs[1]);
+    setDeltaZ(deltaArgs[2]);
+    setNCellsX(ncellArgs[0]);
+    setNCellsY(ncellArgs[1]);
+    setNCellsZ(ncellArgs[2]);
+  }
 
-		return depths;
-	}
+  public double[] getDeltas() {
+    return new double[]{getDeltaX(), getDeltaY(), getDeltaZ()};
+  }
 
-	public String toString2() {
-		return "DeltaXY [" + getDeltaX() + ", " + getDeltaY() + "] " + "#CellsXY [" + getNCellsX() + ", "
-			+ getNCellsY() + "]";
-	}
+  public void setDeltas(double[] args) {
+    if (args.length != 3) {
+      throw new ArrayIndexOutOfBoundsException("There must be 3 members in the array in the order {dx, dy, dz}");
+    }
+    setDeltaX(args[0]);
+    setDeltaY(args[1]);
+    setDeltaZ(args[2]);
+  }
 
-	public void setGridDimensions(double[] args) {
-		if (args.length != 6) {
-			throw new ArrayIndexOutOfBoundsException(
-				"There must be 6 members in the array in the order {dx, dy, dz, numcellsx, numcellsy, numcellsz}");
-		}
-		setDeltaX(args[0]);
-		setDeltaY(args[1]);
-		setDeltaZ(args[2]);
-		setNCellsX((int) args[3]);
-		setNCellsY((int) args[4]);
-		setNCellsZ((int) args[5]);
-	}
+  public int[] getNCells() {
+    return new int[]{getNCellsX(), getNCellsY()};
+  }
 
-	public void setGridDimensions(double[] deltaArgs, int[] ncellArgs) {
-		if (deltaArgs.length != 3) {
-			throw new ArrayIndexOutOfBoundsException("There must be 3 members in the array in the order {dx, dy, dz}");
-		}
-		if (ncellArgs.length != 3) {
-			throw new ArrayIndexOutOfBoundsException(
-				"There must be 3 members in the array in the order {numcellsx, numcellsy, numcellsz}");
-		}
-		setDeltaX(deltaArgs[0]);
-		setDeltaY(deltaArgs[1]);
-		setDeltaZ(deltaArgs[2]);
-		setNCellsX(ncellArgs[0]);
-		setNCellsY(ncellArgs[1]);
-		setNCellsZ(ncellArgs[2]);
-	}
+  public void setNCells(int[] args) {
+    if (args.length != 3) {
+      throw new ArrayIndexOutOfBoundsException(
+              "There must be 3 members in the array in the order {numcellsx, numcellsy, numcellsz}");
+    }
+    setNCellsX(args[0]);
+    setNCellsY(args[1]);
+    setNCellsZ(args[2]);
+  }
 
-	public double[] getDeltas() {
-		return new double[] { getDeltaX(), getDeltaY(), getDeltaZ() };
-	}
+  // <editor-fold defaultstate="collapsed" desc=" Static Methods ">
+  /**
+   *
+   * @param llr
+   *            - The <CODE>LatLonRect</CODE> object defining the maximum
+   *            extent.
+   * @param gridX
+   *            - The X parameter (# cells or deltaX).
+   * @param gridY
+   *            - The Y parameter (# cells or deltaX).
+   * @param gridZ
+   *            - The Z parameter (# cells or deltaX). otherwise,
+   *            <CODE>false</CODE>.
+   * @param depthRange
+   * @param isUseNumCells
+   * @return
+   */
+  public static double[] calculateGrid(LatLonRect llr, double gridX, double gridY, double gridZ, double[] depthRange,
+          boolean isNumCells) {
+    GriddedOutputInfo.useNumCells = isNumCells;
+    if (isNumCells) {
+      return calculateGrid_dxdy(llr, (int) gridX, (int) gridY, (int) gridZ, depthRange);
+    } else {
+      return calculateGrid_numCells(llr, gridX, gridY, gridZ, depthRange);
+    }
+  }
 
-	public void setDeltas(double[] args) {
-		if (args.length != 3) {
-			throw new ArrayIndexOutOfBoundsException("There must be 3 members in the array in the order {dx, dy, dz}");
-		}
-		setDeltaX(args[0]);
-		setDeltaY(args[1]);
-		setDeltaZ(args[2]);
-	}
+  public static double[] calculateGrid(Point2D startLoc, double[] maxExtent, double gridx, double gridy,
+          double gridz, double[] depthRange, boolean isNumCells) {
+    try {
+      LatLonRect llr = new LatLonRect(new LatLonPointImpl(startLoc.getY(), startLoc.getX()), maxExtent[1],
+              maxExtent[0]);
 
-	public int[] getNCells() {
-		return new int[] { getNCellsX(), getNCellsY() };
-	}
+      return calculateGrid(llr, gridx, gridy, gridz, depthRange, isNumCells);
+    } catch (Exception ex) {
+    }
+    return null;
+  }
 
-	public void setNCells(int[] args) {
-		if (args.length != 3) {
-			throw new ArrayIndexOutOfBoundsException(
-				"There must be 3 members in the array in the order {numcellsx, numcellsy, numcellsz}");
-		}
-		setNCellsX(args[0]);
-		setNCellsY(args[1]);
-		setNCellsZ(args[2]);
-	}
+  private static double[] calculateGrid_numCells(LatLonRect llr, double dx, double dy, double dz, double[] depthRange) {
+    /** Convert dx dy dz in meters to decimal degrees */
+    oDx = new Double(dx);
+    oDy = new Double(dy);
+    oDz = new Double(dz);
 
-	// <editor-fold defaultstate="collapsed" desc=" Static Methods ">
+    Arrays.sort(depthRange);
 
-	/**
-	 * 
-	 * @param llr
-	 *            - The <CODE>LatLonRect</CODE> object defining the maximum
-	 *            extent.
-	 * @param gridX
-	 *            - The X parameter (# cells or deltaX).
-	 * @param gridY
-	 *            - The Y parameter (# cells or deltaX).
-	 * @param gridZ
-	 *            - The Z parameter (# cells or deltaX). otherwise,
-	 *            <CODE>false</CODE>.
-	 * @param depthRange
-	 * @param isUseNumCells
-	 * @return
-	 */
-	public static double[] calculateGrid(LatLonRect llr, double gridX, double gridY, double gridZ, double[] depthRange,
-		boolean isNumCells) {
-		GriddedOutputInfo.useNumCells = isNumCells;
-		if (isNumCells) {
-			return calculateGrid_dxdy(llr, (int) gridX, (int) gridY, (int) gridZ, depthRange);
-		} else {
-			return calculateGrid_numCells(llr, gridX, gridY, gridZ, depthRange);
-		}
-	}
+    dx = Length.DECIMAL_DEGREE.fromRadians(Length.METER.toRadians(dx));
+    dy = Length.DECIMAL_DEGREE.fromRadians(Length.METER.toRadians(dy));
 
-	public static double[] calculateGrid(Point2D startLoc, double[] maxExtent, double gridx, double gridy,
-		double gridz, double[] depthRange, boolean isNumCells) {
-		try {
-			LatLonRect llr = new LatLonRect(new LatLonPointImpl(startLoc.getY(), startLoc.getX()), maxExtent[1],
-				maxExtent[0]);
+    double ncellsX = (llr.getLonMax() - llr.getLonMin()) / dx;
+    double ncellsY = (llr.getLatMax() - llr.getLatMin()) / dy;
+    double ncellsZ = (Math.abs(depthRange[0]) - Math.abs(depthRange[1])) / dz;
+    // ncellsX = ((int)ncellsX <= 0) ? 1 : ncellsX;
+    // ncellsY = ((int)ncellsY <= 0) ? 1 : ncellsY;
+    // ncellsZ = ((int)ncellsZ <= 0) ? 1 : ncellsZ;
 
-			return calculateGrid(llr, gridx, gridy, gridz, depthRange, isNumCells);
-		} catch (Exception ex) {
+    // return new double[]{dx, dy, dz, (int)ncellsX, (int)ncellsY,
+    // (int)ncellsZ};
 
-		}
-		return null;
-	}
+    ncellsX = (Math.round(ncellsX) <= 0) ? 1 : ncellsX;
+    ncellsY = (Math.round(ncellsY) <= 0) ? 1 : ncellsY;
+    ncellsZ = (Math.round(ncellsZ) <= 0) ? 1 : ncellsZ;
 
-	private static double[] calculateGrid_numCells(LatLonRect llr, double dx, double dy, double dz, double[] depthRange) {
-		/** Convert dx dy dz in meters to decimal degrees */
-		oDx = new Double(dx);
-		oDy = new Double(dy);
-		oDz = new Double(dz);
+    return new double[]{dx, dy, dz, Math.round(ncellsX), Math.round(ncellsY), Math.round(ncellsZ)};
+  }
 
-		Arrays.sort(depthRange);
+  private static double[] calculateGrid_dxdy(LatLonRect llr, int numX, int numY, int numZ, double[] depthRange) {
+    double dx = (llr.getLonMax() - llr.getLonMin()) / numX;
+    double dy = (llr.getLatMax() - llr.getLatMin()) / numY;
+    double dz = (Math.abs(depthRange[1]) - Math.abs(depthRange[0])) / numZ;
 
-		dx = Length.DECIMAL_DEGREE.fromRadians(Length.METER.toRadians(dx));
-		dy = Length.DECIMAL_DEGREE.fromRadians(Length.METER.toRadians(dy));
+    return new double[]{dx, dy, dz, numX, numY, numZ};
+  }
 
-		double ncellsX = (llr.getLonMax() - llr.getLonMin()) / dx;
-		double ncellsY = (llr.getLatMax() - llr.getLatMin()) / dy;
-		double ncellsZ = (Math.abs(depthRange[0]) - Math.abs(depthRange[1])) / dz;
-		// ncellsX = ((int)ncellsX <= 0) ? 1 : ncellsX;
-		// ncellsY = ((int)ncellsY <= 0) ? 1 : ncellsY;
-		// ncellsZ = ((int)ncellsZ <= 0) ? 1 : ncellsZ;
+  // </editor-fold>
+  // <editor-fold defaultstate="collapsed" desc=" Property Get/Set ">
+  public double getDeltaX() {
+    return deltaX;
+  }
 
-		// return new double[]{dx, dy, dz, (int)ncellsX, (int)ncellsY,
-		// (int)ncellsZ};
+  public void setDeltaX(double deltaX) {
+    this.deltaX = deltaX;
+  }
 
-		ncellsX = (Math.round(ncellsX) <= 0) ? 1 : ncellsX;
-		ncellsY = (Math.round(ncellsY) <= 0) ? 1 : ncellsY;
-		ncellsZ = (Math.round(ncellsZ) <= 0) ? 1 : ncellsZ;
+  public double getDeltaY() {
+    return deltaY;
+  }
 
-		return new double[] { dx, dy, dz, Math.round(ncellsX), Math.round(ncellsY), Math.round(ncellsZ) };
-	}
+  public void setDeltaY(double deltaY) {
+    this.deltaY = deltaY;
+  }
 
-	private static double[] calculateGrid_dxdy(LatLonRect llr, int numX, int numY, int numZ, double[] depthRange) {
-		double dx = (llr.getLonMax() - llr.getLonMin()) / numX;
-		double dy = (llr.getLatMax() - llr.getLatMin()) / numY;
-		double dz = (Math.abs(depthRange[1]) - Math.abs(depthRange[0])) / numZ;
+  public double getDeltaZ() {
+    return deltaZ;
+  }
 
-		return new double[] { dx, dy, dz, numX, numY, numZ };
-	}
+  public void setDeltaZ(double deltaZ) {
+    this.deltaZ = deltaZ;
+  }
 
-	// </editor-fold>
+  public int getNCellsX() {
+    return nCellsX;
+  }
 
-	// <editor-fold defaultstate="collapsed" desc=" Property Get/Set ">
+  public void setNCellsX(int nCellsX) {
+    this.nCellsX = nCellsX;
+  }
 
-	public double getDeltaX() {
-		return deltaX;
-	}
+  public int getNCellsY() {
+    return nCellsY;
+  }
 
-	public void setDeltaX(double deltaX) {
-		this.deltaX = deltaX;
-	}
+  public void setNCellsY(int nCellsY) {
+    this.nCellsY = nCellsY;
+  }
 
-	public double getDeltaY() {
-		return deltaY;
-	}
+  public int getNCellsZ() {
+    return nCellsZ;
+  }
 
-	public void setDeltaY(double deltaY) {
-		this.deltaY = deltaY;
-	}
+  public void setNCellsZ(int nCellsZ) {
+    this.nCellsZ = nCellsZ;
+  }
 
-	public double getDeltaZ() {
-		return deltaZ;
-	}
+  public int getNTimes() {
+    return nTimes;
+  }
 
-	public void setDeltaZ(double deltaZ) {
-		this.deltaZ = deltaZ;
-	}
+  public void setNTimes(int nTimes) {
+    this.nTimes = nTimes;
+  }
 
-	public int getNCellsX() {
-		return nCellsX;
-	}
+  public boolean isUseFloatingGrid() {
+    return useFloatingGrid;
+  }
 
-	public void setNCellsX(int nCellsX) {
-		this.nCellsX = nCellsX;
-	}
+  public void setUseFloatingGrid(boolean useFloatingGrid) {
+    this.useFloatingGrid = useFloatingGrid;
+  }
 
-	public int getNCellsY() {
-		return nCellsY;
-	}
+  public boolean isUseNumCells() {
+    return useNumCells;
+  }
 
-	public void setNCellsY(int nCellsY) {
-		this.nCellsY = nCellsY;
-	}
+  public void setUseNumCells(boolean useNumCells) {
+    this.useNumCells = useNumCells;
+  }
 
-	public int getNCellsZ() {
-		return nCellsZ;
-	}
+  public static double getODx() {
+    return oDx;
+  }
 
-	public void setNCellsZ(int nCellsZ) {
-		this.nCellsZ = nCellsZ;
-	}
+  public static double getODy() {
+    return oDy;
+  }
 
-	public int getNTimes() {
-		return nTimes;
-	}
-
-	public void setNTimes(int nTimes) {
-		this.nTimes = nTimes;
-	}
-
-	public boolean isUseFloatingGrid() {
-		return useFloatingGrid;
-	}
-
-	public void setUseFloatingGrid(boolean useFloatingGrid) {
-		this.useFloatingGrid = useFloatingGrid;
-	}
-
-	public boolean isUseNumCells() {
-		return useNumCells;
-	}
-
-	public void setUseNumCells(boolean useNumCells) {
-		this.useNumCells = useNumCells;
-	}
-
-	public static double getODx() {
-		return oDx;
-	}
-
-	public static double getODy() {
-		return oDy;
-	}
-
-	public static double getODz() {
-		return oDz;
-	}
-
-	// </editor-fold>
-
+  public static double getODz() {
+    return oDz;
+  }
+  // </editor-fold>
 }

@@ -9,7 +9,6 @@
  * Created on Mar 17, 2008, 11:32:51 AM
  *
  */
-
 package com.asascience.edc.particle;
 
 import java.awt.Container;
@@ -25,57 +24,54 @@ import com.bbn.openmap.omGraphics.OMGraphicList;
  */
 public class OutputLayerBase extends TimeLayer {
 
-	protected File dataFile = null;
+  protected File dataFile = null;
+  protected OMGraphicList omgraphics = null;
+  protected OMGraphic selectedGraphic = null;
+  // protected Incident incident = null;
+  protected long currentTime;
 
-	protected OMGraphicList omgraphics = null;
-	protected OMGraphic selectedGraphic = null;
+  /**
+   * Creates a new instance of OutputLayerBase
+   *
+   * @param incident
+   * @param consumeEvents
+   */
+  public OutputLayerBase(boolean consumeEvents) {
+    // public OutputLayerBase(Incident incident, boolean consumeEvents){
+    // this.incident = incident;
+    this.consumeEvents = false;
+  }
 
-	// protected Incident incident = null;
+  /**
+   *
+   * @return
+   */
+  @Override
+  public OMGraphicList prepare() {
+    return null;
+  }
 
-	protected long currentTime;
+  /**
+   * Draws the appropriate data for the passed timestep t <CODE>long</CODE>.
+   *
+   * @param t
+   *            The time <CODE>long</CODE> for which the data should be drawn
+   */
+  public void drawDataForTime(long t) {
+  }
 
-	/**
-	 * Creates a new instance of OutputLayerBase
-	 * 
-	 * @param incident
-	 * @param consumeEvents
-	 */
-	public OutputLayerBase(boolean consumeEvents) {
-		// public OutputLayerBase(Incident incident, boolean consumeEvents){
-		// this.incident = incident;
-		this.consumeEvents = false;
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	@Override
-	public OMGraphicList prepare() {
-		return null;
-	}
-
-	/**
-	 * Draws the appropriate data for the passed timestep t <CODE>long</CODE>.
-	 * 
-	 * @param t
-	 *            The time <CODE>long</CODE> for which the data should be drawn
-	 */
-	public void drawDataForTime(long t) {
-	}
-
-	/**
-	 * Called when the Layer is removed from the MapBean, giving an opportunity
-	 * to clean up.
-	 * 
-	 * @param cont
-	 */
-	@Override
-	public void removed(Container cont) {
-		OMGraphicList list = this.getList();
-		if (list != null) {
-			list.clear();
-			list = null;
-		}
-	}
+  /**
+   * Called when the Layer is removed from the MapBean, giving an opportunity
+   * to clean up.
+   *
+   * @param cont
+   */
+  @Override
+  public void removed(Container cont) {
+    OMGraphicList list = this.getList();
+    if (list != null) {
+      list.clear();
+      list = null;
+    }
+  }
 }

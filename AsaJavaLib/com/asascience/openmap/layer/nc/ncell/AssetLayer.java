@@ -6,7 +6,6 @@
  *
  * Created on Jan 9, 2009 @ 11:36:09 AM
  */
-
 package com.asascience.openmap.layer.nc.ncell;
 
 import java.awt.Color;
@@ -22,122 +21,121 @@ import com.bbn.openmap.util.DataBounds;
  * 
  * @author CBM <cmueller@asascience.com>
  */
-
 public class AssetLayer extends VectorLayer {
 
-	private AssetReader assetReader = null;
+  private AssetReader assetReader = null;
 
-	public AssetLayer(String dataFile) {
-		super.drawVectors = false;
-		super.drawGridCells = true;
-		if (new File(dataFile).exists()) {
-			assetReader = new AssetReader(dataFile);
-			this.setSourceFilePath(dataFile);
+  public AssetLayer(String dataFile) {
+    super.drawVectors = false;
+    super.drawGridCells = true;
+    if (new File(dataFile).exists()) {
+      assetReader = new AssetReader(dataFile);
+      this.setSourceFilePath(dataFile);
 
-			this.setTimeRange(assetReader.getStartTime(), assetReader.getEndTime());
-			// this sets the timeIncrement in the TimeLayer
-			this.setTimeIncrement(assetReader.getTimeIncrement());
-			this.setTimes(assetReader.getTimeSteps());
+      this.setTimeRange(assetReader.getStartTime(), assetReader.getEndTime());
+      // this sets the timeIncrement in the TimeLayer
+      this.setTimeIncrement(assetReader.getTimeIncrement());
+      this.setTimes(assetReader.getTimeSteps());
 
-			this.setName(dataFile.substring(dataFile.lastIndexOf(File.separator) + 1));
-			this.setUVFillVal(assetReader.getFillValue());
+      this.setName(dataFile.substring(dataFile.lastIndexOf(File.separator) + 1));
+      this.setUVFillVal(assetReader.getFillValue());
 
-			this.setVectorColor(Color.RED);
+      this.setVectorColor(Color.RED);
 
-			this.setShowDisplayType(false);
+      this.setShowDisplayType(false);
 
-			this.lats = assetReader.getLats();
-			this.lons = assetReader.getLons();
-		}
-	}
+      this.lats = assetReader.getLats();
+      this.lons = assetReader.getLons();
+    }
+  }
 
-	@Override
-	public DataBounds getLayerExtent() {
-		// this.setLats(assetReader.getLats());
-		// this.setLons(assetReader.getLons());
-		return super.getLayerExtent();
-	}
+  @Override
+  public DataBounds getLayerExtent() {
+    // this.setLats(assetReader.getLats());
+    // this.setLons(assetReader.getLons());
+    return super.getLayerExtent();
+  }
 
-	public void drawDataForTime() {
-		drawDataForTime(this.getCurrentTime());
-	}
+  public void drawDataForTime() {
+    drawDataForTime(this.getCurrentTime());
+  }
 
-	@Override
-	public void drawDataForTime(long t) {
-		// TODO Auto-generated method stub
+  @Override
+  public void drawDataForTime(long t) {
+    // TODO Auto-generated method stub
 
-		if (t == -1) {
-			t = assetReader.getStartTime();
-		}
+    if (t == -1) {
+      t = assetReader.getStartTime();
+    }
 
-		int[] goNoGoData = assetReader.getGoNoGoValues(t, "BathTub");
+    int[] goNoGoData = assetReader.getGoNoGoValues(t, "BathTub");
 
-		buildGridCells(goNoGoData);
+    buildGridCells(goNoGoData);
 
-		this.display();
-	}
+    this.display();
+  }
 
-	/** FIXME Add an overrideable method to VectorLayer. */
-	protected void buildGridCells(int[] dataList) {
-		gridCells = new ArrayList<OMGridCell>();
-		double[] grdx;
-		double[] grdy;
-		int data;
-		int fillVal = assetReader.getFillValue();
-		boolean add;
-		for (int i = 0; i < assetReader.getNCells(); i++) {
-			try {
-				if (dataList != null) {
-					data = dataList[i];
-				} else {
-					data = fillVal;
-				}
-			} catch (Exception ex) {
-				data = fillVal;
-			}
+  /** FIXME Add an overrideable method to VectorLayer. */
+  protected void buildGridCells(int[] dataList) {
+    gridCells = new ArrayList<OMGridCell>();
+    double[] grdx;
+    double[] grdy;
+    int data;
+    int fillVal = assetReader.getFillValue();
+    boolean add;
+    for (int i = 0; i < assetReader.getNCells(); i++) {
+      try {
+        if (dataList != null) {
+          data = dataList[i];
+        } else {
+          data = fillVal;
+        }
+      } catch (Exception ex) {
+        data = fillVal;
+      }
 
-			// if(data == fillVal){
-			// continue;
-			// }
+      // if(data == fillVal){
+      // continue;
+      // }
 
-			grdx = assetReader.getXGridForNcell(i);
-			grdy = assetReader.getYGridForNcell(i);
+      grdx = assetReader.getXGridForNcell(i);
+      grdy = assetReader.getYGridForNcell(i);
 
-			// make sure the grid is valid
-			add = true;
+      // make sure the grid is valid
+      add = true;
 
-			for (double d : grdx) {
-				if (d == fillVal) {
-					add = false;
-					break;
-				}
-			}
-			if (add) {
-				for (double d : grdy) {
-					if (d == fillVal) {
-						add = false;
-						break;
-					}
-				}
-			}
+      for (double d : grdx) {
+        if (d == fillVal) {
+          add = false;
+          break;
+        }
+      }
+      if (add) {
+        for (double d : grdy) {
+          if (d == fillVal) {
+            add = false;
+            break;
+          }
+        }
+      }
 
-			if (add) {
-				Color cellColor = Color.BLACK;
-				if (!Double.isNaN(data)) {
-					switch (data) {
-						case 1:// pass
-							cellColor = Color.GREEN;
-							break;
-						case 2:// fail
-							cellColor = Color.RED;
-							break;
-						default:
-							break;
-					}
-					gridCells.add(new OMGridCell(null, MapUtils.buildFloatPolygonArray(grdy, grdx), data, cellColor,
-						false));
-				}
-			}
-		}
-	}
+      if (add) {
+        Color cellColor = Color.BLACK;
+        if (!Double.isNaN(data)) {
+          switch (data) {
+            case 1:// pass
+              cellColor = Color.GREEN;
+              break;
+            case 2:// fail
+              cellColor = Color.RED;
+              break;
+            default:
+              break;
+          }
+          gridCells.add(new OMGridCell(null, MapUtils.buildFloatPolygonArray(grdy, grdx), data, cellColor,
+                  false));
+        }
+      }
+    }
+  }
 }

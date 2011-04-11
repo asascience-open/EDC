@@ -6,7 +6,6 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package com.asascience.utilities.io;
 
 /**
@@ -14,6 +13,6 @@ package com.asascience.utilities.io;
  * @author cmueller
  */
 public enum NcFileType {
-	SWAFS, NCOM, NCELL, ASSET, GENERIC_GRID, UNKNOWN
 
+  SWAFS, NCOM, NCELL, ASSET, GENERIC_GRID, UNKNOWN
 }

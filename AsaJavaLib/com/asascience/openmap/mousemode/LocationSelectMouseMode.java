@@ -9,7 +9,6 @@
  * Created on Jun 3, 2008, 1:20:04 PM
  *
  */
-
 package com.asascience.openmap.mousemode;
 
 import java.awt.Cursor;
@@ -27,46 +26,44 @@ import com.bbn.openmap.event.CoordMouseMode;
  */
 public class LocationSelectMouseMode extends CoordMouseMode {
 
-	public final static transient String modeID = "LocSelect";
+  public final static transient String modeID = "LocSelect";
+  private MapBean map;
+  private LatLonPoint selLoc;
+  private boolean useCursor;
 
-	private MapBean map;
-	private LatLonPoint selLoc;
+  /** Creates a new instance of LocationSelectMouseMode */
+  public LocationSelectMouseMode() {
+    super(modeID, true);
+    setUseCursor(true);
+  }
 
-	private boolean useCursor;
+  @Override
+  public void mouseClicked(MouseEvent e) {
+    e.getComponent().requestFocus();
+    if (e.getSource() instanceof MapBean) {
+      if (map == null) {
+        map = (MapBean) e.getSource();
+      }
+      Point p = e.getPoint();
 
-	/** Creates a new instance of LocationSelectMouseMode */
-	public LocationSelectMouseMode() {
-		super(modeID, true);
-		setUseCursor(true);
-	}
+      // p.translate(10, 6);//shift the point to match the "center" of the
+      // mouse cursor graphic...
 
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		e.getComponent().requestFocus();
-		if (e.getSource() instanceof MapBean) {
-			if (map == null) {
-				map = (MapBean) e.getSource();
-			}
-			Point p = e.getPoint();
+      selLoc = map.getProjection().inverse(p);
 
-			// p.translate(10, 6);//shift the point to match the "center" of the
-			// mouse cursor graphic...
+      firePropertyChange("locSelect", true, selLoc);
+    }
+  }
 
-			selLoc = map.getProjection().inverse(p);
-
-			firePropertyChange("locSelect", true, selLoc);
-		}
-	}
-
-	/**
-	 * @param useCursor
-	 *            The useCursor to set.
-	 */
-	public void setUseCursor(boolean useCursor) {
-		this.useCursor = useCursor;
-		if (useCursor) {
-			Cursor c = Utils.createCustomCursor("LocSelect.gif", LocationSelectMouseMode.class, true);
-			setModeCursor(c);
-		}
-	}
+  /**
+   * @param useCursor
+   *            The useCursor to set.
+   */
+  public void setUseCursor(boolean useCursor) {
+    this.useCursor = useCursor;
+    if (useCursor) {
+      Cursor c = Utils.createCustomCursor("LocSelect.gif", LocationSelectMouseMode.class, true);
+      setModeCursor(c);
+    }
+  }
 }

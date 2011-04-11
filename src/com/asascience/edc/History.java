@@ -9,7 +9,6 @@
  * Created on Feb 15, 2008, 10:22:26 AM
  *
  */
-
 package com.asascience.edc;
 
 import java.io.BufferedWriter;
@@ -28,28 +27,28 @@ import java.io.Writer;
 public class History {
 
   private static File f;
-  
-	public static boolean initialize(String historyFile) {
-		try {
-			f = new File(historyFile);
-			if (!f.exists()) {
-				BufferedWriter output = new BufferedWriter(new FileWriter(f));
+
+  public static boolean initialize(String historyFile) {
+    try {
+      f = new File(historyFile);
+      if (!f.exists()) {
+        BufferedWriter output = new BufferedWriter(new FileWriter(f));
         output.newLine();
         output.close();
-			}
-			if (f.canWrite()) {
+      }
+      if (f.canWrite()) {
         return true;
       } else {
         throw new Exception("Can't write to the history file");
       }
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		return false;
-	}
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return false;
+  }
 
   public static void addEntry(String name, String path) throws FileNotFoundException, IOException {
-    BufferedWriter output = new BufferedWriter(new FileWriter(f,true));
+    BufferedWriter output = new BufferedWriter(new FileWriter(f, true));
     StringBuilder s = new StringBuilder();
     s.append(name);
     s.append(":");
@@ -63,5 +62,5 @@ public class History {
     } finally {
       output.close();
     }
-  }	
+  }
 }
