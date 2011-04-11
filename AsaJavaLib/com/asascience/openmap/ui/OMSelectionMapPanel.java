@@ -381,7 +381,6 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
 
 	public void makeSelectedExtentLayer(double latMin, double lonMin, double latMax, double lonMax) {
 		LatLonRect llr = new LatLonRect(new LatLonPointImpl(latMin, lonMin), new LatLonPointImpl(latMax, lonMax));
-
 		makeSelectedExtentLayer(llr);
 	}
 
@@ -420,44 +419,11 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		String propName = evt.getPropertyName();
-		// System.err.println("newVal = "+newVal);
+    // User drew a bounding box to select an area
 		if (propName.equals("boundsStored")) {
 			if ((Boolean) evt.getNewValue()) {
-				// System.err.println("here");
 				makeSelectedExtentLayer(geoCons.getBoundingBox());
-				// if(!layerHandler.hasLayer(selectedExtent)){
-				// selectedExtent = new ExtentRectangleLayer("Desired Extent",
-				// false);
-				// layerHandler.addLayer(selectedExtent, 0);
-				// }
-				//
-				// lyrProps = new Properties();
-				// lyrProps.put("prettyName", "Desired Extent");
-				// lyrProps.put("lineColor", "8800FF00");//000000 = black
-				// lyrProps.put("fillColor", "8800FF00");
-				// selectedExtent.setProperties(lyrProps);
-				//                
-				//
-				// selectedExtent.addExtentRectangle(geoCons.getBoundingBox());
-				// //increment the dataset count
-				// datasetCount++;
 			}
-			// }else if(propName.equals("rightclick")){
-			// if(layerHandler.hasLayer(userExtent)){
-			// if(JOptionPane.showConfirmDialog(null,
-			// "Are you sure you wish to remove the current user extent (green box)\n"
-			// +
-			// "and any data layers that are loaded?",
-			// "Remove User Extent?", JOptionPane.YES_NO_OPTION) ==
-			// JOptionPane.YES_OPTION){
-			//
-			// layerHandler.removeLayer(userExtent);
-			// //TODO: make this firePropertyChange work - not making it out to
-			// the listeners...
-			// //even though the one below makes it no problem...
-			// pcs.firePropertyChange("resetmap", false, true);
-			// }
-			// }
 		}
 		pcs.firePropertyChange(evt);// pass the event along to the calling class
 	}

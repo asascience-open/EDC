@@ -103,6 +103,7 @@ public class SubsetProcessPanel extends JPanel {
 	private String sysDir;
 	private DimMapDialog dimMap;
 	private String ncOutPath;
+  private BoundingBoxPanel bboxGui;
 
 	/**
 	 * Creates a new instance of SubsetProcessPanel
@@ -348,9 +349,11 @@ public class SubsetProcessPanel extends JPanel {
 
 				public void propertyChange(PropertyChangeEvent e) {
 					String name = e.getPropertyName();
+          // Bounding box was drawn
 					if (name.equals("boundsStored")) {
 						if (selPanel != null) {
 							selPanel.setHasGeoSub(true);
+              bboxGui.setBoundingBox(mapPanel.getSelectedExtent());
 						}
 					} else if (name.equals(OMSelectionMapPanel.AOI_SAVE)) {
 						String s = javax.swing.JOptionPane.showInputDialog(mainFrame, "Enter a name for the AOI:", e
@@ -463,21 +466,28 @@ public class SubsetProcessPanel extends JPanel {
 			});
 			add(selPanel, BorderLayout.LINE_END);
 
-			// create a panel to hold the time and processing panels
-			JPanel pageEndPanel = new JPanel(new MigLayout("insets 0, fill"));
+			// PARENT panel
+			JPanel pageEndPanel = new JPanel(new MigLayout("gap 2, fill"));
 			pageEndPanel.setBorder(new EtchedBorder());
-			// pageEndPanel.setLayout(new BoxLayout(pageEndPanel,
-			// BoxLayout.Y_AXIS));
 
-			// create a panel to hold all the time related components
-			JPanel timePanel = new JPanel(new MigLayout("insets 0, fill"));
+      // BBOX panel
+      bboxGui = new BoundingBoxPanel();
+      bboxGui.addPropertyChangeListener(new PropertyChangeListener() {
+				public void propertyChange(PropertyChangeEvent evt) {
+          if (evt.getPropertyName().equals("bboxchange")) {
+            mapPanel.makeSelectedExtentLayer(bboxGui.getBoundingBox());
+          }
+				}
+			});
+      pageEndPanel.add(bboxGui, "gap 0, growy");
+
+			// TIME panel
+			JPanel timePanel = new JPanel(new MigLayout("gap 0, fill"));
 			timePanel.setBorder(new EtchedBorder());
-
 			dateSlider = new JSlider2Date();
 			dateSlider.setAlwaysPost(true);
 			dateSlider.setHandleSize(7);// default is 6
 			dateSlider.addPropertyChangeListener(new PropertyChangeListener() {
-
 				public void propertyChange(PropertyChangeEvent evt) {
 					String name = evt.getPropertyName();
 					if (name.equals("minValue")) {
@@ -497,11 +507,10 @@ public class SubsetProcessPanel extends JPanel {
 			timePanel.add(lblNumDatesSelected, "gap 0, gapleft 20, center, wrap");
 			timePanel.add(dateSlider, "gap 0, grow, center");
 
-			// add the time panel to the SubsetProcessPanel
-			pageEndPanel.add(timePanel, "grow, wrap");
+			pageEndPanel.add(timePanel, "gap 0, wrap, grow");
 
 			JPanel processPanel = new JPanel();
-			processPanel.setBorder(new EtchedBorder());
+      processPanel.setBorder(new EtchedBorder());
 			btnProcess = new JButton("Process");
 			btnProcess.setToolTipText("Apply the specified spatial & temporal constraints\n"
 				+ "and export the selected variables to the desired output format.");
@@ -509,6 +518,7 @@ public class SubsetProcessPanel extends JPanel {
 			btnProcess.addActionListener(new ProcessDataListener());
 			processPanel.add(btnProcess);
 
+      /*
 			JButton preview = new JButton("Preview Entire Dataset");
 			preview.setToolTipText("Preview the entire dataset without applying\n"
 				+ "any spatial or temporal subsetting.");
@@ -526,9 +536,10 @@ public class SubsetProcessPanel extends JPanel {
 					}
 				}
 			});
-			// processPanel.add(preview);
+			processPanel.add(preview);
+      */
 
-			pageEndPanel.add(processPanel, "grow");
+			pageEndPanel.add(processPanel, "spanx 2, grow");
 
 			add(pageEndPanel, BorderLayout.PAGE_END);
 
@@ -940,6 +951,7 @@ public class SubsetProcessPanel extends JPanel {
 	class ProcessDataListener implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
+      // Process button is clicked
 			if (selPanel != null) {
 				// get the extent set by the user
 				LatLonRect bounds = mapPanel.getSelectedExtent();
