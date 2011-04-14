@@ -31,7 +31,7 @@ public class BasemapLayer extends ShapeLayer {
     Properties lyrProps = new Properties();
     lyrProps.put("prettyName", "Basemap");
     lyrProps.put("lineColor", "000000");
-    lyrProps.put("fillColor", "666666");// BDDE83
+    lyrProps.put("fillColor", "ffff66");
     lyrProps.put("shapeFile", dataDir + "lowResCoast.shp");
     this.setProperties(lyrProps);
     this.setAddAsBackground(true);
