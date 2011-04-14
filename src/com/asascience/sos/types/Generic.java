@@ -19,8 +19,8 @@ import org.jdom.transform.JDOMResult;
 import org.jdom.transform.JDOMSource;
 import com.asascience.sos.SensorContainer;
 import com.asascience.sos.VariableContainer;
+import java.util.ArrayList;
 import ucar.unidata.geoloc.LatLonRect;
-import ucar.unidata.geoloc.LatLonPoint;
 import ucar.unidata.geoloc.LatLonPointImpl;
 
 /**
@@ -30,6 +30,7 @@ import ucar.unidata.geoloc.LatLonPointImpl;
 public class Generic implements SOSTypeInterface {
 
   protected List<SensorContainer> sensorList;
+  protected ArrayList<VariableContainer> variableList;
   protected Date guiStartTime;
   protected Date guiEndTime;
   protected int selectedSensorCnt;
@@ -47,7 +48,32 @@ public class Generic implements SOSTypeInterface {
   protected int numTimeSteps;
 
   public Generic(Document xmlDoc) {
+    variableList = new ArrayList();
     getCapDoc = xmlDoc;
+  }
+
+  public void setUniqueVariables() {
+    // Make a unique list of VariableContainers
+    boolean found = false;
+    for (SensorContainer sensor : sensorList) {
+      for (VariableContainer variable : sensor.getVarList()) {
+        if (variableList.isEmpty()) {
+          variableList.add(variable);
+        } else {
+          found = false;
+          for (VariableContainer varInList : variableList) {
+            if (variable.compareTo(varInList) == 0) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            variableList.add(variable);
+          }
+        }
+      }
+    }
+    System.out.println("Found: " + variableList.size() + " unique variables!");
   }
 
   public void setSelectedSensors(double[] guiNESW, Date guiStartDate, Date guiEndDate, List<String> guiSelectedVars) {
@@ -226,8 +252,16 @@ public class Generic implements SOSTypeInterface {
     return varNames;
   }
 
+  public List<VariableContainer> getVariables() {
+    return variableList;
+  }
+
   public int getSelectedSensorCnt() {
     return selectedSensorCnt;
+  }
+
+  public List<SensorContainer> getSensors() {
+    return sensorList;
   }
 
   public LatLonRect getBBOX() {

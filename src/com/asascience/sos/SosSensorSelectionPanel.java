@@ -20,59 +20,58 @@ import net.miginfocom.swing.MigLayout;
  *
  * @author Kyle
  */
-public final class SosVariableSelectionPanel extends JPanel {
+public final class SosSensorSelectionPanel extends JPanel {
 
-  private CheckBoxList cblVars;
-  private List<VariableContainer> localVariables;
-  private ArrayList varNames;
-  private ArrayList varDescr;
+  private SensorCheckBoxList cblVars;
+  private List<SensorPoint> localSensors;
+  private ArrayList sensorNames;
+  private ArrayList sensorDescr;
+  private ArrayList sensorChecks;
   private boolean getObsEnabled;
   private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
   private String panelTitle;
 
-  public SosVariableSelectionPanel(SosProcessPanel parent, String title) {
+  public SosSensorSelectionPanel(SosProcessPanel parent, String title) {
     this.panelTitle = title;
     initComponents();
-    getCblVars().addPropertyChangeListener(new CheckBoxPropertyListener());
+    getSensorChecks().addPropertyChangeListener(new CheckBoxPropertyListener());
   }
 
-  public void addVariables(List<VariableContainer> vars) {
-    localVariables = vars;
-    setVariables();
-  }
-
-  public void setVariables() {
-    if (localVariables == null) {
+  public void setSensors(List<SensorPoint> sensors) {
+    localSensors = sensors;
+    if (localSensors == null) {
       return;
     }
 
-    varNames = new ArrayList();
-    varDescr = new ArrayList();
+    sensorNames = new ArrayList();
+    sensorDescr = new ArrayList();
+    sensorChecks = new ArrayList();
 
-    for (VariableContainer v : localVariables) {
-      varNames.add(v.getName());
-      varDescr.add(v.getProperty());
+    for (SensorPoint s : localSensors) {
+      sensorNames.add(s.getSensor().getName());
+      sensorDescr.add(s.getSensor().getDescription());
+      sensorChecks.add(Boolean.valueOf(s.isPicked()));
     }
     cblVars.clearCBList();
-    cblVars.makeCBList(varNames, varDescr, true);
+    cblVars.makeCBList(sensorNames, sensorDescr, sensorChecks, sensors, true);
 
     // remove any existing pcl's
-    PropertyChangeListener[] pcls = getCblVars().getPropertyChangeListeners();
+    PropertyChangeListener[] pcls = getSensorChecks().getPropertyChangeListeners();
     for (int i = pcls.length - 1; i >= 0; i--) {
-      getCblVars().removePropertyChangeListener(pcls[i]);
+      getSensorChecks().removePropertyChangeListener(pcls[i]);
     }
   }
-
-  public CheckBoxList getCblVars() {
+  
+  public SensorCheckBoxList getSensorChecks() {
     return cblVars;
   }
 
   public void initComponents() {
     setLayout(new MigLayout("gap 0, fill"));
-    
-    cblVars = new CheckBoxList(true, true, true);
+
+    cblVars = new SensorCheckBoxList(true, true, true);
     cblVars.setLabelLengthLimit(40);
-   
+
     JScrollPane sp = new JScrollPane();
     sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
     sp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -83,7 +82,7 @@ public final class SosVariableSelectionPanel extends JPanel {
   }
 
   private void enableGetObs() {
-    boolean shouldEnableGetObs = (getCblVars().getSelItemsSize() == 0) ? false : true;
+    boolean shouldEnableGetObs = (getSensorChecks().getSelectedSize() == 0) ? false : true;
     boolean oldShouldEnableGetObs = this.getObsEnabled;
     this.getObsEnabled = shouldEnableGetObs;
     propertyChangeSupport.firePropertyChange("processEnabled",
@@ -99,11 +98,14 @@ public final class SosVariableSelectionPanel extends JPanel {
   public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
     propertyChangeSupport.removePropertyChangeListener(l);
   }
-  
+
   class CheckBoxPropertyListener implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent e) {
       enableGetObs();
+      if (e.getPropertyName().equals("sensorClicked")) {
+        propertyChangeSupport.firePropertyChange(e);
+      }
     }
   }
 }

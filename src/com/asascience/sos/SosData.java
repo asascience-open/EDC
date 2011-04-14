@@ -38,21 +38,8 @@ public class SosData {
 
   private Generic sosType;
   private String myUrl;
-  private double[] NESW;
-  private boolean hasTime;
-  private Date startTime;
-  private Date endTime;
-  private double timeInterval;
-  private int numTimeSteps;
-  private String[] varNames;
-  private Date guiStartTime;
-  private Date guiEndTime;
-  private List<SensorContainer> sensorList;
-  private int selectedSensorCnt;
-  private int[] selectedVarCnt;
   private float requestTime;
   private float parseTime;
-  private String homeDir;
   SimpleDateFormat dateFormatter;
 
   public SosData(String URL) {
@@ -172,13 +159,6 @@ public class SosData {
     }
 
     return bnds;
-  }
-
-  // public static void setSelectedVarCnt(int[] selectedVarCnt) {
-  // SosData.selectedVarCnt = selectedVarCnt;
-  // }
-  public int[] getSelectedVarCnt() {
-    return selectedVarCnt;
   }
 
   // public static void setSelectedSensorCnt(int selectedSensorCnt) {

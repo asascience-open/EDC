@@ -647,9 +647,8 @@ public class OpendapInterface {
 
   public boolean openSOSDataset(SosData sosData) {
     try {
-      constraints = new NetcdfConstraints();
       sosPanel = new SosProcessPanel((PreferencesExt) prefs, fileChooser,
-              this, constraints, sosData, homeDir, sysDir);
+              this, sosData, homeDir, sysDir);
       if (!sosPanel.initData()) {
         return false;
       }

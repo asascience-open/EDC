@@ -47,6 +47,8 @@ import com.asascience.openmap.mousemode.MeasureMouseMode;
 import com.asascience.openmap.mousemode.NavMouseMode3;
 import com.asascience.openmap.mousemode.PanMouseMode2;
 import com.asascience.openmap.utilities.GeoConstraints;
+import com.asascience.sos.SensorContainer;
+import com.asascience.sos.SosLayer;
 import com.asascience.utilities.NumFieldUtilities;
 import com.asascience.utilities.Utils;
 import com.bbn.openmap.InformationDelegator;
@@ -64,6 +66,7 @@ import com.bbn.openmap.layer.shape.ShapeLayer;
 import com.bbn.openmap.omGraphics.event.StandardMapMouseInterpreter;
 import com.bbn.openmap.proj.ProjectionStack;
 import com.bbn.openmap.util.DataBounds;
+import java.util.List;
 
 /**
  * 
@@ -82,6 +85,7 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
   protected MapHandler mHandler;
   private LayerHandler layerHandler;
   private ShapeLayer basemapLayer;
+  private SosLayer sensorLayer;
   protected MapBean mBean;
   protected Properties lyrProps;
   protected OMToolSet tools;
@@ -263,81 +267,32 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
     centerAndScaleToSelectedExtent(ul, lr);
   }
 
-  public void zoomToDataExtent(DataBounds db) {
-    // LatLonPoint lr = new LatLonPoint(db.getMin().getY(),
-    // db.getMax().getX());
-    // LatLonPoint ul = new LatLonPoint(db.getMax().getY(),
-    // db.getMin().getX());
-    // centerAndScaleToDataExtent(ul, lr);
+  public void zoomToDataExtent(LatLonRect bbox) {
+    LatLonPoint lr = new LatLonPoint(bbox.getLatMin(), bbox.getLonMax());
+    LatLonPoint ul = new LatLonPoint(bbox.getLatMax(), bbox.getLonMin());
+    centerAndScaleToDataExtent(ul, lr, bbox);
   }
 
-  // public void zoomToLayer(Layer l){
-  // Projection proj = l.getProjection();
-  // System.err.println(proj.getUpperLeft().getLatitude() + " " +
-  // proj.getUpperLeft().getLongitude());
-  // int inX = l.getX();
-  // int inY = l.getY();
-  // System.err.println(inX );
-  //
-  // LatLonPoint pt1 = proj.inverse(inX, inY);
-  // LatLonPoint pt2 = proj.inverse((inX + l.getWidth()), (inY +
-  // l.getHeight()));
-  // System.err.println(pt1.getLatitude() + " " + pt1.getLongitude());
-  // System.err.println(pt2.getLatitude() + " " + pt2.getLongitude());
-  // }
   protected void centerAndScaleToSelectedExtent(LatLonPoint pUL, LatLonPoint pLR) {
     // Figure out the new scale
     float ncScale = com.bbn.openmap.proj.ProjMath.getScale(pUL, pLR, mBean.getProjection());
-
     float newScale = ncScale + (ncScale * 0.75f);
-
     mBean.setCenter(selectedExtent.getExtentCenterPoint());
+    mBean.setScale(newScale);
+  }
+
+  protected void centerAndScaleToDataExtent(LatLonPoint pUL, LatLonPoint pLR, LatLonRect bbox) {
+    // Figure out the new scale
+    float ncScale = com.bbn.openmap.proj.ProjMath.getScale(pUL, pLR, mBean.getProjection());
+    float newScale = ncScale + (ncScale * 0.75f);
+    mBean.setCenter((pUL.getLatitude() + pLR.getLatitude()) / 2, Float.parseFloat(Double.toString(bbox.getCenterLon())));
     mBean.setScale(newScale);
   }
 
   protected void centerAndScaleToDataExtent(LatLonPoint pUL, LatLonPoint pLR) {
     // Figure out the new scale
     float ncScale = com.bbn.openmap.proj.ProjMath.getScale(pUL, pLR, mBean.getProjection());
-
     float newScale = ncScale + (ncScale * 0.75f);
-    // System.err.println(ncScale + " " + newScale);
-    //
-    // // Figure out the center of the rectangle
-    // float dx = Math.abs(pUL.getLongitude() - pLR.getLongitude());
-    // float dy = Math.abs(pUL.getLatitude() - pLR.getLatitude());
-    // float centerx = Math.min(pUL.getLongitude(), pLR.getLongitude()) + dx
-    // / 2;
-    // float centery = Math.min(pUL.getLatitude(), pLR.getLatitude()) + dy /
-    // 2;
-    //
-    // centerx = (pUL.getLongitude() + pLR.getLongitude()) / 2;
-    // centery = (pUL.getLatitude() + pLR.getLatitude()) / 2;
-    //
-    // // System.err.println("UL-lat: " + pUL.getLatitude() + " UL-lon: " +
-    // pUL.getLongitude());
-    // // System.err.println("LR-lat: " + pLR.getLatitude() + " LR-lon: " +
-    // pLR.getLongitude());
-    // // System.err.println("Center Lat: " + centery + " Center Lon: " +
-    // centerx);
-    // // if(pUL.getLongitude() > 180 || pLR.getLongitude() > 180){
-    // // centerx = 180f;
-    // // }else if(pUL.getLongitude() > pLR.getLongitude()){
-    // // centerx += 180f;
-    // // }
-    // LatLonPoint center = new LatLonPoint();
-    // center.setLatLon(centery, centerx);
-
-    // mBean.setCenter(center);
-
-    // //TODO: DONE: remove after ExtentRectangleLayer is fixed
-    // if(dataExtent.getExtentRectangle().getLonMin() == 0){
-    // if(dataExtent.getExtentRectangle().getLonMax() == 360){
-    // mBean.setCenter(0, 0);
-    // }
-    // }else{
-    // mBean.setCenter(dataExtent.getExtentCenterPoint());
-    // }
-
     mBean.setCenter(dataExtent.getExtentCenterPoint());
     mBean.setScale(newScale);
   }
@@ -390,12 +345,12 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
 
     if (!layerHandler.hasLayer(selectedExtent)) {
       selectedExtent = new ExtentRectangleLayer("Desired Extent", false);
-      layerHandler.addLayer(selectedExtent, 0);
+      layerHandler.addLayer(selectedExtent);
     }
 
     lyrProps = new Properties();
     lyrProps.put("prettyName", "Desired Extent");
-    lyrProps.put("lineColor", "8800FF00");// 000000 = black
+    lyrProps.put("lineColor", "00000000");// 000000 = black
     lyrProps.put("fillColor", "8800FF00");
     selectedExtent.setProperties(lyrProps);
 
@@ -422,6 +377,7 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
     if (propName.equals("boundsStored")) {
       if ((Boolean) evt.getNewValue()) {
         makeSelectedExtentLayer(geoCons.getBoundingBox());
+        sensorLayer.setPickedByBBOX(geoCons.getBoundingBox());
       }
     }
     pcs.firePropertyChange(evt);// pass the event along to the calling class
@@ -443,6 +399,21 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
 
   public MouseDelegator getMouseDelegator() {
     return mouseDelegator;
+  }
+
+  public SosLayer getSensorLayer() {
+    return sensorLayer;
+  }
+
+  public void addSensors(List<SensorContainer> sensorList) {
+    sensorLayer = new SosLayer();
+    layerHandler.addLayer(sensorLayer);
+    sensorLayer.addPropertyChangeListener(new PropertyChangeListener() {
+      public void propertyChange(PropertyChangeEvent evt) {
+        pcs.firePropertyChange("loaded", false, true);
+      }
+    });
+    sensorLayer.setSensors(sensorList);
   }
 
   public JDialog makeRectEntryDialog(JFrame parent, String title, boolean modal) {

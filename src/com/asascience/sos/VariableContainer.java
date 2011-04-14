@@ -12,7 +12,7 @@ package com.asascience.sos;
  * 
  * @author DAS <dstuebe@asascience.com>
  */
-public class VariableContainer {
+public class VariableContainer implements Comparable {
 
   private String procedure;
   private String name;
@@ -69,5 +69,9 @@ public class VariableContainer {
 
   public String getSosRequest() {
     return sosRequest;
+  }
+
+  public int compareTo(Object o) {
+    return this.name.compareTo(((VariableContainer)o).name);
   }
 }

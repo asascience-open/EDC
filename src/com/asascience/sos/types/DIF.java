@@ -39,7 +39,7 @@ public class DIF extends Generic implements SOSTypeInterface {
 
   public DIF(Document xmlDoc) {
     super(xmlDoc);
-    type = "SWE";
+    type = "DIF";
     parseSensors();
   }
 
@@ -97,7 +97,6 @@ public class DIF extends Generic implements SOSTypeInterface {
 
           startTime = startTime.before(sensor.getStartTime()) ? startTime : sensor.getStartTime();
           endTime = endTime.after(sensor.getStartTime()) ? endTime : sensor.getEndTime();
-
         }
 
         // Make sure the year is at least 1990
@@ -122,6 +121,7 @@ public class DIF extends Generic implements SOSTypeInterface {
       System.out.println("Seconds to parse SOS capabilities: " + parseTime);
       System.out.println("Parsed SOS capabilities, found: " + sensorList.size() + " valid sensors!");
 
+      setUniqueVariables();
       return true;
     } else {
       return false;
@@ -519,8 +519,22 @@ public class DIF extends Generic implements SOSTypeInterface {
 
           String Name = xlink.getValue();
           var.setProperty(Name);
-          var.setName(Name.substring(Name.indexOf("#") + 1));
-
+          
+          Character divider;
+          if (Name.contains("http://")) {
+            divider = '/';
+          } else if (Name.contains(":")) {
+            divider = ':';
+          } else if (Name.contains("#")){
+            divider = '#';
+          } else {
+            divider = ' ';
+          }
+          if (!divider.equals(' ')) {
+            var.setName(Name.substring(Name.lastIndexOf(divider) + 1));
+          } else {
+            var.setName(Name);
+          }
         } catch (JDOMException e) {
           e.printStackTrace();
           System.out.println("Can not find Xlink Attribute: JDOM exception");

@@ -135,9 +135,6 @@ public class CheckBoxList extends JPanel implements ActionListener {
       d = descrips.get(i);
       addCheckBox(s, d, trimName);
     }
-
-    // validate();
-    // return this;
   }
 
   /**
@@ -174,7 +171,6 @@ public class CheckBoxList extends JPanel implements ActionListener {
     } else {
       text = t;
     }
-    // cb.setText(name);//orig
     cb.setText(text);
     cb.setToolTipText(descr);
     cb.addActionListener(this);
@@ -217,15 +213,12 @@ public class CheckBoxList extends JPanel implements ActionListener {
    */
   public void actionPerformed(ActionEvent e) {
     JCheckBox cb = (JCheckBox) e.getSource();
-
     if (cb.isSelected()) {
       selItems.add(cb.getText());
-      // this.setSelectedItems(selItems);
       propertyChangeSupport.firePropertyChange(CheckBoxList.ADDED, cb.getText(), cb);
     } else {
       if (selItems.contains(cb.getText())) {
         selItems.remove(cb.getText());
-        // this.setSelectedItems(selItems);
         propertyChangeSupport.firePropertyChange(CheckBoxList.REMOVED, cb.getText(), cb);
       } else {
         System.err.println("CB not in list");
