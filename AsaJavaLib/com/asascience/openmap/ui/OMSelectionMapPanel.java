@@ -377,7 +377,9 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
     if (propName.equals("boundsStored")) {
       if ((Boolean) evt.getNewValue()) {
         makeSelectedExtentLayer(geoCons.getBoundingBox());
-        sensorLayer.setPickedByBBOX(geoCons.getBoundingBox());
+        if (sensorLayer != null) {
+          sensorLayer.setPickedByBBOX(geoCons.getBoundingBox());
+        }
       }
     }
     pcs.firePropertyChange(evt);// pass the event along to the calling class
