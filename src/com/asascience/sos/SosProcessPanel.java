@@ -9,11 +9,8 @@ import com.asascience.edc.gui.OpendapInterface;
 import com.asascience.edc.nc.NetcdfConstraints;
 import gov.noaa.pmel.swing.JSlider2Date;
 
-import java.awt.BorderLayout;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 
@@ -23,8 +20,16 @@ import ucar.nc2.ui.widget.FileManager;
 import com.asascience.openmap.ui.OMSelectionMapPanel;
 import com.asascience.utilities.Utils;
 import gov.noaa.pmel.util.GeoDate;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -37,6 +42,7 @@ public class SosProcessPanel extends JPanel {
   private OMSelectionMapPanel mapPanel;
   private SosVariableSelectionPanel selPanel;
   private SosSensorSelectionPanel sensorPanel;
+  private SosResponseSelectionPanel responsePanel;
   private JSlider2Date dateSlider;
   private JButton btnProcess;
   private BoundingBoxPanel bboxGui;
@@ -65,9 +71,6 @@ public class SosProcessPanel extends JPanel {
     // Show station locations on the map
     mapPanel.addSensors(sosData.getData().getSensors());
 
-    // Load the stations into the sensors pane
-    // sensorPanel.addSensors(sosData.getData().getSensors());
-
     return true;
   }
 
@@ -92,7 +95,7 @@ public class SosProcessPanel extends JPanel {
               shouldWeEnableGetObservations();
             } else if (name.equals("sensorClicked")) {
               ((SensorPoint)e.getNewValue()).togglePicked();
-              //mapPanel.getSensorLayer().repaint();
+              //responsePanel.setAvailableResponseFormats(mapPanel.getSensorLayer().getPickedSensors());
               sensorSelected = !(mapPanel.getSensorLayer().getPickedSensors().isEmpty());
               shouldWeEnableGetObservations();
             }
@@ -136,8 +139,8 @@ public class SosProcessPanel extends JPanel {
         public void propertyChange(PropertyChangeEvent e) {
           if (btnProcess != null) {
             String name = e.getPropertyName();
-            if (name.equals("processEnabled")) {
-              variableSelected = Boolean.valueOf(e.getNewValue().toString());
+            if (name.equals("variableClicked")) {
+              variableSelected = !(selPanel.getSelectedVariables().isEmpty());
               shouldWeEnableGetObservations();
             }
           }
@@ -162,6 +165,23 @@ public class SosProcessPanel extends JPanel {
       });
       pageEndPanel.add(bboxGui, "gap 0, growy");
 
+      /*
+      responsePanel = new SosResponseSelectionPanel(this, "Responses");
+      responsePanel.addPropertyChangeListener(new PropertyChangeListener() {
+
+        public void propertyChange(PropertyChangeEvent e) {
+          if (btnProcess != null) {
+            String name = e.getPropertyName();
+            if (name.equals("responseClicked")) {
+              responseSelected = !(responsePanel.getSelectedResponse().isEmpty());
+              shouldWeEnableGetObservations();
+            }
+          }
+        }
+      });
+      pageEndPanel.add(responsePanel, "gap 0, grow");
+      */
+      
       // TIME panel
       JPanel timePanel = new JPanel(new MigLayout("gap 0, fill"));
       timePanel.setBorder(new EtchedBorder());
@@ -178,6 +198,38 @@ public class SosProcessPanel extends JPanel {
       btnProcess.setToolTipText("Apply the specified spatial & temporal constraints\n"
               + "and export the selected variables to the desired output format.");
       btnProcess.setEnabled(false);
+      btnProcess.addActionListener(new ActionListener() {
+
+        public void actionPerformed(ActionEvent evt) {
+          if (validateAndSetInput()) {
+            //sosData.getData().getObservations();
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+              public void run() {
+                JFrame frame = new JFrame("Get Observations");
+                frame.setLayout(new MigLayout("fill"));
+                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                JComponent newContentPane = new SosGetObsProgressMonitor(sosData.getData());
+                newContentPane.setOpaque(true);
+                responsePanel = new SosResponseSelectionPanel("Available Responses");
+                responsePanel.addPropertyChangeListener(new PropertyChangeListener() {
+
+                  public void propertyChange(PropertyChangeEvent e) {
+                    String name = e.getPropertyName();
+                    if (name.equals("selected")) {
+                      sosData.getData().setResponseFormat(e.getNewValue().toString());
+                    }
+                  }
+                });
+                responsePanel.setAvailableResponseFormats(mapPanel.getSensorLayer().getPickedSensors());
+                frame.add(responsePanel);
+                frame.add(newContentPane, "grow");
+                frame.pack();
+                frame.setVisible(true);
+              }
+            });
+          }
+        }
+      });
       processPanel.add(btnProcess);
       pageEndPanel.add(processPanel, "spanx 2, grow");
 
@@ -186,6 +238,70 @@ public class SosProcessPanel extends JPanel {
     } catch (Exception ex) {
       ex.printStackTrace();
     }
+    return true;
+  }
+
+  private boolean validateAndSetInput() {
+
+    // SENSORS
+    if ((mapPanel.getSensorLayer().getPickedSensors().isEmpty())) {
+      JOptionPane.showConfirmDialog(this,
+                "No Sensors are selected.", "Invalid Sensor",
+                JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+      return false;
+    }
+    sosData.getData().setSelectedSensors((mapPanel.getSensorLayer().getPickedSensors()));
+
+    // VARIABLES
+    if (!variableSelected) {
+      JOptionPane.showConfirmDialog(this, "You must select at least one variable",
+              "Invalid Variable Selection", JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+      return false;
+    }
+    sosData.getData().setSelectedVariables((selPanel.getSelectedVariables()));
+    
+    // DATES
+    Date startDate = null;
+    Date endDate = null;
+    try {
+      startDate = dateSlider.getMinValue().getCalendar().getTime();
+      endDate = dateSlider.getMaxValue().getCalendar().getTime();
+
+      SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm Z");
+      TimeZone tz = TimeZone.getTimeZone("GMT");
+      dateFormatter.setTimeZone(tz);
+
+      if (startDate.compareTo(endDate) >= 0) {
+        JOptionPane.showConfirmDialog(this,
+                "The start and end date are invalid (Start is after or equal to end?).", "Invalid Time",
+                JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+        return false;
+      }
+      sosData.getData().setStartTime(startDate);
+      sosData.getData().setEndTime(endDate);
+      
+      System.out.println("Sensor BeginDate:" + dateFormatter.format(startDate));
+      System.out.println("Sensor EndDate:" + dateFormatter.format(endDate));
+    } catch (Exception ex) {
+      JOptionPane.showConfirmDialog(this, "Date time returned invalid (null) pointer",
+              "Invalid Time", JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+      ex.printStackTrace();
+      return false;
+    }
+
+    // TEST THAT SENSORS HAVE THE VARIABLES
+    try {
+      sosData.getData().validate();
+    } catch (Exception e) {
+      JOptionPane.showConfirmDialog(this,
+              e.getMessage(), "Invalid Query", JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+      return false;
+    }
+    
+    System.out.println("Number of selected sensors: " + sosData.getData().getSelectedSensorCount());
+    System.out.println("Number of selected variables: " + sosData.getData().getSelectedVariableCount());
+
+    // TODO: Add a summary popup and confirmation
     return true;
   }
 

@@ -9,6 +9,7 @@
 /**
  * http://motherlode.ucar.edu:8080/thredds/idv/rt-models.1.0.xml
  * http://www.unidata.ucar.edu/georesources/idvcatalog.xml
+ *
  */
 package com.asascience.edc.gui;
 
@@ -96,7 +97,6 @@ import com.asascience.ui.JCloseableTabbedPane;
 import com.asascience.utilities.Utils;
 import com.asascience.utilities.exception.InitializationFailedException;
 import com.bbn.openmap.Layer;
-import java.lang.reflect.Array;
 import ucar.nc2.ft.FeatureDatasetFactoryManager;
 
 /**

@@ -4,41 +4,43 @@
  */
 package com.asascience.sos.types;
 
+import java.beans.PropertyChangeEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.jdom.Document;
+import com.asascience.sos.SensorContainer;
+import com.asascience.sos.SensorPoint;
+import com.asascience.sos.VariableContainer;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-
-import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.transform.JDOMResult;
 import org.jdom.transform.JDOMSource;
-import com.asascience.sos.SensorContainer;
-import com.asascience.sos.VariableContainer;
-import java.util.ArrayList;
-import ucar.unidata.geoloc.LatLonRect;
 import ucar.unidata.geoloc.LatLonPointImpl;
+import ucar.unidata.geoloc.LatLonRect;
 
 /**
  *
  * @author Kyle
  */
-public class Generic implements SOSTypeInterface {
+public class Generic implements SOSTypeInterface, PropertyChangeListener {
 
   protected List<SensorContainer> sensorList;
   protected ArrayList<VariableContainer> variableList;
-  protected Date guiStartTime;
-  protected Date guiEndTime;
-  protected int selectedSensorCnt;
-  protected int[] selectedVarCnt;
+  protected Date selectedStartTime;
+  protected Date selectedEndTime;
+  protected List<SensorContainer> selectedSensors;
+  protected List<VariableContainer> selectedVariables;
   protected double[] NESW;
   protected Date startTime;
   protected Date endTime;
-  protected String[] varNames;
   protected SimpleDateFormat dateFormatter;
   protected String sosURL;
   protected String homeDir;
@@ -46,9 +48,14 @@ public class Generic implements SOSTypeInterface {
   protected String type;
   protected double timeInterval;
   protected int numTimeSteps;
+  protected String responseFormat;
+  protected String[] varNames;
+  protected PropertyChangeSupport pcs;
 
   public Generic(Document xmlDoc) {
     variableList = new ArrayList();
+    selectedSensors = new ArrayList();
+    pcs = new PropertyChangeSupport(this);
     getCapDoc = xmlDoc;
   }
 
@@ -73,135 +80,72 @@ public class Generic implements SOSTypeInterface {
         }
       }
     }
-    System.out.println("Found: " + variableList.size() + " unique variables!");
   }
 
-  public void setSelectedSensors(double[] guiNESW, Date guiStartDate, Date guiEndDate, List<String> guiSelectedVars) {
+  public void setSelectedSensors(List<SensorPoint> sensorPoints) {
+    selectedSensors.clear();
+    for (SensorPoint p : sensorPoints) {
+      selectedSensors.add(p.getSensor());
+    }
+  }
+  public int getSelectedSensorCount() {
+    return selectedSensors.size();
+  }
+  public void setSelectedVariables(List<VariableContainer> variableContainer) {
+    selectedVariables = variableContainer;
+  }
+  public int getSelectedVariableCount() {
+    return selectedVariables.size();
+  }
+  public void setStartTime(Date startTime) {
+    selectedStartTime = startTime;
+  }
+  public void setEndTime(Date endTime) {
+    selectedEndTime = endTime;
+  }
+  public void setResponseFormat(String format) {
+    responseFormat = format;
+  }
 
-    // System.out.println("sensorList.size()=" + sensorList.size());
-
-    // Reset Counters
-    selectedSensorCnt = 0;
-    selectedVarCnt = null;
-    selectedVarCnt = new int[guiSelectedVars.size()];
-
-    guiStartTime = guiStartDate;
-    guiEndTime = guiEndDate;
-
-    for (SensorContainer sensor : sensorList) {
-
-      // Reset sensor object
-      sensor.setSelected(false);
-
-      // Select based on Time
-      if (sensor.getStartTime().after(guiEndDate) || sensor.getEndTime().before(guiStartDate)) {
-        continue;
-      }
-
-      // Select based on position
-
-      // North-South
-      if (sensor.getNESW()[0] < guiNESW[2]) {
-        continue;
-      }
-
-      if (sensor.getNESW()[2] > guiNESW[0]) {
-        continue;
-      }
-
-      // East-West - I Think I got all the corner cases ?
-      if (sensor.getNESW()[1] >= sensor.getNESW()[3] && guiNESW[1] >= guiNESW[3]) {
-        // West is less than East (no Date line)
-        if (sensor.getNESW()[3] > guiNESW[1]) {
-          continue;
-        }
-
-        if (sensor.getNESW()[1] < guiNESW[3]) {
-          continue;
-        }
-
-      } else if (sensor.getNESW()[1] >= sensor.getNESW()[3] && guiNESW[1] < guiNESW[3]) {
-        // Gui selection Crosses the dateline
-        if (sensor.getNESW()[3] > guiNESW[1] && sensor.getNESW()[1] < guiNESW[3]) {
-          continue;
-        }
-
-      } else if (sensor.getNESW()[1] < sensor.getNESW()[3] && guiNESW[1] >= guiNESW[3]) {
-        // The Sensor Box Crosses the DateLine!
-        if (sensor.getNESW()[3] > guiNESW[1] && sensor.getNESW()[1] < guiNESW[3]) {
-          continue;
-        }
-
-      } // else if (sensor.getNESW()[1] < sensor.getNESW()[3] &&
-      // guiNESW[1] < guiNESW[3]) {
-      // The Both Boxes Cross the DateLine! - If both cross they must
-      // overlap!
-      // if (sensor.getNESW()[3] > guiNESW[1] &&
-      // sensor.getNESW()[1] < guiNESW[3]) {
-      // continue;
-      // }
-      // } // End If
-
-      for (VariableContainer varObj : sensor.getVarList()) {
-
-        // Reset variable object
-        varObj.setSelected(false);
-
-        int ind = 0;
-        for (String varName : guiSelectedVars) {
-
-          if (varName.equalsIgnoreCase(varObj.getName())) {
-            varObj.setSelected(true);
-            selectedVarCnt[ind]++;
+  public void validate() throws Exception {
+    // Check to make sure the selected sensors contain at least one of
+    // the selected variables.
+    boolean found;
+    List<SensorContainer> sensorsWithVariables = new ArrayList<SensorContainer>();
+    for (SensorContainer s : selectedSensors) {
+      for (VariableContainer v : selectedVariables) {
+        found = false;
+        for (VariableContainer vs : s.varList) {
+          if (vs.compareTo(v) == 0) {
+            if (!sensorsWithVariables.contains(s)) {
+              sensorsWithVariables.add(s);
+            }
+            found = true;
             break;
           }
-
-          ind++;
-
-        }
-
-        // Only change Sensor selected if it is not already selected...
-        if (!sensor.isSelected()) {
-          if (varObj.isSelected()) {
-            sensor.setSelected(true);
-            selectedSensorCnt++;
+          if (found) {
+            break;
           }
         }
-
       }
-
-    } // End For Sensor list
+    }
+    selectedSensors = sensorsWithVariables;
+    if (selectedSensors.isEmpty()) {
+      throw new Exception("None of the variables selected are available at the sensors selected");
+    }
   }
 
   protected List<Element> transform(Document doc, Document xsldoc) throws JDOMException {
     try {
-      // Transformer transformer = TransformerFactory.newInstance()
-      // .newTransformer(new StreamSource(stylesheet));
-
       JDOMSource xslSource = new JDOMSource(xsldoc);
 
-      // Transformer transformer =
-      // TransformerFactory.newInstance().newTransformer(new
-      // StreamSource(xsldoc));
       Transformer transformer = TransformerFactory.newInstance().newTransformer(xslSource);
 
       JDOMSource in = new JDOMSource(doc);
       JDOMResult out = new JDOMResult();
 
       transformer.transform(in, out);
-      // Document outDoc = out.getDocument();
-      // if (null != outDoc) {
-      // try {
-      // XMLOutputter outputter = new
-      // XMLOutputter(Format.getPrettyFormat());
-      // Writer writer = new FileWriter(new
-      // File("/home/dstuebe/test.xml"));
-      // outputter.output(outDoc, writer);
-      // } catch (IOException e) {
-      // System.out.println("couldnt output transformed xml");
-      // }
-      // }
-      // return null;
+      
       return out.getResult();
     } catch (TransformerException e) {
       throw new JDOMException("XSLT Transformation failed", e);
@@ -217,6 +161,7 @@ public class Generic implements SOSTypeInterface {
   }
 
   public void getObservations() {
+    // Implemented in the subclasses
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
@@ -248,16 +193,8 @@ public class Generic implements SOSTypeInterface {
     return numTimeSteps;
   }
 
-  public String[] getvarNames() {
-    return varNames;
-  }
-
   public List<VariableContainer> getVariables() {
     return variableList;
-  }
-
-  public int getSelectedSensorCnt() {
-    return selectedSensorCnt;
   }
 
   public List<SensorContainer> getSensors() {
@@ -269,5 +206,17 @@ public class Generic implements SOSTypeInterface {
     LatLonPointImpl lR = new LatLonPointImpl(NESW[2], NESW[1]);
     LatLonRect llr = new LatLonRect(uL, lR);
     return llr;
+  }
+
+  public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+    pcs.addPropertyChangeListener(l);
+  }
+
+  public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+    pcs.removePropertyChangeListener(l);
+  }
+
+  public void propertyChange(PropertyChangeEvent evt) {
+    pcs.firePropertyChange(evt);
   }
 }

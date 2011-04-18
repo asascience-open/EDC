@@ -630,7 +630,7 @@ public class SWE extends Generic implements SOSTypeInterface {
         url = url + "&offering=" + sensor.getGmlName();
         url = url + "&observedproperty=" + variable.getName();
         url = url + "&" + responseformat;
-        url = url + "&eventtime=" + dateFormatter.format(guiStartTime) + "/" + dateFormatter.format(guiEndTime);
+        url = url + "&eventtime=" + dateFormatter.format(selectedStartTime) + "/" + dateFormatter.format(selectedEndTime);
 
         variable.setSosRequest(url);
 

@@ -8,13 +8,10 @@
  */
 package com.asascience.sos;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.TimeZone;
 
 /**
@@ -32,9 +29,11 @@ public class SensorContainer {
   private Date endTime;
   private SimpleDateFormat dateFormatter = null;
   private boolean selected = false;
+  private List<String> responseFormats = null;
 
   public SensorContainer() {
     varList = new ArrayList<VariableContainer>();
+    responseFormats = new ArrayList<String>();
     dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm Z");
     TimeZone tz = TimeZone.getTimeZone("GMT");
     dateFormatter.setTimeZone(tz);
@@ -133,5 +132,13 @@ public class SensorContainer {
 
   public String getGmlName() {
     return gmlName;
+  }
+
+  public void setResponseFormats(List<String> formats) {
+    responseFormats = formats;
+  }
+
+  public List<String> getResponseFormats() {
+    return responseFormats;
   }
 }

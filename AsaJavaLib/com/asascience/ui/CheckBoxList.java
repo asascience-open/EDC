@@ -137,6 +137,14 @@ public class CheckBoxList extends JPanel implements ActionListener {
     }
   }
 
+  public void makeCBList(List<String> items, boolean trimName) {
+    String s = "";
+    for (int i = 0; i < items.size(); i++) {
+      s = items.get(i);
+      addCheckBox(s);
+    }
+  }
+
   /**
    * Appends a single checkbox to the end of the existing list.
    *

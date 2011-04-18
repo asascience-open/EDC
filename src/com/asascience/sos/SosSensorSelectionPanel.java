@@ -81,15 +81,6 @@ public final class SosSensorSelectionPanel extends JPanel {
     add(sp, "grow");
   }
 
-  private void enableGetObs() {
-    boolean shouldEnableGetObs = (getSensorChecks().getSelectedSize() == 0) ? false : true;
-    boolean oldShouldEnableGetObs = this.getObsEnabled;
-    this.getObsEnabled = shouldEnableGetObs;
-    propertyChangeSupport.firePropertyChange("processEnabled",
-                                              oldShouldEnableGetObs,
-                                              this.getObsEnabled);
-  }
-
   @Override
   public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
     propertyChangeSupport.addPropertyChangeListener(l);
@@ -102,7 +93,6 @@ public final class SosSensorSelectionPanel extends JPanel {
   class CheckBoxPropertyListener implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent e) {
-      enableGetObs();
       if (e.getPropertyName().equals("sensorClicked")) {
         propertyChangeSupport.firePropertyChange(e);
       }

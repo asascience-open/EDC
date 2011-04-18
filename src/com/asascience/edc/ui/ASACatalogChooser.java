@@ -88,7 +88,6 @@ import com.asascience.ui.CheckBoxList;
 import com.asascience.utilities.BusyCursorActions;
 import com.asascience.utilities.Utils;
 import com.asascience.sos.SosData;
-import com.asascience.sos.SosGui;
 
 /**
  * A Swing widget for THREDDS clients to access and choose from Dataset
@@ -164,7 +163,6 @@ public class ASACatalogChooser extends JPanel {
   private JButton btnCatConnect;
   private JButton btnDirAccess;
   private JButton btnSOS;
-  private SosGui SosGui;
   JPanel topPanel;
 
   /**
