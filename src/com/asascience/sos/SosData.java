@@ -8,6 +8,7 @@
  */
 package com.asascience.sos;
 
+import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -15,8 +16,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
 
 import org.jdom.Document;
 import org.jdom.JDOMException;
@@ -28,22 +27,26 @@ import cern.colt.Timer;
 import com.asascience.sos.types.DIF;
 import com.asascience.sos.types.Generic;
 import com.asascience.sos.types.SWE;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 //import com.sun.xml.internal.fastinfoset.util.StringArray;
 /**
  * 
  * @author DAS <dstuebe@asascience.com>
  */
-public class SosData {
+public class SosData implements PropertyChangeListener {
 
   private Generic sosType;
   private String myUrl;
   private float requestTime;
   private float parseTime;
   SimpleDateFormat dateFormatter;
+  private PropertyChangeSupport pcs;
 
   public SosData(String URL) {
     myUrl = URL;
+    pcs = new PropertyChangeSupport(this);
   }
 
   public Boolean checkSOS() {
@@ -82,9 +85,10 @@ public class SosData {
   public boolean parseSosGetCapabilities() {
     Timer stopwatch = new Timer();
 
+    pcs.firePropertyChange("progress", null, 1);
+    pcs.firePropertyChange("message", null, "Building Request");
     String capRequest = "?request=GetCapabilities&service=SOS";
-
-    System.out.println("Reading SOS URL: " + myUrl + capRequest);
+    pcs.firePropertyChange("message", null, "Reading SOS URL: " + myUrl + capRequest);
 
     // Start Timing
     stopwatch.start();
@@ -95,37 +99,41 @@ public class SosData {
     try {
       getCapDoc = getCapBuilder.build(myUrl + capRequest);
     } catch (JDOMException e) {
-      System.out.println("SOS at: " + myUrl + "; is not well-formed.");
+      pcs.firePropertyChange("message", null, "SOS at: " + myUrl + "; is not well-formed");
       return false;
     } catch (IOException e) {
-      System.out.println("SOS at: " + myUrl + "; is inaccessible");
+      pcs.firePropertyChange("message", null, "SOS at: " + myUrl + "; is inaccessible");
       return false;
     }
 
     stopwatch.stop();
     requestTime = stopwatch.seconds();
-    System.out.println("Seconds to get SOS capabilities request: " + requestTime);
+    pcs.firePropertyChange("message", null, "Fetched GetCapabilities in " + requestTime + " seconds");
 
     try {
       XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
       Writer writer = new StringWriter(4 * 10 ^ 7); // 40 mb
       outputter.output(getCapDoc, writer);
       float mysize = writer.toString().length();
-      System.out.println("Size of SOS capabilities request (mB)= ~" + mysize / 1000000.0);
+      pcs.firePropertyChange("message", null, "Size of SOS capabilities request (mB)= ~" + mysize / 1000000.0);
     } catch (IOException e) {
-      System.out.println("Could not get the size of the xml document");
+      pcs.firePropertyChange("message", null, "Could not get the size of the xml document");
       return false;
     }
 
     String type = getSOSType();
     if (type.equalsIgnoreCase("dif")) {
+      pcs.firePropertyChange("message", null, "Identified as DIF format");
       sosType = new DIF(getCapDoc);
     } else if (type.equalsIgnoreCase("swe")) {
+      pcs.firePropertyChange("message", null, "Identified as SWE format");
       sosType = new SWE(getCapDoc);
     } else {
-      System.out.println("Could not figure out of the output was DIF or SWE");
+      pcs.firePropertyChange("message", null, "Halted because I could not decide between the DIF or SWE format");
       return false;
     }
+    sosType.addPropertyChangeListener(this);
+    sosType.process();
     sosType.setURL(myUrl);
     return true;
 
@@ -186,5 +194,17 @@ public class SosData {
 
   private String getSOSType() {
     return "DIF";
+  }
+
+  public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+    pcs.addPropertyChangeListener(l);
+  }
+
+  public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+    pcs.removePropertyChangeListener(l);
+  }
+
+  public void propertyChange(PropertyChangeEvent evt) {
+    pcs.firePropertyChange(evt);
   }
 }

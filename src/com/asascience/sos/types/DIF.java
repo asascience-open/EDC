@@ -20,7 +20,6 @@ import cern.colt.Timer;
 import com.asascience.sos.SensorContainer;
 import com.asascience.sos.SosData;
 import com.asascience.sos.VariableContainer;
-import com.bbn.openmap.layer.util.http.HttpConnection;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,12 +41,11 @@ public class DIF extends Generic implements SOSTypeInterface {
   public DIF(Document xmlDoc) {
     super(xmlDoc);
     type = "DIF";
-    parseSensors();
   }
 
   @Override
   public boolean parseSensors() {
-
+    pcs.firePropertyChange("message", null, "Parsing for Offerings...");
     Timer stopwatch = new Timer();
 
     // Start Timing
@@ -117,8 +115,8 @@ public class DIF extends Generic implements SOSTypeInterface {
         }
       }
       float parseTime = stopwatch.seconds();
-      System.out.println("Seconds to parse SOS capabilities: " + parseTime);
-      System.out.println("Parsed SOS capabilities, found: " + sensorList.size() + " valid sensors!");
+      pcs.firePropertyChange("message", null, "Seconds to parse SOS capabilities: " + parseTime);
+      pcs.firePropertyChange("message", null, "Found " + sensorList.size() + " valid sensors.");
 
       setUniqueVariables();
       return true;
@@ -312,7 +310,7 @@ public class DIF extends Generic implements SOSTypeInterface {
         NESW[1] = ur[1];
         NESW[2] = ll[0];
         NESW[3] = ll[1];
-        
+
         sensor.setNESW(NESW);
       }
 
@@ -351,7 +349,7 @@ public class DIF extends Generic implements SOSTypeInterface {
       try {
         Element begin = (Element) XPATH_BeginPosition.selectSingleNode(obsOffering);
         beginString = begin.getValue().trim();
-        
+
         // Change "yyyy-MM-ddTHH:mmZ" to "yyyy-MM-ddTHH:mm:ssZ"
         if (beginString.length() == 17) {
           beginString = beginString.substring(0, 15).concat(":00Z");
@@ -360,7 +358,7 @@ public class DIF extends Generic implements SOSTypeInterface {
         }
 
         sensor.setStartTime(dateFormatter.parse(beginString));
-        
+
       } catch (JDOMException e) {
         e.printStackTrace();
         System.out.println("Can not find BeginPosition: JDOM exception");
@@ -571,7 +569,7 @@ public class DIF extends Generic implements SOSTypeInterface {
       // version
       params.add("version=1.0.0");
       // responseFormat
-      params.add("responseFormat="+URLEncoder.encode(responseFormat,"utf-8"));
+      params.add("responseFormat=" + URLEncoder.encode(responseFormat, "utf-8"));
       // offering
       params.add("offering=" + URLEncoder.encode(sensor.getGmlName(), "utf-8"));
       // observedProperty
@@ -584,11 +582,11 @@ public class DIF extends Generic implements SOSTypeInterface {
           }
         }
       }
-      params.add("observedproperty=" + StringUtils.join(variableQueryString,','));
+      params.add("observedproperty=" + StringUtils.join(variableQueryString, ','));
       // eventTime
       params.add("eventtime=" + dateFormatter.format(selectedStartTime) + "/" + dateFormatter.format(selectedEndTime));
-      
-      return sosURL + "?" + StringUtils.join(params,'&');
+
+      return sosURL + "?" + StringUtils.join(params, '&');
     } catch (Exception e) {
       return "";
     }
@@ -605,22 +603,22 @@ public class DIF extends Generic implements SOSTypeInterface {
     /*
     SAXBuilder xslBuilder = new SAXBuilder();
     if (responseFormat == "text/xml;schema=\"ioos/0.6.1\"") {
-      pcs.firePropertyChange("message", null, "Loading XSL Schema");
-      Document xslDoc = null;
-      try {
-        xslDoc = xslBuilder.build("http://ioos.gov/library/ioos_gmlv061_to_csv.xsl");
-      } catch (JDOMException e) {
-        System.out.println("XSL at: http://ioos.gov/library/ioos_gmlv061_to_csv.xsl; is not well-formed.");
-        e.printStackTrace();
-        return;
-      } catch (IOException e) {
-        System.out.println("SOS at: " + sosURL + "; is inaccessible");
-        e.printStackTrace();
-        return;
-      }
-      pcs.firePropertyChange("message", null, "Done (Loading XSL Schema)");
+    pcs.firePropertyChange("message", null, "Loading XSL Schema");
+    Document xslDoc = null;
+    try {
+    xslDoc = xslBuilder.build("http://ioos.gov/library/ioos_gmlv061_to_csv.xsl");
+    } catch (JDOMException e) {
+    System.out.println("XSL at: http://ioos.gov/library/ioos_gmlv061_to_csv.xsl; is not well-formed.");
+    e.printStackTrace();
+    return;
+    } catch (IOException e) {
+    System.out.println("SOS at: " + sosURL + "; is inaccessible");
+    e.printStackTrace();
+    return;
     }
-    */
+    pcs.firePropertyChange("message", null, "Done (Loading XSL Schema)");
+    }
+     */
     Timer stopwatch = new Timer();
 
     for (SensorContainer sensor : selectedSensors) {
@@ -628,7 +626,7 @@ public class DIF extends Generic implements SOSTypeInterface {
       stopwatch.start();
       pcs.firePropertyChange("message", null, "Sensor: " + sensor.getName());
       pcs.firePropertyChange("message", null, "- Building Request String...");
-      
+
       requestURL = buildRequest(sensor);
 
       int written;
@@ -645,8 +643,8 @@ public class DIF extends Generic implements SOSTypeInterface {
         byte[] buffer = new byte[2048];
         int len = 0;
         written = 0;
-        while (-1 != ( len = is.read(buffer))) {
-          output.write(buffer,0,len);
+        while (-1 != (len = is.read(buffer))) {
+          output.write(buffer, 0, len);
           written += len;
         }
         is.close();
@@ -663,52 +661,52 @@ public class DIF extends Generic implements SOSTypeInterface {
       SAXBuilder difBuilder = new SAXBuilder(); // parameters control
       Document difDoc = null;
       try {
-        difDoc = difBuilder.build(requestURL);
+      difDoc = difBuilder.build(requestURL);
       } catch (JDOMException e) {
-        System.out.println("SOS at: " + requestURL + "; is not well-formed.");
-        e.printStackTrace();
-        continue;
+      System.out.println("SOS at: " + requestURL + "; is not well-formed.");
+      e.printStackTrace();
+      continue;
       } catch (IOException e) {
-        System.out.println("SOS at: " + sosURL + "; is inaccessible");
-        e.printStackTrace();
-        continue;
+      System.out.println("SOS at: " + sosURL + "; is inaccessible");
+      e.printStackTrace();
+      continue;
       }
-      */
-      
+       */
+
 
       // Write file
 
       /*
       try {
-        XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-        Writer writer = new StringWriter(4 * 10 ^ 7); // 40 mb
-        outputter.output(difDoc, writer);
-        float mysize = writer.toString().length();
-        System.out.println("Size of SOS Observations request (mB)= ~" + mysize / 1000000.0);
+      XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
+      Writer writer = new StringWriter(4 * 10 ^ 7); // 40 mb
+      outputter.output(difDoc, writer);
+      float mysize = writer.toString().length();
+      System.out.println("Size of SOS Observations request (mB)= ~" + mysize / 1000000.0);
 
       } catch (IOException e) {
-        System.out.println("couldnt get the size of the xml document");
+      System.out.println("couldnt get the size of the xml document");
       }
       
       stopwatch.start();
 
       List<Element> myList = null;
       try {
-        myList = transform(difDoc, xslDoc);
+      myList = transform(difDoc, xslDoc);
       } catch (JDOMException e) {
-        e.printStackTrace();
+      e.printStackTrace();
       }
 
       try {
-        Writer fstream = new FileWriter(new File(homeDir + sensor.getName() + ".txt"));
-        BufferedWriter out = new BufferedWriter(fstream);
-        // out.write(url + "/n"); // dump url to file header?
-        out.write(myList.toString());
-        out.close();
+      Writer fstream = new FileWriter(new File(homeDir + sensor.getName() + ".txt"));
+      BufferedWriter out = new BufferedWriter(fstream);
+      // out.write(url + "/n"); // dump url to file header?
+      out.write(myList.toString());
+      out.close();
       } catch (IOException e) {
-        System.out.println("couldnt output transformed xml");
+      System.out.println("couldnt output transformed xml");
       }
-      */
+       */
       countSens++;
       pcs.firePropertyChange("message", null, "- Completed " + written + " bytes in " + stopwatch.elapsedTime() + " seconds.");
       int prog = Double.valueOf(countSens / numSens * 100).intValue();

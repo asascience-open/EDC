@@ -4,6 +4,7 @@
  */
 package com.asascience.sos.types;
 
+import cern.colt.Timer;
 import java.beans.PropertyChangeEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -59,8 +60,16 @@ public class Generic implements SOSTypeInterface, PropertyChangeListener {
     getCapDoc = xmlDoc;
   }
 
+  public void process() {
+    parseSensors();
+  }
+  
   public void setUniqueVariables() {
     // Make a unique list of VariableContainers
+    pcs.firePropertyChange("message", null, "Parsing out unique variables");
+    Timer stopwatch = new Timer();
+    stopwatch.start();
+    
     boolean found = false;
     for (SensorContainer sensor : sensorList) {
       for (VariableContainer variable : sensor.getVarList()) {
@@ -80,6 +89,7 @@ public class Generic implements SOSTypeInterface, PropertyChangeListener {
         }
       }
     }
+    pcs.firePropertyChange("message", null, "Found " + variableList.size() + " unique variables in " + stopwatch.seconds() + " seconds");
   }
 
   public void setSelectedSensors(List<SensorPoint> sensorPoints) {

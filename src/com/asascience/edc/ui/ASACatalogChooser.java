@@ -88,6 +88,8 @@ import com.asascience.ui.CheckBoxList;
 import com.asascience.utilities.BusyCursorActions;
 import com.asascience.utilities.Utils;
 import com.asascience.sos.SosData;
+import com.asascience.sos.SosGetCapProgressMonitor;
+import com.asascience.sos.SosResponseSelectionPanel;
 
 /**
  * A Swing widget for THREDDS clients to access and choose from Dataset
@@ -265,32 +267,36 @@ public class ASACatalogChooser extends JPanel {
       btnSOS.addActionListener(new ActionListener() {
 
         public void actionPerformed(ActionEvent evt) {
-          SosData myData = null;
-          String sosURL = "";
+          
           try {
-            Utils.showBusyCursor(ASACatalogChooser.this);
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+              public void run() {
+                final JFrame frame = new JFrame("Get Capabilities");
+                frame.setLayout(new MigLayout("fill"));
+                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-            sosURL = (String) sosListBox.getSelectedItem();
+                SosData myData = new SosData((String) sosListBox.getSelectedItem());
+                JComponent newContentPanel = new SosGetCapProgressMonitor(myData, odapInterface);
+                newContentPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
-            myData = new SosData(sosURL);
-            boolean testCapParse = myData.parseSosGetCapabilities();
-
-            if (!testCapParse) {
-              System.out.println("Can't Read SOS service!");
-              JOptionPane.showConfirmDialog((Component) topPanel, "Bad SOS Connection", "ASA",
-                      JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
-
-              statusLabel.setText("Not Connected");
-              return;
-            }
-          } finally {
-            Utils.hideBusyCursor(ASACatalogChooser.this);
-            myData.getData().setHomeDir(odapInterface.getHomeDir());
+                  public void propertyChange(PropertyChangeEvent e) {
+                    String name = e.getPropertyName();
+                    if (name.equals("closed")) {
+                      frame.setVisible(false);
+                      frame.dispose();
+                    }
+                  }
+                });
+                
+                newContentPanel.setOpaque(true);
+                frame.add(newContentPanel, "grow");
+                frame.pack();
+                frame.setVisible(true);
+              }
+            });
+          } catch(Exception e) {
+            
           }
-          if (odapInterface.openSOSDataset(myData)) {
-            sosListBox.addItem(sosURL);
-          }
-          statusLabel.setText("Connected to SOS!");
         }
       });
 

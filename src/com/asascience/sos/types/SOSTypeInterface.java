@@ -15,4 +15,5 @@ public interface SOSTypeInterface {
   public boolean parseSensors();
 
   public void getObservations();
+  
 }

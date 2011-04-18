@@ -97,6 +97,7 @@ import com.asascience.ui.JCloseableTabbedPane;
 import com.asascience.utilities.Utils;
 import com.asascience.utilities.exception.InitializationFailedException;
 import com.bbn.openmap.Layer;
+import javax.swing.SwingWorker;
 import ucar.nc2.ft.FeatureDatasetFactoryManager;
 
 /**
@@ -645,21 +646,25 @@ public class OpendapInterface {
     }
   }
 
-  public boolean openSOSDataset(SosData sosData) {
+  public boolean openSOSDataset(SosData sosData, SwingWorker task) {
     try {
-      sosPanel = new SosProcessPanel((PreferencesExt) prefs, fileChooser,
+      if (!task.isCancelled()) {
+        sosPanel = new SosProcessPanel((PreferencesExt) prefs, fileChooser,
               this, sosData, homeDir, sysDir);
-      if (!sosPanel.initData()) {
+      }
+      if (task.isCancelled() || !sosPanel.initData()) {
         return false;
       }
 
-      int i = tabbedPane.indexOfTab("SOS - Subset & Process");
-      if (i != -1) {
-        tabbedPane.removeTabAt(i);
+      if (!task.isCancelled()) {
+        int i = tabbedPane.indexOfTab("SOS - Subset & Process");
+        if (i != -1) {
+          tabbedPane.removeTabAt(i);
+        }
+        tabbedPane.addTabClose("SOS - Subset & Process", sosPanel);
+        tabbedPane.setSelectedComponent(sosPanel);
+        return true;
       }
-      tabbedPane.addTabClose("SOS - Subset & Process", sosPanel);
-      tabbedPane.setSelectedComponent(sosPanel);
-      return true;
     } catch (Exception ex) {
       ex.printStackTrace();
     }
