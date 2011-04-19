@@ -132,7 +132,7 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
       // version
       params.add("version=1.0.0");
       // responseFormat
-      params.add("responseFormat=" + URLEncoder.encode(responseFormat, "utf-8"));
+      params.add("responseFormat=" + URLEncoder.encode(getType(), "utf-8"));
       // offering
       params.add("offering=" + URLEncoder.encode(sensor.getGmlName(), "utf-8"));
       // observedProperty

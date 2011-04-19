@@ -200,8 +200,8 @@ public class SosServer implements PropertyChangeListener {
       } else if (responseFormat.contains("om/1.0.0")) {
         sosRequest.setFileSuffix("xml");
       }
+      sosRequest.setType(responseFormat);
     }
-    sosRequest.setType(responseFormat);
     sosRequest.getObservations();
   }
 
