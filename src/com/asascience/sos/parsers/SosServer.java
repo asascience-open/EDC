@@ -188,25 +188,20 @@ public class SosServer implements PropertyChangeListener {
     } else {
       // Just save the RAW response output
       if (responseFormat.contains("0.6.1")) {
-        sosRequest.setType("IOOS_DIF");
         sosRequest.setFileSuffix("xml");
       } else if (responseFormat.contains("swe")) {
-        sosRequest.setType("OGC_SWE");
         sosRequest.setFileSuffix("xml");
       } else if (responseFormat.contains("kml")) {
-        sosRequest.setType("KML");
         sosRequest.setFileSuffix("kml");
       } else if (responseFormat.contains("csv")) {
-        sosRequest.setType("CSV");
         sosRequest.setFileSuffix("csv");
       } else if (responseFormat.contains("tab-separated-values")) {
-        sosRequest.setType("TSV");
         sosRequest.setFileSuffix("tsv");
       } else if (responseFormat.contains("om/1.0.0")) {
-        sosRequest.setType("OM");
         sosRequest.setFileSuffix("xml");
       }
     }
+    sosRequest.setType(responseFormat);
     sosRequest.getObservations();
   }
 

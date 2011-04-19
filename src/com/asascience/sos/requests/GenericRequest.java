@@ -34,8 +34,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class GenericRequest implements PropertyChangeListener, SosRequestInterface {
 
-  protected String type;
-  protected List<String> compatibleResponseFormats;
+  protected String responseFormat;
   protected Date selectedStartTime;
   protected Date selectedEndTime;
   protected List<SensorContainer> selectedSensors;
@@ -47,7 +46,6 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
   protected String fileSuffix;
 
   public GenericRequest(String url) {
-    type = "Generic";
     fileSuffix = "txt";
     sosURL = url;
     pcs = new PropertyChangeSupport(this);
@@ -117,11 +115,11 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
   }
 
   public String getType() {
-    return type;
+    return responseFormat;
   }
 
   public void setType(String s) {
-    type = s;
+    responseFormat = s;
   }
 
   public String buildRequest(SensorContainer sensor) {
@@ -134,7 +132,7 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
       // version
       params.add("version=1.0.0");
       // responseFormat
-      params.add("responseFormat=" + URLEncoder.encode(getType(), "utf-8"));
+      params.add("responseFormat=" + URLEncoder.encode(responseFormat, "utf-8"));
       // offering
       params.add("offering=" + URLEncoder.encode(sensor.getGmlName(), "utf-8"));
       // observedProperty

@@ -18,7 +18,7 @@ public class DifToNetCDF extends GenericRequest {
     super(gr);
     for (String s : formats) {
       if (s.contains("0.6.1") && !s.contains("post-process")) {
-        type = s;
+        responseFormat = s;
         break;
       }
     }

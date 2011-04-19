@@ -18,7 +18,7 @@ public class SweToNetCDF extends GenericRequest {
     super(gr);
     for (String s : formats) {
       if (s.contains("swe") && !s.contains("post-process")) {
-        type = s;
+        responseFormat = s;
         break;
       }
     }
