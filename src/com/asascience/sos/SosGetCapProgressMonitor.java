@@ -4,6 +4,7 @@
  */
 package com.asascience.sos;
 
+import com.asascience.sos.parsers.SosServer;
 import com.asascience.edc.gui.OpendapInterface;
 import java.awt.BorderLayout;
 import java.awt.Insets;
@@ -18,6 +19,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
+import net.miginfocom.swing.MigLayout;
 
 /**
  *
@@ -28,7 +30,7 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
   private JProgressBar progressBar;
   private JTextArea taskOutput;
   private Task task;
-  private SosData sosData;
+  private SosServer sosData;
   private ListenForProgress listener;
   private OpendapInterface odapInterface;
   private JButton closeButton;
@@ -50,7 +52,7 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
           //sosData.getData().addPropertyChangeListener(listener);
           firePropertyChange("message", null, "Adding sensors to map (this could take awhile)");
           odapInterface.openSOSDataset(sosData, this);
-          sosData.getData().setHomeDir(odapInterface.getHomeDir());
+          sosData.getRequest().setHomeDir(odapInterface.getHomeDir());
           firePropertyChange("progress", null, 100);
         }
       } catch (Exception e) {
@@ -70,9 +72,8 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
     }
   }
 
-  public SosGetCapProgressMonitor(SosData data, OpendapInterface odap) {
-    super(new BorderLayout());
-    super.setSize(600, 300);
+  public SosGetCapProgressMonitor(SosServer data, OpendapInterface odap) {
+    super(new MigLayout("fill"));
 
     listener = new ListenForProgress();
 
@@ -91,11 +92,11 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
     closeButton.addActionListener(this);
 
     JPanel panel = new JPanel();
-    panel.add(closeButton);
+    panel.add(closeButton, "wrap");
     panel.add(progressBar);
 
-    add(panel, BorderLayout.PAGE_START);
-    add(new JScrollPane(taskOutput), BorderLayout.CENTER);
+    add(panel, "wrap, align center");
+    add(new JScrollPane(taskOutput), "grow");
     setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
     // GO

@@ -89,7 +89,7 @@ import com.asascience.openmap.ui.OMLayerPanel;
 import com.asascience.openmap.ui.OMTimeSlider;
 import com.asascience.openmap.utilities.MapUtils;
 import com.asascience.openmap.utilities.listener.VectorInterrogationPropertyListener;
-import com.asascience.sos.SosData;
+import com.asascience.sos.parsers.SosServer;
 import com.asascience.sos.SosProcessPanel;
 import com.asascience.ui.ErrorDisplayDialog;
 import com.asascience.ui.ImagePanel;
@@ -646,7 +646,7 @@ public class OpendapInterface {
     }
   }
 
-  public boolean openSOSDataset(SosData sosData, SwingWorker task) {
+  public boolean openSOSDataset(SosServer sosData, SwingWorker task) {
     try {
       if (!task.isCancelled()) {
         sosPanel = new SosProcessPanel((PreferencesExt) prefs, fileChooser,

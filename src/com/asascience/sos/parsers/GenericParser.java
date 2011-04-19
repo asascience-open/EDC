@@ -2,49 +2,135 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.asascience.sos.types;
+package com.asascience.sos.parsers;
 
-import java.text.ParseException;
+import cern.colt.Timer;
+import java.beans.PropertyChangeEvent;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 
-import org.jdom.Attribute;
 import org.jdom.Document;
+import com.asascience.sos.SensorContainer;
+import com.asascience.sos.SensorPoint;
+import com.asascience.sos.VariableContainer;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TimeZone;
+import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.xpath.XPath;
-import cern.colt.Timer;
-import com.asascience.sos.SensorContainer;
-import com.asascience.sos.SosData;
-import com.asascience.sos.VariableContainer;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import org.apache.commons.lang.StringUtils;
+import ucar.unidata.geoloc.LatLonPointImpl;
+import ucar.unidata.geoloc.LatLonRect;
 
 /**
  *
  * @author Kyle
  */
-public class DIF extends Generic implements SOSTypeInterface {
+public class GenericParser implements PropertyChangeListener, SosParserInterface {
 
-  public DIF(Document xmlDoc) {
-    super(xmlDoc);
-    type = "DIF";
+  protected List<SensorContainer> sensorList;
+  protected List<VariableContainer> variableList;
+  protected List<String> responseFormatList;
+  protected double[] NESW;
+  protected Date startTime;
+  protected Date endTime;
+  protected SimpleDateFormat dateFormatter;
+  protected String sosURL;
+  protected String homeDir;
+  protected Document getCapDoc;
+  protected String type;
+  protected double timeInterval;
+  protected int numTimeSteps;
+  protected PropertyChangeSupport pcs;
+
+  public GenericParser(Document xmlDoc) {
+    type = "Generic";
+    pcs = new PropertyChangeSupport(this);
+    getCapDoc = xmlDoc;
   }
 
-  @Override
-  public boolean parseSensors() {
+  public void process() {
+    // Sensors must go first
+    parseSensors();
+    parseVariables();
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public List<SensorContainer> getSensors() {
+    return sensorList;
+  }
+
+  public List<VariableContainer> getVariables() {
+    return variableList;
+  }
+
+  public List<String> getResponseFormats() {
+    return responseFormatList;
+  }
+
+  public void parseResponseFormats(List<SensorPoint> selectedPoints) {
+    List<String> formats = new ArrayList<String>();
+    for (SensorPoint sp : selectedPoints) {
+      for (String f : sp.getSensor().getResponseFormats()) {
+        if (!formats.contains(f)) {
+          formats.add(f);
+          if (f.contains("0.6.1")) {
+            formats.add(f + " to CSV (post-process)");
+            formats.add(f + " to NetCDF (post-process)");
+          } else if (f.contains("swe")) {
+            formats.add(f + " to CSV (post-process)");
+            formats.add(f + " to NetCDF (post-process)");
+          }
+        }
+      }
+    }
+    // This makes the list unique
+    Set set = new HashSet(formats);
+    responseFormatList = new ArrayList<String>(set);
+    
+    pcs.firePropertyChange("message", null, "Found " + responseFormatList.size() + " unique response formats");
+  }
+
+  public void parseVariables() {
+    // Make a unique list of VariableContainers
+    List<VariableContainer> thisList = new ArrayList();
+    pcs.firePropertyChange("message", null, "Parsing out unique variables");
+    Timer stopwatch = new Timer();
+    stopwatch.start();
+    
+    boolean found = false;
+    for (SensorContainer sensor : sensorList) {
+      for (VariableContainer variable : sensor.getVarList()) {
+        if (thisList.isEmpty()) {
+          thisList.add(variable);
+        } else {
+          found = false;
+          for (VariableContainer varInList : thisList) {
+            if (variable.compareTo(varInList) == 0) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            thisList.add(variable);
+          }
+        }
+      }
+    }
+    variableList = thisList;
+    pcs.firePropertyChange("message", null, "Found " + variableList.size() + " unique variables in " + stopwatch.seconds() + " seconds");
+  }
+  
+  public void parseSensors() {
     pcs.firePropertyChange("message", null, "Parsing for Offerings...");
     Timer stopwatch = new Timer();
 
@@ -54,41 +140,30 @@ public class DIF extends Generic implements SOSTypeInterface {
     sensorList = getCapXPath(getCapDoc);
 
     if (sensorList != null) {
-
       // See if this service has a network all sensor
       // (http://sdf.ndbc.noaa.gov/sos/server.php?request=GetCapabilities&service=SOS)
-
       if (sensorList.get(0).getName().equals("network-all")) {
-
-        // System.out.println("Service has 'network-all' sensor (concatinated sensor list)");
-
         SensorContainer NetworkAll = sensorList.remove(0);
-
         // Set min and max location Data
         NESW = NetworkAll.getNESW();
-
         // Set min and max Time
         startTime = NetworkAll.getStartTime();
         endTime = NetworkAll.getEndTime();
-
       } else {
-
         // Set default values for NESW
         NESW = new double[4];
         NESW[0] = -90.;
         NESW[1] = -180.;
         NESW[2] = 90.;
         NESW[3] = 180.;
-
         // Set default values for Time;
         startTime = new Date();
-        endTime = new Date();
-
         startTime.setYear(300); // set a way future start time...
+
+        endTime = new Date();
         endTime.setYear(0); // set an old end time
 
         for (SensorContainer sensor : sensorList) {
-
           NESW[0] = Math.max(sensor.getNESW()[0], NESW[0]);
           NESW[1] = Math.max(sensor.getNESW()[1], NESW[1]);
           NESW[2] = Math.min(sensor.getNESW()[2], NESW[2]);
@@ -109,19 +184,14 @@ public class DIF extends Generic implements SOSTypeInterface {
 
         if (startTime.before(minTime)) {
           startTime = minTime;
-          System.out.println("================================= Date Error ===================================");
-          System.out.println("Observation Data before 1990 is not available through this client at this time.");
-          System.out.println("================================================================================");
+          pcs.firePropertyChange("message", null, "======= Date Error =======");
+          pcs.firePropertyChange("message", null, "Observation Data before 1990 is not available through this client at this time");
+          pcs.firePropertyChange("message", null, "==========================");
         }
       }
       float parseTime = stopwatch.seconds();
       pcs.firePropertyChange("message", null, "Seconds to parse SOS capabilities: " + parseTime);
       pcs.firePropertyChange("message", null, "Found " + sensorList.size() + " valid sensors.");
-
-      setUniqueVariables();
-      return true;
-    } else {
-      return false;
     }
   }
 
@@ -196,22 +266,16 @@ public class DIF extends Generic implements SOSTypeInterface {
     try {
       parameterObjects = XPath.selectNodes(doc,
               "//ows:Parameter[@name='observedProperty']/ows:AllowedValues/ows:Value");
-
       int cnt = parameterObjects.size();
-      varNames = new String[cnt];
       int index = 0;
       for (Object o : parameterObjects) {
-
         if (!(o instanceof Element)) {
           System.out.println("xpathGetCapabilities: Unknown Instance of Parameter (Property Names)!");
           return null;
         }
-
         Element names = (Element) o;
-        varNames[index] = names.getValue();
         index = index + 1;
       }
-
     } catch (JDOMException e) {
       System.out.println("xpathGetCapabilities: XPATH error reading Parameter names!");
       e.printStackTrace();
@@ -281,7 +345,7 @@ public class DIF extends Generic implements SOSTypeInterface {
       double[] ll = null;
       try {
         Element lowerCorner = (Element) XPATH_Lower_Corner.selectSingleNode(obsOffering);
-        ll = SosData.parseBnds(lowerCorner.getValue());
+        ll = SosServer.parseBnds(lowerCorner.getValue());
       } catch (JDOMException e) {
         e.printStackTrace();
         System.out.println("Can not find Lower Corner: JDOM exception");
@@ -296,7 +360,7 @@ public class DIF extends Generic implements SOSTypeInterface {
         Element upperCorner = (Element) XPATH_Upper_Corner.selectSingleNode(obsOffering);
         // upperCorner = (Element)
         // XPath.selectSingleNode(obsOffering,XPATH_GETEACH_UPPER_CORNER);
-        ur = SosData.parseBnds(upperCorner.getValue());
+        ur = SosServer.parseBnds(upperCorner.getValue());
 
       } catch (JDOMException e) {
         e.printStackTrace();
@@ -559,159 +623,34 @@ public class DIF extends Generic implements SOSTypeInterface {
     return sensorList;
   }
 
-  public String buildRequest(SensorContainer sensor) {
-    try {
-      ArrayList<String> params = new ArrayList<String>();
-      // request
-      params.add("request=GetObservation");
-      // service
-      params.add("service=SOS");
-      // version
-      params.add("version=1.0.0");
-      // responseFormat
-      params.add("responseFormat=" + URLEncoder.encode(responseFormat, "utf-8"));
-      // offering
-      params.add("offering=" + URLEncoder.encode(sensor.getGmlName(), "utf-8"));
-      // observedProperty
-      ArrayList<String> variableQueryString = new ArrayList<String>();
-      for (VariableContainer variable : selectedVariables) {
-        for (VariableContainer sv : sensor.getVarList()) {
-          if (sv.compareTo(variable) == 0) {
-            variableQueryString.add(variable.getName());
-            break;
-          }
-        }
-      }
-      params.add("observedproperty=" + StringUtils.join(variableQueryString, ','));
-      // eventTime
-      params.add("eventtime=" + dateFormatter.format(selectedStartTime) + "/" + dateFormatter.format(selectedEndTime));
-
-      return sosURL + "?" + StringUtils.join(params, '&');
-    } catch (Exception e) {
-      return "";
-    }
+  public void setURL(String URL) {
+    sosURL = URL;
   }
 
-  @Override
-  public void getObservations() {
+  public LatLonRect getBBOX() {
+    LatLonPointImpl uL = new LatLonPointImpl(NESW[0], NESW[3]);
+    LatLonPointImpl lR = new LatLonPointImpl(NESW[2], NESW[1]);
+    LatLonRect llr = new LatLonRect(uL, lR);
+    return llr;
+  }
 
-    double numSens = getSelectedSensorCount();
-    double countSens = 0;
-    String requestURL;
+  public Date getStartTime() {
+    return startTime;
+  }
 
-    // Are we loading an XSL?
-    /*
-    SAXBuilder xslBuilder = new SAXBuilder();
-    if (responseFormat == "text/xml;schema=\"ioos/0.6.1\"") {
-    pcs.firePropertyChange("message", null, "Loading XSL Schema");
-    Document xslDoc = null;
-    try {
-    xslDoc = xslBuilder.build("http://ioos.gov/library/ioos_gmlv061_to_csv.xsl");
-    } catch (JDOMException e) {
-    System.out.println("XSL at: http://ioos.gov/library/ioos_gmlv061_to_csv.xsl; is not well-formed.");
-    e.printStackTrace();
-    return;
-    } catch (IOException e) {
-    System.out.println("SOS at: " + sosURL + "; is inaccessible");
-    e.printStackTrace();
-    return;
-    }
-    pcs.firePropertyChange("message", null, "Done (Loading XSL Schema)");
-    }
-     */
-    Timer stopwatch = new Timer();
+  public Date getEndTime() {
+    return endTime;
+  }
 
-    for (SensorContainer sensor : selectedSensors) {
-      stopwatch.reset();
-      stopwatch.start();
-      pcs.firePropertyChange("message", null, "Sensor: " + sensor.getName());
-      pcs.firePropertyChange("message", null, "- Building Request String...");
+  public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+    pcs.addPropertyChangeListener(l);
+  }
 
-      requestURL = buildRequest(sensor);
+  public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+    pcs.removePropertyChangeListener(l);
+  }
 
-      int written;
-      try {
-        URL u = new URL(requestURL);
-        pcs.firePropertyChange("message", null, "- Making Request (" + requestURL + ")...");
-        HttpURLConnection ht = (HttpURLConnection) u.openConnection();
-        ht.setDoInput(true);
-        ht.setRequestMethod("GET");
-        InputStream is = ht.getInputStream();
-        pcs.firePropertyChange("message", null, "- Streaming Results to File...");
-        File f = new File(homeDir + sensor.getName() + ".txt");
-        OutputStream output = new BufferedOutputStream(new FileOutputStream(f));
-        byte[] buffer = new byte[2048];
-        int len = 0;
-        written = 0;
-        while (-1 != (len = is.read(buffer))) {
-          output.write(buffer, 0, len);
-          written += len;
-        }
-        is.close();
-        output.flush();
-        output.close();
-      } catch (MalformedURLException e) {
-        pcs.firePropertyChange("message", null, "- BAD URL, skipping sensor");
-        continue;
-      } catch (IOException io) {
-        pcs.firePropertyChange("message", null, "- BAD CONNECTION, skipping sensor");
-        continue;
-      }
-      /*
-      SAXBuilder difBuilder = new SAXBuilder(); // parameters control
-      Document difDoc = null;
-      try {
-      difDoc = difBuilder.build(requestURL);
-      } catch (JDOMException e) {
-      System.out.println("SOS at: " + requestURL + "; is not well-formed.");
-      e.printStackTrace();
-      continue;
-      } catch (IOException e) {
-      System.out.println("SOS at: " + sosURL + "; is inaccessible");
-      e.printStackTrace();
-      continue;
-      }
-       */
-
-
-      // Write file
-
-      /*
-      try {
-      XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-      Writer writer = new StringWriter(4 * 10 ^ 7); // 40 mb
-      outputter.output(difDoc, writer);
-      float mysize = writer.toString().length();
-      System.out.println("Size of SOS Observations request (mB)= ~" + mysize / 1000000.0);
-
-      } catch (IOException e) {
-      System.out.println("couldnt get the size of the xml document");
-      }
-      
-      stopwatch.start();
-
-      List<Element> myList = null;
-      try {
-      myList = transform(difDoc, xslDoc);
-      } catch (JDOMException e) {
-      e.printStackTrace();
-      }
-
-      try {
-      Writer fstream = new FileWriter(new File(homeDir + sensor.getName() + ".txt"));
-      BufferedWriter out = new BufferedWriter(fstream);
-      // out.write(url + "/n"); // dump url to file header?
-      out.write(myList.toString());
-      out.close();
-      } catch (IOException e) {
-      System.out.println("couldnt output transformed xml");
-      }
-       */
-      countSens++;
-      pcs.firePropertyChange("message", null, "- Completed " + written + " bytes in " + stopwatch.elapsedTime() + " seconds.");
-      int prog = Double.valueOf(countSens / numSens * 100).intValue();
-      pcs.firePropertyChange("progress", null, prog);
-    } // End Sensor List
-    pcs.firePropertyChange("progress", null, 100);
+  public void propertyChange(PropertyChangeEvent evt) {
+    pcs.firePropertyChange(evt);
   }
 }

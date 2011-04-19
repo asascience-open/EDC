@@ -8,7 +8,6 @@ import com.asascience.ui.RadioList;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -33,7 +32,7 @@ public final class SosResponseSelectionPanel extends JPanel {
     getCblVars().addPropertyChangeListener(new RadioListPropertyListener());
   }
 
-  public void addResponseFormats(List<String> formats) {
+  public void setResponseFormats(List<String> formats) {
     localVariables = formats;
     setResponses();
   }
@@ -43,7 +42,7 @@ public final class SosResponseSelectionPanel extends JPanel {
       return;
     }
 
-    radioList.makeRadioList(localVariables, true);
+    radioList.makeRadioList(localVariables, false);
 
     // remove any existing pcl's
     PropertyChangeListener[] pcls = getCblVars().getPropertyChangeListeners();
@@ -60,23 +59,10 @@ public final class SosResponseSelectionPanel extends JPanel {
     return radioList.getSelected();
   }
 
-  public void setAvailableResponseFormats(List<SensorPoint> selectedPoints) {
-    List<String> formats = new ArrayList<String>();
-    for (SensorPoint sp : selectedPoints) {
-      for (String f : sp.getSensor().getResponseFormats()) {
-        if (!formats.contains(f)) {
-          formats.add(f);
-        }
-      }
-    }
-    addResponseFormats(formats);
-  }
-
   public void initComponents() {
     setLayout(new MigLayout("gap 0, fill"));
 
     radioList = new RadioList();
-    radioList.setLabelLengthLimit(40);
 
     JScrollPane sp = new JScrollPane();
     sp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -87,11 +73,11 @@ public final class SosResponseSelectionPanel extends JPanel {
   }
 
   @Override
-  public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+  public void addPropertyChangeListener(PropertyChangeListener l) {
     pcs.addPropertyChangeListener(l);
   }
   @Override
-  public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+  public void removePropertyChangeListener(PropertyChangeListener l) {
     pcs.removePropertyChangeListener(l);
   }
 

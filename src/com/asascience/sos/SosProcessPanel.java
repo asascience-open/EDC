@@ -4,6 +4,8 @@
  */
 package com.asascience.sos;
 
+import com.asascience.edc.Configuration;
+import com.asascience.sos.parsers.SosServer;
 import com.asascience.edc.gui.BoundingBoxPanel;
 import com.asascience.edc.gui.OpendapInterface;
 import com.asascience.edc.nc.NetcdfConstraints;
@@ -20,6 +22,7 @@ import ucar.nc2.ui.widget.FileManager;
 import com.asascience.openmap.ui.OMSelectionMapPanel;
 import com.asascience.utilities.Utils;
 import gov.noaa.pmel.util.GeoDate;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -37,9 +40,10 @@ import javax.swing.JOptionPane;
  */
 public class SosProcessPanel extends JPanel {
 
-  private SosData sosData;
+  private SosServer sosServer;
   private String sysDir;
   private OMSelectionMapPanel mapPanel;
+  private OpendapInterface parent;
   private SosVariableSelectionPanel selPanel;
   private SosSensorSelectionPanel sensorPanel;
   private SosResponseSelectionPanel responsePanel;
@@ -51,31 +55,32 @@ public class SosProcessPanel extends JPanel {
 
   public SosProcessPanel(ucar.util.prefs.PreferencesExt prefs,
           FileManager fileChooser, OpendapInterface caller,
-          SosData sosd, String homeDir, String sysDir) {
-    this.sosData = sosd;
+          SosServer sosd, String homeDir, String sysDir) {
+    this.sosServer = sosd;
     this.sysDir = Utils.appendSeparator(sysDir);
+    this.parent = caller;
     initComponents();
   }
 
   public boolean initData() {
     // Set the timeslider values
     // Set start time to 10 days ago
-    dateSlider.setRange(sosData.getData().getStartTime(), sosData.getData().getEndTime());
+    dateSlider.setRange(sosServer.getParser().getStartTime(), sosServer.getParser().getEndTime());
     GeoDate tempDate = new GeoDate();
     tempDate.setTime(System.currentTimeMillis() - 1000*60*60*24*10);
     dateSlider.setStartValue(tempDate);
 
     // Load variables into the variable pane
-    selPanel.addVariables(sosData.getData().getVariables());
+    selPanel.addVariables(sosServer.getParser().getVariables());
 
     // Show station locations on the map
-    mapPanel.addSensors(sosData.getData().getSensors());
+    mapPanel.addSensors(sosServer.getParser().getSensors());
 
     return true;
   }
 
-  public void setData(SosData data) {
-    this.sosData = data;
+  public void setData(SosServer data) {
+    this.sosServer = data;
   }
 
   private boolean initComponents() {
@@ -104,12 +109,12 @@ public class SosProcessPanel extends JPanel {
       });
       add(sensorPanel, "gap 0");
 
-
+      
       // Map panel with BBOX change event
       String gisDataDir = sysDir + "data";
       NetcdfConstraints constraints = new NetcdfConstraints();
       mapPanel = new OMSelectionMapPanel(constraints, gisDataDir, false);
-      mapPanel.zoomToDataExtent(sosData.getData().getBBOX());
+      mapPanel.zoomToDataExtent(sosServer.getParser().getBBOX());
       mapPanel.setBorder(new EtchedBorder());
       mapPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -202,25 +207,37 @@ public class SosProcessPanel extends JPanel {
 
         public void actionPerformed(ActionEvent evt) {
           if (validateAndSetInput()) {
-            //sosData.getData().getObservations();
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
               public void run() {
                 JFrame frame = new JFrame("Get Observations");
                 frame.setLayout(new MigLayout("fill"));
+                frame.setPreferredSize(new Dimension(980, 400));
                 frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                JComponent newContentPane = new SosGetObsProgressMonitor(sosData.getData());
+                JComponent newContentPane = new SosGetObsProgressMonitor(sosServer);
+                newContentPane.addPropertyChangeListener(new PropertyChangeListener() {
+
+                  public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals("done")) {
+                      if (Configuration.CLOSE_AFTER_PROCESSING) {
+                        parent.formWindowClose(evt.getNewValue().toString());
+                      }
+                    }
+                  }
+                });
                 newContentPane.setOpaque(true);
+                
                 responsePanel = new SosResponseSelectionPanel("Available Responses");
                 responsePanel.addPropertyChangeListener(new PropertyChangeListener() {
 
                   public void propertyChange(PropertyChangeEvent e) {
                     String name = e.getPropertyName();
                     if (name.equals("selected")) {
-                      sosData.getData().setResponseFormat(e.getNewValue().toString());
+                      sosServer.setResponseFormat(e.getNewValue().toString());
                     }
                   }
                 });
-                responsePanel.setAvailableResponseFormats(mapPanel.getSensorLayer().getPickedSensors());
+                sosServer.getParser().parseResponseFormats(mapPanel.getSensorLayer().getPickedSensors());
+                responsePanel.setResponseFormats(sosServer.getParser().getResponseFormats());
                 frame.add(responsePanel);
                 frame.add(newContentPane, "grow");
                 frame.pack();
@@ -250,7 +267,7 @@ public class SosProcessPanel extends JPanel {
                 JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
       return false;
     }
-    sosData.getData().setSelectedSensors((mapPanel.getSensorLayer().getPickedSensors()));
+    sosServer.getRequest().setSelectedSensors((mapPanel.getSensorLayer().getPickedSensors()));
 
     // VARIABLES
     if (!variableSelected) {
@@ -258,7 +275,7 @@ public class SosProcessPanel extends JPanel {
               "Invalid Variable Selection", JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
       return false;
     }
-    sosData.getData().setSelectedVariables((selPanel.getSelectedVariables()));
+    sosServer.getRequest().setSelectedVariables((selPanel.getSelectedVariables()));
     
     // DATES
     Date startDate = null;
@@ -277,11 +294,11 @@ public class SosProcessPanel extends JPanel {
                 JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
         return false;
       }
-      sosData.getData().setStartTime(startDate);
-      sosData.getData().setEndTime(endDate);
+      sosServer.getRequest().setStartTime(startDate);
+      sosServer.getRequest().setEndTime(endDate);
       
-      System.out.println("Sensor BeginDate:" + dateFormatter.format(startDate));
-      System.out.println("Sensor EndDate:" + dateFormatter.format(endDate));
+      //System.out.println("Sensor BeginDate:" + dateFormatter.format(startDate));
+      //System.out.println("Sensor EndDate:" + dateFormatter.format(endDate));
     } catch (Exception ex) {
       JOptionPane.showConfirmDialog(this, "Date time returned invalid (null) pointer",
               "Invalid Time", JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
@@ -291,15 +308,15 @@ public class SosProcessPanel extends JPanel {
 
     // TEST THAT SENSORS HAVE THE VARIABLES
     try {
-      sosData.getData().validate();
+      sosServer.getRequest().validate();
     } catch (Exception e) {
       JOptionPane.showConfirmDialog(this,
               e.getMessage(), "Invalid Query", JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
       return false;
     }
     
-    System.out.println("Number of selected sensors: " + sosData.getData().getSelectedSensorCount());
-    System.out.println("Number of selected variables: " + sosData.getData().getSelectedVariableCount());
+    //System.out.println("Number of selected sensors: " + sosServer.getData().getSelectedSensorCount());
+    //System.out.println("Number of selected variables: " + sosServer.getData().getSelectedVariableCount());
 
     // TODO: Add a summary popup and confirmation
     return true;

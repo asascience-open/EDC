@@ -2,17 +2,15 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.asascience.sos.types;
+package com.asascience.sos.requests;
 
 /**
  *
  * @author Kyle
  */
-public interface SOSTypeInterface {
+public interface SosRequestInterface {
 
   public String getType();
-
-  public boolean parseSensors();
 
   public void getObservations();
   

@@ -87,9 +87,10 @@ import com.asascience.edc.gui.OpendapInterface;
 import com.asascience.ui.CheckBoxList;
 import com.asascience.utilities.BusyCursorActions;
 import com.asascience.utilities.Utils;
-import com.asascience.sos.SosData;
+import com.asascience.sos.parsers.SosServer;
 import com.asascience.sos.SosGetCapProgressMonitor;
 import com.asascience.sos.SosResponseSelectionPanel;
+import java.awt.Dimension;
 
 /**
  * A Swing widget for THREDDS clients to access and choose from Dataset
@@ -273,9 +274,10 @@ public class ASACatalogChooser extends JPanel {
               public void run() {
                 final JFrame frame = new JFrame("Get Capabilities");
                 frame.setLayout(new MigLayout("fill"));
+                frame.setPreferredSize(new Dimension(750, 400));
                 frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-                SosData myData = new SosData((String) sosListBox.getSelectedItem());
+                SosServer myData = new SosServer((String) sosListBox.getSelectedItem());
                 JComponent newContentPanel = new SosGetCapProgressMonitor(myData, odapInterface);
                 newContentPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
