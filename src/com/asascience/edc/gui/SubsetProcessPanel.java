@@ -945,11 +945,24 @@ public class SubsetProcessPanel extends JPanel {
           }
         }
 
-        FileDialog outputPath = new FileDialog(mainFrame, "Save .nc and .xml file here...", FileDialog.SAVE);
-        outputPath.setDirectory(homeDir);
+        FileDialog outputPath = new FileDialog(mainFrame, "Save output files here...", FileDialog.SAVE);
+        File containingFolder = new File(homeDir + File.separator + outname + File.separator);
+        if (!containingFolder.exists()) {
+          containingFolder.mkdir();
+        }
+        outputPath.setDirectory(containingFolder.getAbsolutePath());
         outputPath.setFile(outname + ".nc");
         outputPath.setVisible(true);
-        homeDir = outputPath.getDirectory();
+        
+        File newHomeDir = new File(outputPath.getDirectory());
+
+        // Did the user use the new directory we created for them?
+        if (!newHomeDir.getAbsolutePath().contains(containingFolder.getAbsolutePath())) {
+          if (containingFolder.length() == 0) {
+            containingFolder.delete();
+          }
+        }
+
         String userOutname = outputPath.getFile().replace(".nc", "");
 
         if (!userOutname.equals(outname)) {
@@ -957,7 +970,7 @@ public class SubsetProcessPanel extends JPanel {
         }
 
         if (!skip) {
-          f = new File(homeDir + File.separator + outname + ".nc");
+          f = new File(newHomeDir.getAbsolutePath() + File.separator + outname + ".nc");
 
           if (f.exists()) {
             if (Configuration.ALLOW_FILE_REPLACEMENT) {
