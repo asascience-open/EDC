@@ -21,7 +21,6 @@ import java.beans.PropertyChangeSupport;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.TimeZone;
 import org.jdom.Attribute;
 import org.jdom.Element;
@@ -98,9 +97,20 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
         }
       }
     }
+
     // This makes the list unique
     responseFormatList = new ArrayList<ResponseFormat>(new HashSet(formats));
-    
+
+    if (displayType == Configuration.DisplayType.ESRI) {
+      ArrayList<ResponseFormat> removals = new ArrayList<ResponseFormat>();
+      for (ResponseFormat r : responseFormatList) {
+        if (!r.getName().contains("ARC")) {
+          removals.add(r);
+        }
+      }
+      responseFormatList.removeAll(removals);
+    }
+
     pcs.firePropertyChange("message", null, "Found " + responseFormatList.size() + " unique response formats");
   }
 
