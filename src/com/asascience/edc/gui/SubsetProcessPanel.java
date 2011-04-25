@@ -922,17 +922,6 @@ public class SubsetProcessPanel extends JPanel {
       do {
         skip = false;
 
-        outname = (String) JOptionPane.showInputDialog(mainFrame, "Enter a name for the output file:",
-                "Output Name", JOptionPane.OK_CANCEL_OPTION, null, null, outname);
-
-        // If Cancal was clicked, outname would be null
-        if (outname == null) {
-          return;
-        }
-
-        // Cancel was not clicked, set the outname
-        outname = createSuitableLayerName(outname);
-
         if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {// ESRI
           if (selPanel.isMakeRaster()) {
             if (!rasterNameOk(outname)) {
@@ -945,32 +934,24 @@ public class SubsetProcessPanel extends JPanel {
           }
         }
 
-        FileDialog outputPath = new FileDialog(mainFrame, "Save output files here...", FileDialog.SAVE);
-        File containingFolder = new File(homeDir + File.separator + outname + File.separator);
+        FileDialog outputPath = new FileDialog(mainFrame, "Create folder and save output files here...", FileDialog.SAVE);
+        outputPath.setDirectory(homeDir);
+        outputPath.setFile(outname);
+        outputPath.setVisible(true);
+
+        String userOutname = outputPath.getFile();
+
+        File containingFolder = new File(outputPath.getDirectory() + File.separator + userOutname + File.separator);
         if (!containingFolder.exists()) {
           containingFolder.mkdir();
         }
-        outputPath.setDirectory(containingFolder.getAbsolutePath());
-        outputPath.setFile(outname + ".nc");
-        outputPath.setVisible(true);
         
-        File newHomeDir = new File(outputPath.getDirectory());
-
-        // Did the user use the new directory we created for them?
-        if (!newHomeDir.getAbsolutePath().contains(containingFolder.getAbsolutePath())) {
-          if (containingFolder.length() == 0) {
-            containingFolder.delete();
-          }
-        }
-
-        String userOutname = outputPath.getFile().replace(".nc", "");
-
         if (!userOutname.equals(outname)) {
           outname = createSuitableLayerName(userOutname);
         }
 
         if (!skip) {
-          f = new File(newHomeDir.getAbsolutePath() + File.separator + outname + ".nc");
+          f = new File(containingFolder.getAbsolutePath() + File.separator + userOutname + ".nc");
 
           if (f.exists()) {
             if (Configuration.ALLOW_FILE_REPLACEMENT) {

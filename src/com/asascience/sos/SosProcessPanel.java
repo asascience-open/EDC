@@ -214,6 +214,7 @@ public class SosProcessPanel extends JPanel {
                 frame.setPreferredSize(new Dimension(980, 400));
                 frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 JComponent newContentPane = new SosGetObsProgressMonitor(sosServer);
+                sosServer.getRequest().setParentFrame(frame);
                 newContentPane.addPropertyChangeListener(new PropertyChangeListener() {
 
                   public void propertyChange(PropertyChangeEvent evt) {

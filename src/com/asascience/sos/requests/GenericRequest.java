@@ -26,6 +26,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.awt.FileDialog;
+import javax.swing.JFrame;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -44,6 +46,7 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
   protected String sosURL;
   protected String homeDir;
   protected String fileSuffix;
+  protected JFrame parentFrame;
 
   public GenericRequest(String url) {
     fileSuffix = "txt";
@@ -58,14 +61,21 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
     selectedVariables = gr.selectedVariables;
     selectedStartTime = gr.selectedStartTime;
     selectedEndTime = gr.selectedEndTime;
+    parentFrame = gr.parentFrame;
     homeDir = gr.homeDir;
   }
-  
+
+  public void setParentFrame(JFrame frame) {
+    parentFrame = frame;
+  }
+
   public void getObservations() {
 
     double numSens = getSelectedSensorCount();
     double countSens = 0;
     String requestURL;
+
+    File savePath = chooseSavePath();
 
     Timer stopwatch = new Timer();
 
@@ -86,7 +96,8 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
         ht.setRequestMethod("GET");
         InputStream is = ht.getInputStream();
         pcs.firePropertyChange("message", null, "- Streaming Results to File");
-        File f = new File(homeDir + sensor.getName() + "." + fileSuffix);
+        String filename = chooseFilename(savePath, sensor.getName());
+        File f = new File(filename);
         OutputStream output = new BufferedOutputStream(new FileOutputStream(f));
         byte[] buffer = new byte[2048];
         int len = 0;
@@ -153,6 +164,42 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
     } catch (Exception e) {
       return "";
     }
+  }
+
+  protected String getNameFromURL(String url) {
+    try {
+      URL target = new URL(url);
+      Date dateNow = new Date ();
+      SimpleDateFormat formatted = new SimpleDateFormat("yyyy-MM-dd_HHmma");
+      StringBuilder now = new StringBuilder( formatted.format( dateNow ) );
+      return target.getHost() + File.separator + now;
+    } catch (MalformedURLException e) {
+      return "";
+    }
+  }
+
+  public File chooseSavePath() {
+    FileDialog outputPath = new FileDialog(parentFrame, "Create directory and save output files here...", FileDialog.SAVE);
+    File containingFolder = new File(homeDir + File.separator + getNameFromURL(sosURL) + File.separator);
+    if (!containingFolder.exists()) {
+      containingFolder.mkdirs();
+    }
+    outputPath.setDirectory(containingFolder.getAbsolutePath());
+    outputPath.setFile("Choose Output Directory (ignore this filename)");
+    outputPath.setVisible(true);
+    File newHomeDir = new File(outputPath.getDirectory());
+
+    // Did the user use the new directory we created for them?
+    if (!newHomeDir.getAbsolutePath().contains(containingFolder.getAbsolutePath())) {
+      if (containingFolder.length() == 0) {
+        containingFolder.delete();
+      }
+    }
+    return newHomeDir;
+  }
+
+  public String chooseFilename(File path, String sensorName) {
+    return path.getAbsolutePath() + File.separator + sensorName + "." + fileSuffix;
   }
 
   public void validate() throws Exception {

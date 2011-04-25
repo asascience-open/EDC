@@ -70,6 +70,8 @@ public class DifToCSV extends GenericRequest {
     String requestURL;
     List filenames = new ArrayList<String>();
 
+    File savePath = chooseSavePath();
+
     // Are we loading an XSL?
     String schemaLoc = "http://ioos.gov/library/ioos_gmlv061_to_csv.xsl";
     SAXBuilder xslBuilder = new SAXBuilder();
@@ -131,7 +133,7 @@ public class DifToCSV extends GenericRequest {
       }
 
       try {
-        String filename = homeDir + sensor.getName() + "." + fileSuffix;
+        String filename = chooseFilename(savePath, sensor.getName());
         Writer fstream = new FileWriter(new File(filename));
         pcs.firePropertyChange("message", null, "- Streaming transformed results to file");
         BufferedWriter out = new BufferedWriter(fstream);
