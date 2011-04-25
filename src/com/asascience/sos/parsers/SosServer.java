@@ -21,6 +21,7 @@ import org.jdom.output.XMLOutputter;
 
 import cern.colt.Timer;
 import com.asascience.sos.requests.GenericRequest;
+import com.asascience.sos.requests.ResponseFormat;
 import com.asascience.sos.requests.custom.DifToCSV;
 import com.asascience.sos.requests.custom.DifToNetCDF;
 import com.asascience.sos.requests.custom.SweToCSV;
@@ -52,7 +53,7 @@ public class SosServer implements PropertyChangeListener {
   protected String type;
   protected double timeInterval;
   protected int numTimeSteps;
-  protected String responseFormat;
+  protected ResponseFormat responseFormat;
 
   public SosServer(String url) {
     if (url.contains("?")) {
@@ -151,7 +152,7 @@ public class SosServer implements PropertyChangeListener {
     return parseTime;
   }
   
-  public void setResponseFormat(String format) {
+  public void setResponseFormat(ResponseFormat format) {
     responseFormat = format;
   }
 
@@ -168,40 +169,21 @@ public class SosServer implements PropertyChangeListener {
   }
 
   public void getObservations() {
-
-    if (responseFormat.contains("post-process")) {
-      // We are translating the output into something
-      if (responseFormat.contains("0.6.1")) {
-        if (responseFormat.contains("to CSV")) {
-          sosRequest = new DifToCSV(sosRequest, sosParser.getResponseFormats());
-        } else if (responseFormat.contains("to NetCDF")) {
-          sosRequest = new DifToNetCDF(sosRequest, sosParser.getResponseFormats());
-        }
-      } else if (responseFormat.contains("swe")) {
-        if (responseFormat.contains("to CSV")) {
-          sosRequest = new SweToCSV(sosRequest, sosParser.getResponseFormats());
-        } else if (responseFormat.contains("to NetCDF")) {
-          sosRequest = new SweToNetCDF(sosRequest, sosParser.getResponseFormats());
-        }
+    if (responseFormat.isPostProcess()) {
+      String name = responseFormat.getClassName();
+      if (name.equalsIgnoreCase("DifToCSV")) {
+        sosRequest = new DifToCSV(sosRequest);
+      } else if (name.equalsIgnoreCase("DifToNetCDF")) {
+        sosRequest = new DifToNetCDF(sosRequest);
+      } else if (name.equalsIgnoreCase("SweToCSV")) {
+        sosRequest = new SweToCSV(sosRequest);
+      } else if (name.equalsIgnoreCase("SweToNetCDF")) {
+        sosRequest = new SweToNetCDF(sosRequest);
       }
       sosRequest.addPropertyChangeListener(this);
-    } else {
-      // Just save the RAW response output
-      if (responseFormat.contains("0.6.1")) {
-        sosRequest.setFileSuffix("xml");
-      } else if (responseFormat.contains("swe")) {
-        sosRequest.setFileSuffix("xml");
-      } else if (responseFormat.contains("kml")) {
-        sosRequest.setFileSuffix("kml");
-      } else if (responseFormat.contains("csv")) {
-        sosRequest.setFileSuffix("csv");
-      } else if (responseFormat.contains("tab-separated-values")) {
-        sosRequest.setFileSuffix("tsv");
-      } else if (responseFormat.contains("om/1.0.0")) {
-        sosRequest.setFileSuffix("xml");
-      }
-      sosRequest.setType(responseFormat);
     }
+    sosRequest.setFileSuffix(responseFormat.getFileSuffix());
+    sosRequest.setResponseFormatValue(responseFormat.getValue());
     sosRequest.getObservations();
   }
 

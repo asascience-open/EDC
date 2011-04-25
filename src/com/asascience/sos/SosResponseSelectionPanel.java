@@ -4,6 +4,7 @@
  */
 package com.asascience.sos;
 
+import com.asascience.sos.requests.ResponseFormat;
 import com.asascience.ui.RadioList;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -11,6 +12,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import net.miginfocom.swing.MigLayout;
 
@@ -21,7 +23,7 @@ import net.miginfocom.swing.MigLayout;
 public final class SosResponseSelectionPanel extends JPanel {
 
   private RadioList radioList;
-  private List<String> localVariables;
+  private List<ResponseFormat> localVariables;
   private PropertyChangeSupport pcs;
   private String panelTitle;
 
@@ -32,7 +34,7 @@ public final class SosResponseSelectionPanel extends JPanel {
     getCblVars().addPropertyChangeListener(new RadioListPropertyListener());
   }
 
-  public void setResponseFormats(List<String> formats) {
+  public void setResponseFormats(List<ResponseFormat> formats) {
     localVariables = formats;
     setResponses();
   }
@@ -85,7 +87,7 @@ public final class SosResponseSelectionPanel extends JPanel {
 
     public void propertyChange(PropertyChangeEvent e) {
       if (e.getPropertyName().equals("selected")) {
-        pcs.firePropertyChange(e);
+        pcs.firePropertyChange("selected", null, ((ResponseFormatRadioButton)e.getOldValue()).getResponseFormat());
       }
     }
   }

@@ -34,15 +34,8 @@ import org.jdom.transform.JDOMSource;
  */
 public class DifToCSV extends GenericRequest {
 
-  public DifToCSV(GenericRequest gr, List<String> formats) {
+  public DifToCSV(GenericRequest gr) {
     super(gr);
-    fileSuffix = "csv";
-    for (String s : formats) {
-      if (s.contains("0.6.1") && !s.contains("post-process")) {
-        responseFormat = s;
-        break;
-      }
-    }
   }
 
   protected List<Text> transform(Document doc, Document xsldoc) throws JDOMException {

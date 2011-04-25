@@ -14,13 +14,7 @@ import java.util.List;
  */
 public class SweToCSV extends GenericRequest {
 
-  public SweToCSV(GenericRequest gr, List<String> formats) {
+  public SweToCSV(GenericRequest gr) {
     super(gr);
-    for (String s : formats) {
-      if (s.contains("swe") && !s.contains("post-process")) {
-        responseFormat = s;
-        break;
-      }
-    }
   }
 }

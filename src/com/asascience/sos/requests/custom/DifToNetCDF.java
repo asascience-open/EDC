@@ -14,13 +14,7 @@ import java.util.List;
  */
 public class DifToNetCDF extends GenericRequest {
 
-  public DifToNetCDF(GenericRequest gr, List<String> formats) {
+  public DifToNetCDF(GenericRequest gr) {
     super(gr);
-    for (String s : formats) {
-      if (s.contains("0.6.1") && !s.contains("post-process")) {
-        responseFormat = s;
-        break;
-      }
-    }
   }
 }

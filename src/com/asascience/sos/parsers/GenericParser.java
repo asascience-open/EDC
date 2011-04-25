@@ -5,6 +5,7 @@
 package com.asascience.sos.parsers;
 
 import cern.colt.Timer;
+import com.asascience.edc.Configuration;
 import java.beans.PropertyChangeEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -14,6 +15,7 @@ import org.jdom.Document;
 import com.asascience.sos.SensorContainer;
 import com.asascience.sos.SensorPoint;
 import com.asascience.sos.VariableContainer;
+import com.asascience.sos.requests.ResponseFormat;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.ParseException;
@@ -36,7 +38,7 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
 
   protected List<SensorContainer> sensorList;
   protected List<VariableContainer> variableList;
-  protected List<String> responseFormatList;
+  protected List<ResponseFormat> responseFormatList;
   protected double[] NESW;
   protected Date startTime;
   protected Date endTime;
@@ -48,6 +50,7 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
   protected double timeInterval;
   protected int numTimeSteps;
   protected PropertyChangeSupport pcs;
+  protected int displayType;
 
   public GenericParser(Document xmlDoc) {
     type = "Generic";
@@ -73,29 +76,30 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
     return variableList;
   }
 
-  public List<String> getResponseFormats() {
+  public List<ResponseFormat> getResponseFormats() {
     return responseFormatList;
   }
 
+  public void setPanelType(int type) {
+    displayType = type;
+  }
+
   public void parseResponseFormats(List<SensorPoint> selectedPoints) {
-    List<String> formats = new ArrayList<String>();
+    List<ResponseFormat> formats = new ArrayList<ResponseFormat>();
     for (SensorPoint sp : selectedPoints) {
       for (String f : sp.getSensor().getResponseFormats()) {
-        if (!formats.contains(f)) {
-          formats.add(f);
-          if (f.contains("0.6.1")) {
-            formats.add(f + " to CSV (post-process)");
-            formats.add(f + " to NetCDF (post-process)");
-          } else if (f.contains("swe")) {
-            formats.add(f + " to CSV (post-process)");
-            formats.add(f + " to NetCDF (post-process)");
+        ResponseFormat format = new ResponseFormat(f);
+        if (!formats.contains(format)) {
+          formats.add(format);
+          // Does this format supply some post-processing formats?
+          for (ResponseFormat r : format.getChildFormats()) {
+            formats.add(r);
           }
         }
       }
     }
     // This makes the list unique
-    Set set = new HashSet(formats);
-    responseFormatList = new ArrayList<String>(set);
+    responseFormatList = new ArrayList<ResponseFormat>(new HashSet(formats));
     
     pcs.firePropertyChange("message", null, "Found " + responseFormatList.size() + " unique response formats");
   }

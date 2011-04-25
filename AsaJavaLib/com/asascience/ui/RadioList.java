@@ -5,6 +5,8 @@
 
 package com.asascience.ui;
 
+import com.asascience.sos.ResponseFormatRadioButton;
+import com.asascience.sos.requests.ResponseFormat;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,12 +32,22 @@ public class RadioList extends JPanel implements ActionListener {
     pcs = new PropertyChangeSupport(this);
     setLayout(new GridLayout(0, 1));
   }
-
+  /*
   public void makeRadioList(List<String> items, boolean trimName) {
     clearRadioList();
     boolean c = true;
     for (String s : items) {
       group.add(addRadio(s, trimName, c));
+      c = false;
+    }
+  }
+  */
+
+  public void makeRadioList(List<ResponseFormat> items, boolean trimName) {
+    clearRadioList();
+    boolean c = true;
+    for (ResponseFormat rf : items) {
+      group.add(addRadio(rf, trimName, c));
       c = false;
     }
   }
@@ -48,15 +60,18 @@ public class RadioList extends JPanel implements ActionListener {
     }
   }
 
-  public JRadioButton addRadio(String name, boolean trimName, boolean select) {
-    JRadioButton r = new JRadioButton();
+  public JRadioButton addRadio(ResponseFormat rf, boolean trimName, boolean select) {
+    ResponseFormatRadioButton r = new ResponseFormatRadioButton();
     String text;
+    String name = rf.getName();
     if (trimName) {
       text = (name.length() > labelLengthLimit) ? name.substring(0, labelLengthLimit - 1) + "..." : name;
     } else {
       text = name;
     }
+    r.setName(rf.getValue());
     r.setText(text);
+    r.setResponseFormat(rf);
     r.addActionListener(this);
     r.setActionCommand(name);
     add(r);

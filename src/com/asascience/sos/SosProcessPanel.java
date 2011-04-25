@@ -20,6 +20,7 @@ import net.miginfocom.swing.MigLayout;
 import ucar.nc2.ui.widget.FileManager;
 
 import com.asascience.openmap.ui.OMSelectionMapPanel;
+import com.asascience.sos.requests.ResponseFormat;
 import com.asascience.utilities.Utils;
 import gov.noaa.pmel.util.GeoDate;
 import java.awt.Dimension;
@@ -233,10 +234,11 @@ public class SosProcessPanel extends JPanel {
                   public void propertyChange(PropertyChangeEvent e) {
                     String name = e.getPropertyName();
                     if (name.equals("selected")) {
-                      sosServer.setResponseFormat(e.getNewValue().toString());
+                      sosServer.setResponseFormat((ResponseFormat)e.getNewValue());
                     }
                   }
                 });
+                sosServer.getParser().setPanelType(Configuration.DISPLAY_TYPE);
                 sosServer.getParser().parseResponseFormats(mapPanel.getSensorLayer().getPickedSensors());
                 responsePanel.setResponseFormats(sosServer.getParser().getResponseFormats());
                 frame.add(responsePanel);

@@ -10,8 +10,8 @@ package com.asascience.sos.requests;
  */
 public interface SosRequestInterface {
 
-  public String getType();
-
+  public String getResponseFormatValue();
+  public void setResponseFormatValue(String s);
   public void getObservations();
   
 }
