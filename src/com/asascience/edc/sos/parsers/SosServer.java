@@ -182,11 +182,15 @@ public class SosServer implements PropertyChangeListener {
         sosRequest = new SweToCSV(sosRequest);
       } else if (name.equalsIgnoreCase("SweToNetCDF")) {
         sosRequest = new SweToNetCDF(sosRequest);
+      } else {
+        sosRequest = new GenericRequest(sosRequest);
       }
-      sosRequest.addPropertyChangeListener(this);
+    } else {
+      sosRequest = new GenericRequest(sosRequest);
     }
     sosRequest.setFileSuffix(responseFormat.getFileSuffix());
     sosRequest.setResponseFormatValue(responseFormat.getValue());
+    sosRequest.addPropertyChangeListener(this);
     sosRequest.getObservations();
   }
 
