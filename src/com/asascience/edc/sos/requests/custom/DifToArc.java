@@ -32,9 +32,9 @@ import org.jdom.transform.JDOMSource;
  *
  * @author Kyle
  */
-public class DifToCSV extends GenericRequest {
+public class DifToArc extends GenericRequest {
 
-  public DifToCSV(GenericRequest gr) {
+  public DifToArc(GenericRequest gr) {
     super(gr);
   }
 
@@ -66,7 +66,7 @@ public class DifToCSV extends GenericRequest {
     File savePath = chooseSavePath();
 
     // Are we loading an XSL?
-    String schemaLoc = "/resources/schemas/ioos_gmlv061_to_csv.xsl";
+    String schemaLoc = "/resources/schemas/ioos_gmlv061_to_arc.xsl";
     SAXBuilder xslBuilder = new SAXBuilder();
     Document xslDoc = null;
     try {

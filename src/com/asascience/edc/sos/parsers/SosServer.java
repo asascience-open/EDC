@@ -22,6 +22,7 @@ import org.jdom.output.XMLOutputter;
 import cern.colt.Timer;
 import com.asascience.edc.sos.requests.GenericRequest;
 import com.asascience.edc.sos.requests.ResponseFormat;
+import com.asascience.edc.sos.requests.custom.DifToArc;
 import com.asascience.edc.sos.requests.custom.DifToCSV;
 import com.asascience.edc.sos.requests.custom.DifToNetCDF;
 import com.asascience.edc.sos.requests.custom.SweToCSV;
@@ -176,6 +177,8 @@ public class SosServer implements PropertyChangeListener {
       String name = responseFormat.getClassName();
       if (name.equalsIgnoreCase("DifToCSV")) {
         sosRequest = new DifToCSV(sosRequest);
+      } else if (name.equalsIgnoreCase("DifToArc")) {
+        sosRequest = new DifToArc(sosRequest);
       } else if (name.equalsIgnoreCase("DifToNetCDF")) {
         sosRequest = new DifToNetCDF(sosRequest);
       } else if (name.equalsIgnoreCase("SweToCSV")) {

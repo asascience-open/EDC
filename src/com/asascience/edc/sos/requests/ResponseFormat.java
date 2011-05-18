@@ -59,11 +59,11 @@ public class ResponseFormat {
     this.className = "GenericRequest";
     childFormats = new ArrayList<ResponseFormat>();
     if (value.contains("0.6.1")) {
-      childFormats.add(new ResponseFormat(value, "ARC (post-process from DIF)", "DifToCSV", "csv", true));
+      childFormats.add(new ResponseFormat(value, "ARC (post-process from DIF)", "DifToArc", "csv", true));
       childFormats.add(new ResponseFormat(value, "NetCDF (post-process from DIF)", "DifToNetCDF", "nc", true));
       childFormats.add(new ResponseFormat(value, "CSV (post-process from DIF)", "DifToCSV", "csv", true));
     } else if (value.contains("swe")) {
-      childFormats.add(new ResponseFormat(value, "ARC (post-process from SWE)", "SweToCSV", "csv", true));
+      childFormats.add(new ResponseFormat(value, "ARC (post-process from SWE)", "SweToArc", "csv", true));
       childFormats.add(new ResponseFormat(value, "NetCDF (post-process from SWE)", "SweToNetCDF", "nc", true));
       childFormats.add(new ResponseFormat(value, "CSV (post-process from SWE)", "SweToCSV", "csv", true));
     }
