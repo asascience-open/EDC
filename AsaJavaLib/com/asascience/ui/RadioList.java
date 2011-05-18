@@ -5,8 +5,8 @@
 
 package com.asascience.ui;
 
-import com.asascience.sos.ResponseFormatRadioButton;
-import com.asascience.sos.requests.ResponseFormat;
+import com.asascience.edc.sos.ResponseFormatRadioButton;
+import com.asascience.edc.sos.requests.ResponseFormat;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

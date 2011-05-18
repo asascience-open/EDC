@@ -20,14 +20,14 @@
  */
 package com.asascience.edc.ui;
 
-import com.asascience.edu.ui.sos.SOSComboBox;
-import com.asascience.edc.ui.da.DAComboBox;
+import com.asascience.edc.erddap.ErddapDataset;
+import com.asascience.edc.erddap.ErddapGetDatasetsProgressMonitor;
+import com.asascience.edc.erddap.ErddapServer;
+import com.asascience.edc.erddap.gui.ErddapDatasetViewer;
+import com.asascience.edc.ui.combos.HistoryComboBox;
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
-import java.awt.FlowLayout;
 import java.awt.Frame;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -37,16 +37,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 
-import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -58,39 +54,34 @@ import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.EventListenerList;
-import javax.swing.filechooser.FileFilter;
 
 import net.miginfocom.swing.MigLayout;
 import thredds.catalog.DatasetFilter;
 import thredds.catalog.InvAccess;
 import thredds.catalog.InvCatalog;
-import thredds.catalog.InvCatalogFactory;
 import thredds.catalog.InvCatalogImpl;
 import thredds.catalog.InvCatalogRef;
 import thredds.catalog.InvDataset;
 import thredds.catalog.InvDatasetImpl;
-import thredds.catalog.InvService;
-import thredds.catalog.ServiceType;
-import thredds.catalog.XMLEntityResolver;
 import thredds.ui.catalog.ThreddsDatasetChooser;
-import thredds.cataloggen.DirectoryScanner;
-import ucar.nc2.ui.widget.BAMutil;
-import ucar.nc2.ui.widget.FileManager;
 import ucar.nc2.ui.widget.HtmlBrowser;
-import ucar.nc2.ui.widget.IndependentWindow;
-import ucar.nc2.ui.widget.TextGetPutPane;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.util.prefs.PreferencesExt;
 import ucar.util.prefs.ui.ComboBox;
 
 import com.asascience.edc.gui.OpendapInterface;
+import com.asascience.edc.ui.combos.DirectComboBox;
+import com.asascience.edc.ui.combos.ErddapComboBox;
+import com.asascience.edc.ui.combos.SosComboBox;
 import com.asascience.ui.CheckBoxList;
 import com.asascience.utilities.BusyCursorActions;
-import com.asascience.utilities.Utils;
-import com.asascience.sos.parsers.SosServer;
-import com.asascience.sos.SosGetCapProgressMonitor;
-import com.asascience.sos.SosResponseSelectionPanel;
+import com.asascience.edc.sos.parsers.SosServer;
+import com.asascience.edc.sos.SosGetCapProgressMonitor;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import javax.swing.JTabbedPane;
+import javax.swing.plaf.basic.BasicTabbedPaneUI;
 
 /**
  * A Swing widget for THREDDS clients to access and choose from Dataset
@@ -134,39 +125,36 @@ import java.awt.Dimension;
 public class ASACatalogChooser extends JPanel {
 
   private static final String HDIVIDER = "HSplit_Divider";
-  private static final String FILECHOOSER_DEFAULTDIR = "FileChooserDefaultDir";
   private ucar.util.prefs.PreferencesExt prefs;
   private EventListenerList listenerList = new EventListenerList();
   private String eventType = null;
   // ui
   private ComboBox catListBox;
-  // private DAComboBox catListBox;
-  private ASACatalogTreeView tree;
-  private HtmlBrowser htmlViewer;
-  private FileManager fileChooser;
+  private ASACatalogTreeView catalogTree;
+  private HtmlBrowser catalogHtmlViewer;
   private JSplitPane splitCatalog;
+  private ErddapDatasetViewer erddapViewer;
   private JLabel statusLabel;
   private JPanel buttPanel;
   private JLabel sourceText;
-  private RootPaneContainer parent = null;
   private JFrame parentFrame;
   private OpendapInterface odapInterface;
   private boolean datasetEvents = true;
   private boolean catrefEvents = false;
   private String currentURL = "";
-  // private boolean catgenShow = true;
-  private FileManager catgenFileChooser;
   private boolean debugEvents = false;
-  // private boolean debugTree = false;
   private boolean showHTML = false;
   private JButton acceptButton;
   private NetcdfDataset daDataset;
-  private DAComboBox daListBox;
-  private SOSComboBox sosListBox;
+  private HistoryComboBox daListBox;
+  private HistoryComboBox sosListBox;
+  private HistoryComboBox erddapListBox;
   private JButton btnCatConnect;
   private JButton btnDirAccess;
   private JButton btnSOS;
-  JPanel topPanel;
+  private JButton btnERDDAP;
+  private JTabbedPane layers;
+  private JPanel topPanel;
 
   /**
    * Constructor, with control over whether a comboBox of previous catalogs is
@@ -181,8 +169,7 @@ public class ASACatalogChooser extends JPanel {
    *            show a FileChooser (must have showComboChooser true)
    * @param parent
    */
-  public ASACatalogChooser(ucar.util.prefs.PreferencesExt prefs, boolean showComboChooser, boolean showOpenButton,
-          boolean showFileChooser, OpendapInterface parent) {
+  public ASACatalogChooser(ucar.util.prefs.PreferencesExt prefs, OpendapInterface parent) {
     this.prefs = prefs;
     this.parentFrame = parent.getMainFrame();
 
@@ -190,377 +177,416 @@ public class ASACatalogChooser extends JPanel {
 
     topPanel = null;
 
-    if (showComboChooser) {
+    // combo box holds the catalogs
+    catListBox = new ComboBox(prefs);
+    daListBox = new DirectComboBox(prefs);
+    sosListBox = new SosComboBox(prefs);
+    erddapListBox = new ErddapComboBox(prefs);
 
-      // combo box holds the catalogs
-      catListBox = new ComboBox(prefs);
-      daListBox = new DAComboBox(prefs);
-      sosListBox = new SOSComboBox(prefs);
+    /*
+     * Catalog URL "Connect" Button
+     */
 
-      /*
-       * Catalog URL "Connect" Button
-       */
+    catalogHtmlViewer = new HtmlBrowser();
+    catalogTree = new ASACatalogTreeView();
+    splitCatalog = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, catalogTree, catalogHtmlViewer);
+    if (prefs != null) {
+      splitCatalog.setDividerLocation(prefs.getInt(HDIVIDER, 400));
+    }
+    acceptButton = new JButton("Subset & Process");
 
-      btnCatConnect = new JButton("Connect");
-      btnCatConnect.setToolTipText("Read the selected catalog");
-      btnCatConnect.addActionListener(new ActionListener() {
+    erddapViewer = new ErddapDatasetViewer();
+    erddapViewer.addPropertyChangeListener(new PropertyChangeListener() {
 
-        public void actionPerformed(ActionEvent evt) {
-          String catalogURL = (String) catListBox.getSelectedItem();
-          tree.setCatalog(catalogURL.trim()); // will get "Catalog"
-          // property change event
-          // if ok
-        }
-      });
-
-      /*
-       * Direct Access URL "Connect" Button
-       */
-      btnDirAccess = new JButton("Connect");
-      btnDirAccess.setToolTipText("Enter a dataset url for direct access");
-      ActionListener al = new ActionListener() {
-
-        public void actionPerformed(ActionEvent ae) {
-          String dataUrl = "";
+      public void propertyChange(PropertyChangeEvent evt) {
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        // GRIDDAP
+        if (evt.getPropertyName().equals("griddap")) {
+          
+          ErddapDataset erd = (ErddapDataset)evt.getNewValue();
           try {
-            // dataUrl =
-            // JOptionPane.showInputDialog(odapInterface.getMainFrame(),
-            // "Enter a data url:", "Direct Data Access...");
-            dataUrl = daListBox.getSelectedItem().toString();
-
-            if (dataUrl == null | dataUrl.equals("")) {
-              return;
-            }// cancel clicked
-
-            // setThreddsDatatype(dataUrl);
-
-            System.err.println("Dataset Url: " + dataUrl);
-            System.err.println("Retrieving data...");
-            // odapInterface.getMainFrame().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-            daDataset = NetcdfDataset.openDataset(dataUrl);
-
-            daDataset.setTitle(dataUrl.substring(dataUrl.lastIndexOf(File.separator) + 1));
+            daDataset = NetcdfDataset.openDataset(erd.getGriddap());
+            daDataset.setTitle(erd.getTitle());
 
             if (odapInterface.openDataset(daDataset)) {
-              daListBox.addItem(dataUrl);
+              daListBox.addItem(erd.getGriddap());
             }
-            // OpenDirectAccessDataset odad = new
-            // OpenDirectAccessDataset(ncd);
-            // oi.openDataset(ncd);
-
           } catch (IOException ex) {
             JOptionPane.showMessageDialog(odapInterface.getMainFrame(), "Cannot find the file\n\""
-                    + dataUrl + "\"" + "\n\nPlease check the name and try again.");
+                    + erd.getGriddap() + "\"" + "\n\nPlease check the name and try again.");
             System.err.println("OI:directAccess: Invalid filename");
             ex.printStackTrace();
-          } finally {
-            // odapInterface.getMainFrame().setCursor(Cursor.getDefaultCursor());
           }
-        }
-      };
-
-      /*
-       * SOS "Connect" Button
-       */
-      btnSOS = new JButton("Connect");
-      btnSOS.setToolTipText("Read the selected SOS");
-      btnSOS.addActionListener(new ActionListener() {
-
-        public void actionPerformed(ActionEvent evt) {
+        } else if (evt.getPropertyName().equals("tabledap")) {
           
-          try {
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-              public void run() {
-                final JFrame frame = new JFrame("Get Capabilities");
-                frame.setLayout(new MigLayout("fill"));
-                frame.setPreferredSize(new Dimension(750, 400));
-                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-                SosServer myData = new SosServer((String) sosListBox.getSelectedItem());
-                JComponent newContentPanel = new SosGetCapProgressMonitor(myData, odapInterface);
-                newContentPanel.addPropertyChangeListener(new PropertyChangeListener() {
-
-                  public void propertyChange(PropertyChangeEvent e) {
-                    String name = e.getPropertyName();
-                    if (name.equals("closed")) {
-                      frame.setVisible(false);
-                      frame.dispose();
-                    }
-                  }
-                });
-                
-                newContentPanel.setOpaque(true);
-                frame.add(newContentPanel, "grow");
-                frame.pack();
-                frame.setVisible(true);
-              }
-            });
-          } catch(Exception e) {
-            
-          }
         }
-      });
-
-
-      ActionListener cal = com.asascience.utilities.BusyCursorActions.createListener(
-              odapInterface.getMainFrame(), al);
-      btnDirAccess.addActionListener(cal);
-
-      // btnDirAccess.addActionListener(new OpenDADatasetListener());
-
-      JPanel topButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-      topButtons.add(btnCatConnect);
-      topButtons.add(btnDirAccess);
-      topButtons.add(btnSOS);
-
-      // topPanel = new JPanel(new BorderLayout());
-      // topPanel.add(new JLabel("Catalog URL"), BorderLayout.WEST);
-      // topPanel.add(catListBox, BorderLayout.CENTER);
-      // topPanel.add(topButtons, BorderLayout.EAST);
-
-      topPanel = new JPanel(new MigLayout("fillx, insets 0"));
-
-      ActionListener radioListener = new ActionListener() {
-
-        public void actionPerformed(ActionEvent ae) {
-          boolean enable = true;
-          String cmd = ae.getActionCommand();
-          if (cmd.equals("cat")) {
-            catListBox.setEnabled(enable);
-            btnCatConnect.setEnabled(enable);
-            daListBox.setEnabled(!enable);
-            btnDirAccess.setEnabled(!enable);
-            sosListBox.setEnabled(!enable);
-            btnSOS.setEnabled(!enable);
-          } else if (cmd.equals("da")) {
-            catListBox.setEnabled(!enable);
-            btnCatConnect.setEnabled(!enable);
-            daListBox.setEnabled(enable);
-            btnDirAccess.setEnabled(enable);
-            sosListBox.setEnabled(!enable);
-            btnSOS.setEnabled(!enable);
-          } else if (cmd.equals("sos")) {
-            catListBox.setEnabled(!enable);
-            btnCatConnect.setEnabled(!enable);
-            daListBox.setEnabled(!enable);
-            btnDirAccess.setEnabled(!enable);
-            sosListBox.setEnabled(enable);
-            btnSOS.setEnabled(enable);
-          }
-        }
-      };
-
-      JRadioButton rbCatUrl = new JRadioButton("Catalog URL:");
-      rbCatUrl.setActionCommand("cat");
-      rbCatUrl.addActionListener(radioListener);
-      topPanel.add(rbCatUrl);
-      rbCatUrl.addMouseListener(new MouseAdapter() {
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-          if (e.getButton() == MouseEvent.BUTTON3) {// right-click
-            if (catListBox.isEnabled()) {
-              ListEditorDialog dia = new ListEditorDialog(parentFrame, "Remove Catalog Items",
-                      "ComboBoxList");
-              dia.setVisible(true);
-
-              if (saveDialogChanges) {
-                java.util.List<String> remItems = dia.getItemsToRemove();
-                for (String s : remItems) {
-                  for (int i = 0; i < catListBox.getItemCount(); i++) {
-                    if (s.equals(catListBox.getItemAt(i).toString())) {
-                      catListBox.removeItemAt(i);
-                      break;
-                    }
-                  }
-                }
-              }
-              dia.dispose();
-
-              // update the prefs
-              catListBox.save();
-            }
-          }
-        }
-      });
-      topPanel.add(catListBox, "growx");
-      topPanel.add(btnCatConnect, "wrap");
-
-      JRadioButton rbDaUrl = new JRadioButton("Direct Access URL:");
-      rbDaUrl.setActionCommand("da");
-      rbDaUrl.addActionListener(radioListener);
-      rbDaUrl.addMouseListener(new MouseAdapter() {
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-          if (e.getButton() == MouseEvent.BUTTON3) {// right-click
-            if (daListBox.isEnabled()) {
-              ListEditorDialog dia = new ListEditorDialog(parentFrame, "Remove Direct Access Items",
-                      "DAComboBoxList");
-              dia.setVisible(true);
-
-              if (saveDialogChanges) {
-                java.util.List<String> remItems = dia.getItemsToRemove();
-                for (String s : remItems) {
-                  for (int i = 0; i < daListBox.getItemCount(); i++) {
-                    if (s.equals(daListBox.getItemAt(i).toString())) {
-                      daListBox.removeItemAt(i);
-                      break;
-                    }
-                  }
-                }
-              }
-              dia.dispose();
-
-              // update the prefs
-              daListBox.save();
-            }
-          }
-        }
-      });
-      topPanel.add(rbDaUrl);
-      topPanel.add(daListBox, "growx");
-      topPanel.add(btnDirAccess, "wrap"); // David Added "wrap"
-
-      // David added:
-
-      // List of previous servers in the SOS LIST
-      // http://sdf.ndbc.noaa.gov/sos/server.php
-      // http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS
-      // http://neptune.baruch.sc.edu/cgi-bin/oostethys_sos.cgi
-      // http://www.gomoos.org/cgi-bin/sos/V1.0/oostethys_sos.cgi
-
-      JRadioButton rbDaSOS = new JRadioButton("Sensor Obs Service:");
-      rbDaSOS.setActionCommand("sos");
-      rbDaSOS.addActionListener(radioListener);
-      rbDaSOS.addMouseListener(new MouseAdapter() {
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-          if (e.getButton() == MouseEvent.BUTTON3) {// right-click
-            if (sosListBox.isEnabled()) {
-              ListEditorDialog dia = new ListEditorDialog(parentFrame, "Remove SOS Access Items",
-                      "SOSComboBoxList");
-              dia.setVisible(true);
-
-              if (saveDialogChanges) {
-                java.util.List<String> remItems = dia.getItemsToRemove();
-                for (String s : remItems) {
-                  for (int i = 0; i < sosListBox.getItemCount(); i++) {
-                    if (s.equals(sosListBox.getItemAt(i).toString())) {
-                      sosListBox.removeItemAt(i);
-                      break;
-                    }
-                  }
-                }
-              }
-              dia.dispose();
-
-              // update the prefs
-              sosListBox.save();
-            }
-          }
-        }
-      });
-      topPanel.add(rbDaSOS);
-      topPanel.add(sosListBox, "growx");
-      topPanel.add(btnSOS);
-
-      ButtonGroup rbGroup = new ButtonGroup();
-      rbGroup.add(rbCatUrl);
-      rbGroup.add(rbDaUrl);
-      rbGroup.add(rbDaSOS);
-
-      rbCatUrl.doClick();
-
-      if (showFileChooser) {
-        // add a file chooser
-        PreferencesExt fcPrefs = (PreferencesExt) prefs.node("FileManager");
-        FileFilter[] filters = new FileFilter[]{new FileManager.XMLExtFilter()};
-        fileChooser = new FileManager(null, null, filters, fcPrefs);
-
-        AbstractAction fileAction = new AbstractAction() {
-
-          public void actionPerformed(ActionEvent e) {
-            String filename = fileChooser.chooseFilename();
-            if (filename == null) {
-              return;
-            }
-            tree.setCatalog("file:" + filename);
-          }
-        };
-        BAMutil.setActionProperties(fileAction, "FileChooser", "open Local catalog...", false, 'L', -1);
-        BAMutil.addActionToContainer(topButtons, fileAction);
-
-        // a file chooser used for catgen on a directory
-        PreferencesExt catgenPrefs = (PreferencesExt) prefs.node("CatgenFileManager");
-        catgenFileChooser = new FileManager(null, null, null, catgenPrefs);
-        catgenFileChooser.getFileChooser().setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        catgenFileChooser.getFileChooser().setDialogTitle("Run CatGen on Directory");
-
-        AbstractAction catgenAction = new AbstractAction() {
-
-          public void actionPerformed(ActionEvent e) {
-            String filename = catgenFileChooser.chooseFilename();
-            if (filename == null) {
-              return;
-            }
-            File d = new File(filename);
-            if (d.isDirectory()) {
-              System.err.println("Run catgen on filename");
-
-              InvService service = new InvService("local", ServiceType.FILE.toString(), d.toURI().toString(), null, null);
-              DirectoryScanner catgen = new DirectoryScanner(service, "local access to files", d, null,
-                      false);
-
-              InvCatalogImpl cat = (InvCatalogImpl) catgen.getDirCatalog(d, null, false, false);
-
-              InvCatalogFactory catFactory = InvCatalogFactory.getDefaultFactory(true);
-
-              // internalize to dirscan?
-              try {
-                cat.setBaseURI(new URI(d.toURI().toString() + "catalog.xml"));
-              } catch (URISyntaxException e1) {
-                e1.printStackTrace();
-              }
-              catFactory.setCatalogConverter(cat, XMLEntityResolver.CATALOG_NAMESPACE_10);
-
-              setCatalog(cat);
-
-              try {
-                // System.err.println( catFactory.writeXML(
-                // cat));
-                catFactory.writeXML(cat, filename + "/catalog.xml");
-              } catch (IOException e1) {
-                e1.printStackTrace(); // To change body of catch
-                // statement use File |
-                // Settings | File
-                // Templates.
-              }
-            }
-          }
-        };
-        BAMutil.setActionProperties(catgenAction, "catalog", "run catgen on directory...", false, 'L', -1);
-        BAMutil.addActionToContainer(topButtons, catgenAction);
-
-        AbstractAction srcEditAction = new AbstractAction() {
-
-          public void actionPerformed(ActionEvent e) {
-            TextGetPutPane sourceEditor = new TextGetPutPane(null);
-            IndependentWindow sourceEditorWindow = new IndependentWindow("Source", BAMutil.getImage("thredds"), sourceEditor);
-            sourceEditorWindow.setBounds(new Rectangle(50, 50, 725, 450));
-            sourceEditorWindow.show();
-          }
-        };
-        BAMutil.setActionProperties(srcEditAction, "Edit", "Source Editor", false, 'E', -1);
-        BAMutil.addActionToContainer(topButtons, srcEditAction);
+        
+        setCursor(Cursor.getDefaultCursor());
       }
-    }
+    });
+
+    layers = new JTabbedPane();
+    layers.setUI(new BasicTabbedPaneUI() {
+      // Hides the tabs
+      @Override
+      protected void paintTab(Graphics g, int tabPlacement, Rectangle[] rects, int tabIndex, Rectangle iconRect, Rectangle textRect) {
+        //super.paintTab(g, tabPlacement, rects, tabIndex, iconRect, textRect);
+      }
+    });
+    layers.add(splitCatalog, "grow");
+    layers.add(erddapViewer, "grow");
+    layers.setEnabledAt(0, false);
+    layers.setEnabledAt(1, false);
+
+    btnCatConnect = new JButton("Connect");
+    btnCatConnect.setToolTipText("Read the selected catalog");
+    btnCatConnect.addActionListener(new ActionListener() {
+
+      public void actionPerformed(ActionEvent evt) {
+        String catalogURL = (String) catListBox.getSelectedItem();
+        catalogTree.setCatalog(catalogURL.trim()); // will get "Catalog"
+      }
+    });
+
+    /*
+     * Direct Access URL "Connect" Button
+     */
+    btnDirAccess = new JButton("Connect");
+    btnDirAccess.setToolTipText("Enter a dataset url for direct access");
+    ActionListener al = new ActionListener() {
+
+      public void actionPerformed(ActionEvent ae) {
+        String dataUrl = "";
+        try {
+          dataUrl = daListBox.getSelectedItem().toString();
+
+          if (dataUrl == null | dataUrl.equals("")) {
+            return;
+          }// cancel clicked
+
+          System.err.println("Dataset Url: " + dataUrl);
+          System.err.println("Retrieving data...");
+
+          daDataset = NetcdfDataset.openDataset(dataUrl);
+          daDataset.setTitle(dataUrl.substring(dataUrl.lastIndexOf(File.separator) + 1));
+
+          if (odapInterface.openDataset(daDataset)) {
+            daListBox.addItem(dataUrl);
+          }
+
+        } catch (IOException ex) {
+          JOptionPane.showMessageDialog(odapInterface.getMainFrame(), "Cannot find the file\n\""
+                  + dataUrl + "\"" + "\n\nPlease check the name and try again.");
+          System.err.println("OI:directAccess: Invalid filename");
+          ex.printStackTrace();
+        }
+      }
+    };
+    ActionListener cal = com.asascience.utilities.BusyCursorActions.createListener(
+            odapInterface.getMainFrame(), al);
+    btnDirAccess.addActionListener(cal);
+
+    /*
+     * SOS "Connect" Button
+     */
+    btnSOS = new JButton("Connect");
+    btnSOS.setToolTipText("Read the selected SOS");
+    btnSOS.addActionListener(new ActionListener() {
+
+      public void actionPerformed(ActionEvent evt) {
+
+        try {
+          javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+              final JFrame frame = new JFrame("Get Capabilities");
+              frame.setLayout(new MigLayout("fill"));
+              frame.setPreferredSize(new Dimension(750, 400));
+              frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+              String sosServerURL = sosListBox.getSelectedItem().toString();
+              SosServer myData = new SosServer(sosServerURL);
+              JComponent newContentPanel = new SosGetCapProgressMonitor(myData, odapInterface);
+              sosListBox.addItem(sosServerURL);
+              newContentPanel.addPropertyChangeListener(new PropertyChangeListener() {
+
+                public void propertyChange(PropertyChangeEvent e) {
+                  String name = e.getPropertyName();
+                  if (name.equals("closed")) {
+                    frame.setVisible(false);
+                    frame.dispose();
+                  }
+                }
+              });
+
+              newContentPanel.setOpaque(true);
+              frame.add(newContentPanel, "grow");
+              frame.pack();
+              frame.setVisible(true);
+            }
+          });
+        } catch(Exception e) {
+
+        }
+      }
+    });
+
+    /*
+     * ERDDAP "Connect" Button
+     */
+    btnERDDAP = new JButton("Connect");
+    btnERDDAP.setToolTipText("Read the selected ERDDAP Server");
+    btnERDDAP.addActionListener(new ActionListener() {
+
+      public void actionPerformed(ActionEvent evt) {
+
+        try {
+          javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+              final JFrame frame = new JFrame("Get Datasets from ERDDAP");
+              frame.setLayout(new MigLayout("fill"));
+              frame.setPreferredSize(new Dimension(750, 400));
+              frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+              String erddapServerURL = erddapListBox.getSelectedItem().toString();
+              ErddapServer erddapServer = new ErddapServer(erddapServerURL);
+              erddapViewer.setServer(erddapServer);
+              JComponent newContentPanel = new ErddapGetDatasetsProgressMonitor(erddapViewer, odapInterface);
+              erddapListBox.addItem(erddapServerURL);
+              newContentPanel.addPropertyChangeListener(new PropertyChangeListener() {
+
+                public void propertyChange(PropertyChangeEvent e) {
+                  String name = e.getPropertyName();
+                  if (name.equals("closed")) {
+                    frame.setVisible(false);
+                    frame.dispose();
+                  }
+                }
+              });
+
+              newContentPanel.setOpaque(true);
+              frame.add(newContentPanel, "grow");
+              frame.pack();
+              frame.setVisible(true);
+            }
+          });
+        } catch(Exception e) {
+
+        }
+      }
+    });
+
+    topPanel = new JPanel(new MigLayout("fillx, insets 0"));
+    ActionListener radioListener = new ActionListener() {
+
+      public void actionPerformed(ActionEvent ae) {
+        boolean enable = true;
+        String cmd = ae.getActionCommand();
+        if (cmd.equals("cat")) {
+          catListBox.setEnabled(enable);
+          btnCatConnect.setEnabled(enable);
+          daListBox.setEnabled(!enable);
+          btnDirAccess.setEnabled(!enable);
+          sosListBox.setEnabled(!enable);
+          btnSOS.setEnabled(!enable);
+          erddapListBox.setEnabled(!enable);
+          btnERDDAP.setEnabled(!enable);
+          layers.setVisible(enable);
+          layers.setSelectedComponent(splitCatalog);
+          acceptButton.setVisible(enable);
+        } else if (cmd.equals("da")) {
+          catListBox.setEnabled(!enable);
+          btnCatConnect.setEnabled(!enable);
+          daListBox.setEnabled(enable);
+          btnDirAccess.setEnabled(enable);
+          sosListBox.setEnabled(!enable);
+          btnSOS.setEnabled(!enable);
+          erddapListBox.setEnabled(!enable);
+          btnERDDAP.setEnabled(!enable);
+          layers.setVisible(!enable);
+          acceptButton.setVisible(!enable);
+        } else if (cmd.equals("sos")) {
+          catListBox.setEnabled(!enable);
+          btnCatConnect.setEnabled(!enable);
+          daListBox.setEnabled(!enable);
+          btnDirAccess.setEnabled(!enable);
+          sosListBox.setEnabled(enable);
+          btnSOS.setEnabled(enable);
+          erddapListBox.setEnabled(!enable);
+          btnERDDAP.setEnabled(!enable);
+          layers.setVisible(!enable);
+          acceptButton.setVisible(!enable);
+        } else if (cmd.equals("erd")) {
+          catListBox.setEnabled(!enable);
+          btnCatConnect.setEnabled(!enable);
+          daListBox.setEnabled(!enable);
+          btnDirAccess.setEnabled(!enable);
+          sosListBox.setEnabled(!enable);
+          btnSOS.setEnabled(!enable);
+          erddapListBox.setEnabled(enable);
+          btnERDDAP.setEnabled(enable);
+          layers.setVisible(enable);
+          layers.setSelectedComponent(erddapViewer);
+          acceptButton.setVisible(!enable);
+        }
+      }
+    };
+
+    JRadioButton rbCatUrl = new JRadioButton("Catalog URL:");
+    rbCatUrl.setActionCommand("cat");
+    rbCatUrl.addActionListener(radioListener);
+    topPanel.add(rbCatUrl);
+    rbCatUrl.addMouseListener(new MouseAdapter() {
+
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        if (e.getButton() == MouseEvent.BUTTON3) {// right-click
+          if (catListBox.isEnabled()) {
+            ListEditorDialog dia = new ListEditorDialog(parentFrame, "Remove Catalog Items",
+                    "ComboBoxList");
+            dia.setVisible(true);
+
+            if (saveDialogChanges) {
+              java.util.List<String> remItems = dia.getItemsToRemove();
+              for (String s : remItems) {
+                for (int i = 0; i < catListBox.getItemCount(); i++) {
+                  if (s.equals(catListBox.getItemAt(i).toString())) {
+                    catListBox.removeItemAt(i);
+                    break;
+                  }
+                }
+              }
+            }
+            dia.dispose();
+
+            // update the prefs
+            catListBox.save();
+          }
+        }
+      }
+    });
+    topPanel.add(catListBox, "growx");
+    topPanel.add(btnCatConnect, "wrap");
+
+    JRadioButton rbDaUrl = new JRadioButton("Direct Access URL:");
+    rbDaUrl.setActionCommand("da");
+    rbDaUrl.addActionListener(radioListener);
+    rbDaUrl.addMouseListener(new MouseAdapter() {
+
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        if (e.getButton() == MouseEvent.BUTTON3) {// right-click
+          if (daListBox.isEnabled()) {
+            ListEditorDialog dia = new ListEditorDialog(parentFrame, "Remove Direct Access Items",
+                    "DAComboBoxList");
+            dia.setVisible(true);
+
+            if (saveDialogChanges) {
+              java.util.List<String> remItems = dia.getItemsToRemove();
+              for (String s : remItems) {
+                for (int i = 0; i < daListBox.getItemCount(); i++) {
+                  if (s.equals(daListBox.getItemAt(i).toString())) {
+                    daListBox.removeItemAt(i);
+                    break;
+                  }
+                }
+              }
+            }
+            dia.dispose();
+
+            // update the prefs
+            daListBox.save();
+          }
+        }
+      }
+    });
+    topPanel.add(rbDaUrl);
+    topPanel.add(daListBox, "growx");
+    topPanel.add(btnDirAccess, "wrap"); // David Added "wrap"
+
+
+    JRadioButton rbSOS = new JRadioButton("Sensor Obs Service:");
+    rbSOS.setActionCommand("sos");
+    rbSOS.addActionListener(radioListener);
+    rbSOS.addMouseListener(new MouseAdapter() {
+
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        if (e.getButton() == MouseEvent.BUTTON3) {// right-click
+          if (sosListBox.isEnabled()) {
+            ListEditorDialog dia = new ListEditorDialog(parentFrame, "Remove SOS Access Items",
+                    "SOSComboBoxList");
+            dia.setVisible(true);
+
+            if (saveDialogChanges) {
+              java.util.List<String> remItems = dia.getItemsToRemove();
+              for (String s : remItems) {
+                for (int i = 0; i < sosListBox.getItemCount(); i++) {
+                  if (s.equals(sosListBox.getItemAt(i).toString())) {
+                    sosListBox.removeItemAt(i);
+                    break;
+                  }
+                }
+              }
+            }
+            dia.dispose();
+
+            // update the prefs
+            sosListBox.save();
+          }
+        }
+      }
+    });
+    topPanel.add(rbSOS);
+    topPanel.add(sosListBox, "growx");
+    topPanel.add(btnSOS, "wrap");
+
+
+    JRadioButton rbErddap = new JRadioButton("ERDDAP Server:");
+    rbErddap.setActionCommand("erd");
+    rbErddap.addActionListener(radioListener);
+    rbErddap.addMouseListener(new MouseAdapter() {
+
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        if (e.getButton() == MouseEvent.BUTTON3) {// right-click
+          if (erddapListBox.isEnabled()) {
+            ListEditorDialog dia = new ListEditorDialog(parentFrame, "Remove ERDDAP Access Items",
+                    "ERDDAPComboBoxList");
+            dia.setVisible(true);
+
+            if (saveDialogChanges) {
+              java.util.List<String> remItems = dia.getItemsToRemove();
+              for (String s : remItems) {
+                for (int i = 0; i < erddapListBox.getItemCount(); i++) {
+                  if (s.equals(erddapListBox.getItemAt(i).toString())) {
+                    erddapListBox.removeItemAt(i);
+                    break;
+                  }
+                }
+              }
+            }
+            dia.dispose();
+
+            // update the prefs
+            erddapListBox.save();
+          }
+        }
+      }
+    });
+    topPanel.add(rbErddap);
+    topPanel.add(erddapListBox, "growx");
+    topPanel.add(btnERDDAP);
+
+    ButtonGroup rbGroup = new ButtonGroup();
+    rbGroup.add(rbCatUrl);
+    rbGroup.add(rbDaUrl);
+    rbGroup.add(rbSOS);
+    rbGroup.add(rbErddap);
+
+    rbCatUrl.doClick();
 
     // the catalog tree
-    tree = new ASACatalogTreeView();
-    tree.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+    catalogTree.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
 
       public void propertyChange(java.beans.PropertyChangeEvent e) {
         if (debugEvents) {
@@ -577,7 +603,7 @@ public class ASACatalogChooser extends JPanel {
 
         } else if (e.getPropertyName().equals("Selection")) {
 
-          InvDatasetImpl ds = (InvDatasetImpl) tree.getSelectedDataset();
+          InvDatasetImpl ds = (InvDatasetImpl) catalogTree.getSelectedDataset();
           if (ds == null) {
             return;
           }
@@ -592,7 +618,7 @@ public class ASACatalogChooser extends JPanel {
             } catch (Exception ee) {
             }
           } else if (ds.getParent() == null) { // top
-            setCurrentURL(tree.getCatalogURL());
+            setCurrentURL(catalogTree.getCatalogURL());
           }
 
         } else { // Dataset or File
@@ -603,10 +629,8 @@ public class ASACatalogChooser extends JPanel {
     });
 
     // htmlViewer Viewer
-    htmlViewer = new HtmlBrowser();
-
     // listen for selection
-    htmlViewer.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+    catalogHtmlViewer.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
 
       public void propertyChange(java.beans.PropertyChangeEvent e) {
         if (e.getPropertyName().equals("datasetURL")) {
@@ -614,7 +638,7 @@ public class ASACatalogChooser extends JPanel {
           if (debugEvents) {
             System.err.println("***datasetURL= " + datasetURL);
           }
-          InvDataset dataset = tree.getSelectedDataset();
+          InvDataset dataset = catalogTree.getSelectedDataset();
 
           InvAccess access = dataset.findAccess(datasetURL);
           firePropertyChangeEvent(new PropertyChangeEvent(this, "InvAccess", null, access));
@@ -624,7 +648,7 @@ public class ASACatalogChooser extends JPanel {
           if (debugEvents) {
             System.err.println("***catrefURL= " + urlString);
           }
-          tree.setCatalog(urlString.trim());
+          catalogTree.setCatalog(urlString.trim());
         }
       }
     });
@@ -636,39 +660,14 @@ public class ASACatalogChooser extends JPanel {
     statusPanel.add(statusLabel, BorderLayout.WEST);
     statusPanel.add(sourceText, BorderLayout.EAST);
 
-    // button panel
-    buttPanel = new JPanel();
-    JButton openfileButton = new JButton("Open file");
-    // buttPanel.add(openfileButton, null);
-    openfileButton.addActionListener(new ActionListener() {
-
-      public void actionPerformed(ActionEvent evt) {
-        eventType = "File";
-        try {
-          tree.acceptSelected();
-        } catch (Throwable t) {
-          t.printStackTrace();
-          JOptionPane.showMessageDialog(ASACatalogChooser.this, "ERROR " + t.getMessage());
-        } finally {
-          eventType = null;
-        }
-      }
-    });
-
-    // JButton acceptButton = new JButton("Open dataset");
-    acceptButton = new JButton("Subset & Process");
-    // acceptButton.setEnabled(false);
-    buttPanel.add(acceptButton, null);
-    // ActionListener al = new OpenDatasetListener();
-    // acceptButton.addActionListener(al);
-    ActionListener al = new ActionListener() {
+    ActionListener al2 = new ActionListener() {
 
       public void actionPerformed(ActionEvent evt) {
         eventType = "Dataset";
         try {
           // System.err.println("ASACatChoose: Before acceptSelected(): "
           // + System.currentTimeMillis());
-          tree.acceptSelected();
+          catalogTree.acceptSelected();
           // System.err.println("ASACatChoose: After acceptSelected(): "
           // + System.currentTimeMillis());
         } catch (Throwable t) {
@@ -680,36 +679,22 @@ public class ASACatalogChooser extends JPanel {
         }
       }
     };
-    ActionListener cursorAl = BusyCursorActions.createListener(odapInterface.getMainFrame(), al);
+    
+    ActionListener cursorAl = BusyCursorActions.createListener(odapInterface.getMainFrame(), al2);
     acceptButton.addActionListener(cursorAl);
 
-
-    // splitter
-    splitCatalog = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, tree, htmlViewer);
-    if (prefs != null) {
-      splitCatalog.setDividerLocation(prefs.getInt(HDIVIDER, 400));
-    }
     // put it all together
     setLayout(new BorderLayout());
-    if (showComboChooser) {
-      add(topPanel, BorderLayout.NORTH);
-    }
-    add(splitCatalog, BorderLayout.CENTER);
+    add(topPanel, BorderLayout.NORTH);
+    add(layers, BorderLayout.CENTER);
 
-    if (showOpenButton) {
-      JPanel botPanel = new JPanel(new BorderLayout());
-      botPanel.add(buttPanel, BorderLayout.NORTH);
-      botPanel.add(statusPanel, BorderLayout.SOUTH);
-      add(botPanel, BorderLayout.SOUTH);
-    }
-  }
-
-  private void makeSourceEditWindow() {
-    TextGetPutPane sourceEditor = new TextGetPutPane(null);
-    IndependentWindow sourceEditorWindow = new IndependentWindow("Source", BAMutil.getImage("thredds"),
-            sourceEditor);
-    sourceEditorWindow.setBounds(new Rectangle(50, 50, 725, 450));
-    sourceEditorWindow.show();
+    // Subset Button
+    JPanel botPanel = new JPanel(new BorderLayout());
+    buttPanel = new JPanel();
+    buttPanel.add(acceptButton, null);
+    botPanel.add(buttPanel, BorderLayout.NORTH);
+    botPanel.add(statusPanel, BorderLayout.SOUTH);
+    add(botPanel, BorderLayout.SOUTH);
   }
 
   /**
@@ -720,7 +705,7 @@ public class ASACatalogChooser extends JPanel {
    *            DatasetFilter or null
    */
   public void setDatasetFilter(DatasetFilter filter) {
-    tree.setDatasetFilter(filter);
+    catalogTree.setDatasetFilter(filter);
   }
 
   /**
@@ -736,18 +721,10 @@ public class ASACatalogChooser extends JPanel {
     if (sosListBox != null) {
       sosListBox.save();
     }
-
+    if (erddapListBox != null) {
+      erddapListBox.save();
+    }
     if (prefs != null) {
-      if (fileChooser != null) {
-        fileChooser.save();
-      }
-      if (catgenFileChooser != null) {
-        catgenFileChooser.save();
-      }
-      // if (sosFileChooser != null) {
-      // sosFileChooser.save();
-      // }
-
       prefs.putInt(HDIVIDER, splitCatalog.getDividerLocation());
     }
   }
@@ -810,7 +787,7 @@ public class ASACatalogChooser extends JPanel {
    *            if true, throw events only if dataset has an Access
    */
   public void setAccessOnly(boolean accessOnly) {
-    tree.setAccessOnly(accessOnly);
+    catalogTree.setAccessOnly(accessOnly);
   }
 
   /**
@@ -859,7 +836,7 @@ public class ASACatalogChooser extends JPanel {
    *            select this InvDataset, must be already in the tree.
    */
   public void setSelectedDataset(InvDatasetImpl ds) {
-    tree.setSelectedDataset(ds);
+    catalogTree.setSelectedDataset(ds);
     showDatasetInfo(ds);
   }
 
@@ -869,14 +846,14 @@ public class ASACatalogChooser extends JPanel {
    * @return current catalog, or null.
    */
   public InvCatalog getCurrentCatalog() {
-    return tree.getCatalog();
+    return catalogTree.getCatalog();
   }
 
   /**
    * Get the TreeView component.
    */
   public ASACatalogTreeView getTreeView() {
-    return tree;
+    return catalogTree;
   }
 
   /**
@@ -900,7 +877,7 @@ public class ASACatalogChooser extends JPanel {
    * Set the current catalog.
    */
   public void setCatalog(InvCatalogImpl catalog) {
-    tree.setCatalog(catalog);
+    catalogTree.setCatalog(catalog);
   }
 
   /**
@@ -908,7 +885,7 @@ public class ASACatalogChooser extends JPanel {
    * catalog#datasetId
    */
   public void setCatalog(String catalogURL) {
-    tree.setCatalog(catalogURL.trim());
+    catalogTree.setCatalog(catalogURL.trim());
   }
 
   private void showDatasetInfo(InvDatasetImpl ds) {
@@ -921,7 +898,7 @@ public class ASACatalogChooser extends JPanel {
     if (showHTML) {
       System.err.println("HTML=\n" + sbuff);
     }
-    htmlViewer.setContent(ds.getName(), sbuff.toString());
+    catalogHtmlViewer.setContent(ds.getName(), sbuff.toString());
   }
   private boolean saveDialogChanges;
 
@@ -1003,7 +980,6 @@ public class ASACatalogChooser extends JPanel {
    *            is modal
    */
   public JDialog makeDialog(RootPaneContainer parent, String title, boolean modal) {
-    this.parent = parent;
     return new Dialog(parent, title, modal);
   }
 
@@ -1040,115 +1016,5 @@ public class ASACatalogChooser extends JPanel {
       pack();
     }
   }
-  // class OpenDatasetListener implements ActionListener {
-  //
-  // public void actionPerformed(ActionEvent e) {
-  // ProgressDialog pd = new ProgressDialog(odapInterface.getMainFrame(),
-  // "Progress", "Opening Dataset...");
-  // pd.addTask(new OpenDataset());
-  // pd.run();
-  // pd.finished();
-  // }
-  // }
-  //
-  // class OpenDADatasetListener implements ActionListener {
-  //
-  // public void actionPerformed(ActionEvent e) {
-  //
-  // String dataUrl = "";
-  // try{
-  // dataUrl = JOptionPane.showInputDialog(odapInterface.getMainFrame(),
-  // "Enter a data url:", "Direct Data Access...");
-  //
-  // if(dataUrl == null){
-  // return;
-  // }//cancel clicked
-  //
-  // // setThreddsDatatype(dataUrl);
-  //
-  // System.err.println("Dataset Url: " + dataUrl);
-  // System.err.println("Retrieving data...");
-  // //
-  // odapInterface.getMainFrame().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-  //
-  // daDataset = NetcdfDataset.openDataset(dataUrl);
-  //
-  // ProgressDialog pd = new ProgressDialog(odapInterface.getMainFrame(),
-  // "Progress", "Opening Dataset...");
-  // pd.addTask(new OpenDirectAccessDataset());
-  // pd.run();
-  // pd.finished();
-  //
-  // }catch(IOException ex){
-  // JOptionPane.showMessageDialog(odapInterface.getMainFrame(),
-  // "Cannot find the file\n\"" + dataUrl + "\"" +
-  // "\n\nPlease check the name and try again.");
-  // System.err.println("OI:directAccess: Invalid filename");
-  // ex.printStackTrace();
-  // }finally{
-  // // odapInterface.getMainFrame().setCursor(Cursor.getDefaultCursor());
-  // }
-  // }
-  // }
-  //
-  // class OpenDataset implements Runnable {
-  //
-  // public void run() {
-  // eventType = "Dataset";
-  // try{
-  // System.err.println("od runnable");
-  // tree.acceptSelected();
-  // }catch(Throwable t){
-  // t.printStackTrace();
-  // JOptionPane.showMessageDialog(ASACatalogChooser.this, "ERROR " +
-  // t.getMessage());
-  // }finally{
-  // eventType = null;
-  // }
-  // }
-  // }
-  //
-  // class OpenDirectAccessDataset implements Runnable {
-  // public void run() {
-  // System.err.println("odad runnable");
-  // odapInterface.openDataset(daDataset);
-  // }
-  // }
-}
 
-/*
- * Change History: $Log: CatalogChooser.java,v $ Revision 1.35 2005/11/18
- * 17:47:41 caron** empty log message *** Revision 1.34 2005/08/08 19:38:59
- * caron minor Revision 1.33 2005/08/05 18:40:22 caron no message Revision 1.32
- * 2005/07/27 23:29:13 caron minor Revision 1.31 2005/07/22 16:19:49 edavis
- * Allow DatasetSource and InvDatasetScan to add dataset size metadata. Revision
- * 1.30 2005/07/11 20:06:17 caron** empty log message *** Revision 1.29
- * 2005/07/08 18:34:59 edavis Fix problem dealing with service URLs that are
- * relative to the catalog (base="") and those that are relative to the
- * collection (base URL is not empty). Revision 1.28 2005/07/01 02:50:12 caron
- * no message Revision 1.27 2005/06/23 20:02:55 caron add "View File" button to
- * thredds dataset chooser Revision 1.26 2005/06/23 19:18:50 caron no message
- * Revision 1.25 2005/05/25 21:09:36 caron no message Revision 1.24 2005/05/04
- * 03:37:05 edavis Remove several unnecessary methods in DirectoryScanner.
- * Revision 1.23 2005/04/29 14:55:56 edavis Fixes for change in
- * InvCatalogFactory.writeXML( cat, filename) method signature. And start on
- * allowing wildcard characters in pathname given to DirectoryScanner. Revision
- * 1.22 2005/04/28 23:15:11 caron catChooser writes catalog to directory
- * Revision 1.21 2005/04/27 22:08:03 caron no message Revision 1.20 2005/01/14
- * 22:44:03 caron** empty log message *** Revision 1.19 2004/12/16 00:32:13
- * caron** empty log message *** Revision 1.18 2004/12/15 00:11:45 caron 2.2.05
- * Revision 1.17 2004/12/14 15:41:01 caron** empty log message *** Revision 1.16
- * 2004/12/07 02:43:19 caron** empty log message *** Revision 1.15 2004/12/01
- * 05:54:23 caron improve FileChooser Revision 1.14 2004/09/30 00:33:36 caron**
- * empty log message *** Revision 1.13 2004/09/28 21:39:09 caron** empty log
- * message *** Revision 1.12 2004/09/24 03:26:30 caron merge nj22 Revision 1.11
- * 2004/06/12 02:01:11 caron dqc 0.3 Revision 1.10 2004/06/09 00:27:28 caron
- * version 2.0a release; cleanup javadoc Revision 1.9 2004/05/11 23:30:32 caron
- * release 2.0a Revision 1.8 2004/03/11 23:35:20 caron minor bugs Revision 1.7
- * 2004/03/05 23:35:48 caron rel 1.3.1 javadoc Revision 1.6 2004/03/05 17:21:50
- * caron 1.3.1 release Revision 1.5 2004/02/20 00:49:53 caron 1.3 changes
- * Revision 1.4 2003/12/04 22:27:45 caron** empty log message *** Revision 1.3
- * 2003/05/29 22:59:48 john refactor choosers into toolkit framework Revision
- * 1.2 2003/03/17 20:09:33 john improve catalog chooser, use ucar.unidata.geoloc
- * Revision 1.1 2003/01/31 22:06:14 john ThreddsDatasetChooser standalone
- */
+}

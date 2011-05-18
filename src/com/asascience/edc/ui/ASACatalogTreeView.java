@@ -47,6 +47,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import net.miginfocom.swing.MigLayout;
 
 import thredds.catalog.CatalogSetCallback;
 import thredds.catalog.DatasetFilter;
@@ -172,8 +173,8 @@ public class ASACatalogTreeView extends JPanel implements CatalogSetCallback {
     ToolTipManager.sharedInstance().registerComponent(tree);
 
     // layout
-    setLayout(new BorderLayout());
-    add(new JScrollPane(tree), BorderLayout.CENTER);
+    setLayout(new MigLayout("fill"));
+    add(new JScrollPane(tree), "grow");
   }
 
   /** Get the underlying JTree */

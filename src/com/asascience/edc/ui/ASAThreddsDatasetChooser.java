@@ -44,7 +44,6 @@ import thredds.catalog.InvCatalog;
 import thredds.catalog.InvCatalogFactory;
 import thredds.catalog.InvDataset;
 import thredds.catalog.ServiceType;
-import thredds.ui.catalog.query.QueryChooser;
 import ucar.util.prefs.PreferencesExt;
 
 import com.asascience.edc.gui.OpendapInterface;
@@ -98,14 +97,9 @@ import com.asascience.ui.JCloseableTabbedPane;
  */
 public class ASAThreddsDatasetChooser extends JPanel {
 
-  private final static String FRAME_SIZE = "FrameSize";
-  private ucar.util.prefs.PreferencesExt prefs;
   private EventListenerList listenerList = new EventListenerList();
   private ASACatalogChooser catalogChooser;
-  private QueryChooser queryChooser;
-  private CatalogSearcher searchChooser;
   private JCloseableTabbedPane tabbedPane;
-  private boolean doResolve = false; // shoul we resolve Resolver datasets?
   private boolean pipeOut = true; // send results to standard out
   private boolean messageOut = false; // send results to popup message
   private JFrame parentFrame; // need for popup messages
@@ -143,85 +137,28 @@ public class ASAThreddsDatasetChooser extends JPanel {
   public ASAThreddsDatasetChooser(ucar.util.prefs.PreferencesExt prefs, JCloseableTabbedPane tabs,
           OpendapInterface parent, boolean pipeOutput, boolean messageOutput) {
 
-    this.prefs = prefs;
     this.parentFrame = parent.getMainFrame();
     this.pipeOut = pipeOutput;
     this.messageOut = messageOutput;
 
     // create the catalog chooser
     PreferencesExt node = (prefs == null) ? null : (PreferencesExt) prefs.node("catChooser");
-    catalogChooser = new ASACatalogChooser(node, true, true, false, parent);
+    catalogChooser = new ASACatalogChooser(node, parent);
     catalogChooser.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
 
       public void propertyChange(java.beans.PropertyChangeEvent e) {
-
         if (e.getPropertyName().equals("InvAccess")) {
-          InvAccess qcAccess = (InvAccess) e.getNewValue();
-          if (qcAccess.getService().getServiceType() == ServiceType.QC) { // LOOK
-            // &&
-            // (ds.getDataType()
-            // !=
-            // DataType.STATION))
-            // {
-            queryChooser.setDataset(qcAccess.getDataset());
-            tabbedPane.setSelectedComponent(queryChooser);
-            return;
-          }
-
           firePropertyChangeEvent(e);
-          return;
         }
-
-        // see if this dataset is really a qc
         if (e.getPropertyName().equals("Dataset") || e.getPropertyName().equals("File")) {
-          InvDataset ds = (thredds.catalog.InvDataset) e.getNewValue();
-          InvAccess qcAccess = ds.getAccess(ServiceType.QC);
-          if ((qcAccess != null)) { // LOOK && (ds.getDataType() !=
-            // DataType.STATION)) {
-
-            // non station data DQC
-            queryChooser.setDataset(ds);
-            tabbedPane.setSelectedComponent(queryChooser);
-            return;
-          }
-
-          // do we need to resolve it? LOOK what about QC events?
-          qcAccess = ds.getAccess(ServiceType.RESOLVER);
-          if ((qcAccess != null) && doResolve) {
-            resolve(ds);
-            return;
-          }
-
-          // otherwise send out the info
           firePropertyChangeEvent(e);
         }
       }
     });
-
-    // DQC
-    node = (prefs == null) ? null : (PreferencesExt) prefs.node("dqc");
-    queryChooser = new QueryChooser(node, true);
-    queryChooser.addPropertyChangeListener(new PropertyChangeListener() {
-
-      public void propertyChange(PropertyChangeEvent e) {
-        firePropertyChangeEvent(e);
-      }
-    });
-
-    // panel to search catalog
-    node = (prefs == null) ? null : (PreferencesExt) prefs.node("search");
-    searchChooser = new CatalogSearcher(node);
 
     // the overall UI
     tabbedPane = (tabs == null) ? new JCloseableTabbedPane() : tabs;
-
     tabbedPane.addTabNoClose("Browse", catalogChooser);
-    // tabbedPane.addTab("DQC Chooser", queryChooser);
-    if (ucar.util.prefs.ui.Debug.isSet("System/showTools")) // not ready for
-    // general use
-    {
-      tabbedPane.addTab("Search", searchChooser);
-    }
     tabbedPane.setSelectedComponent(catalogChooser);
 
     setLayout(new BorderLayout());
@@ -239,36 +176,14 @@ public class ASAThreddsDatasetChooser extends JPanel {
     catalogChooser.setDatasetFilter(filter);
   }
 
-  /**
-   * If you want resolver datasets to be resolved (default false). If true,
-   * may throw "Datasets" event.
-   *
-   * @param doResolve
-   */
-  public void setDoResolve(boolean doResolve) {
-    this.doResolve = doResolve;
-  }
-
-  /** Get the component QueryChooser */
-  public QueryChooser getQueryChooser() {
-    return queryChooser;
-  }
-
   /** Get the component CatalogChooser */
   public ASACatalogChooser getCatalogChooser() {
     return catalogChooser;
   }
 
-  /** Get the component CatalogSearcher */
-  public CatalogSearcher getSearchChooser() {
-    return searchChooser;
-  }
-
   /** save the state */
   public void save() {
     catalogChooser.save();
-    queryChooser.save();
-    searchChooser.save();
   }
 
   private void firePropertyChangeEvent(PropertyChangeEvent event) {
@@ -300,6 +215,7 @@ public class ASAThreddsDatasetChooser extends JPanel {
    * <li>propertyName = "InvAccess" getNewValue() = InvAccess chosen.
    * </ul>
    */
+  @Override
   public void addPropertyChangeListener(PropertyChangeListener l) {
     listenerList.add(PropertyChangeListener.class, l);
   }
@@ -307,16 +223,19 @@ public class ASAThreddsDatasetChooser extends JPanel {
   /**
    * Remove a PropertyChangeEvent Listener.
    */
+  @Override
   public void removePropertyChangeListener(PropertyChangeListener l) {
     listenerList.remove(PropertyChangeListener.class, l);
   }
 
   private void messageEvent(java.beans.PropertyChangeEvent e) {
     StringBuffer buff = new StringBuffer();
-    buff.append("Event propertyName = " + e.getPropertyName());
+    buff.append("Event propertyName = ");
+    buff.append(e.getPropertyName());
     Object newValue = e.getNewValue();
     if (newValue != null) {
-      buff.append(", class = " + newValue.getClass().getName());
+      buff.append(", class = ");
+      buff.append(newValue.getClass().getName());
     }
     buff.append("\n");
 
@@ -325,7 +244,9 @@ public class ASAThreddsDatasetChooser extends JPanel {
 
     } else if (e.getPropertyName().equals("Datasets")) {
       Object[] ds = (Object[]) e.getNewValue();
-      buff.append(" element class = " + ds[0].getClass().getName() + "\n");
+      buff.append(" element class = ");
+      buff.append(ds[0].getClass().getName());
+      buff.append("\n");
 
       for (int i = 0; i < ds.length; i++) {
         if (ds[i] instanceof InvDataset) {
@@ -362,18 +283,29 @@ public class ASAThreddsDatasetChooser extends JPanel {
     Iterator iter = ds.getAccess().iterator();
     while (iter.hasNext()) {
       thredds.catalog.InvAccess ac = (thredds.catalog.InvAccess) iter.next();
-      buff.append(ac.getStandardUrlName() + " " + ac.getService().getServiceType() + "\n");
+      buff.append(ac.getStandardUrlName());
+      buff.append(" ");
+      buff.append(ac.getService().getServiceType());
+      buff.append("\n");
     }
   }
 
   private void showDatasetInfo(StringBuffer buff, thredds.catalog.InvDataset ds) {
-    buff.append(" Dataset = " + ds.getName());
-    buff.append(", dataType = " + ds.getDataType() + "\n");
+    buff.append(" Dataset = ");
+    buff.append(ds.getName());
+    buff.append(", dataType = ");
+    buff.append(ds.getDataType());
+    buff.append("\n");
     Iterator iter = ds.getAccess().iterator();
     while (iter.hasNext()) {
       thredds.catalog.InvAccess ac = (thredds.catalog.InvAccess) iter.next();
-      buff.append("  service = " + ac.getService().getServiceType() + ", url = " + ac.getStandardUrlName() + "\n");
-      System.err.println("  url = " + ac.getStandardUrlName());
+      buff.append("  service = ");
+      buff.append(ac.getService().getServiceType());
+      buff.append(", url = ");
+      buff.append(ac.getStandardUrlName());
+      buff.append("\n");
+      System.err.println("  url = ");
+      buff.append(ac.getStandardUrlName());
     }
   }
 
@@ -463,140 +395,5 @@ public class ASAThreddsDatasetChooser extends JPanel {
       pack();
     }
   }
-
-  // dummy
-  private class CatalogSearcher extends JPanel {
-
-    CatalogSearcher(PreferencesExt prefs) {
-    }
-
-    void save() {
-    }
-  }
-  // /**
-  // * Standalone application.
-  // * @param args recognized values:
-  // * <ul> <li> -usePopup to popup messages </ul>
-  // */
-  // public static void main(String args[]) {
-  // boolean usePopup = false;
-  //
-  // for (int i=0; i<args.length; i++) {
-  // if (args[i].equals("-usePopup"))
-  // usePopup = true;
-  // }
-  //
-  // try {
-  // store = ucar.util.prefs.XMLStore.createFromFile("ThreddsDatasetChooser",
-  // null);
-  // p = store.getPreferences();
-  // } catch (IOException e) {
-  // System.err.println("XMLStore Creation failed "+e);
-  // }
-  //
-  // // put it together in a JFrame
-  // final JFrame parentFrame = new JFrame("Thredds Dataset Chooser");
-  // parentFrame.addWindowListener(new WindowAdapter() {
-  // public void windowClosing(WindowEvent e) {
-  // chooser.save();
-  // Rectangle bounds = parentFrame.getBounds();
-  // p.putBeanObject(FRAME_SIZE, bounds);
-  // try {
-  // store.save();
-  // } catch (IOException ioe) { ioe.printStackTrace(); }
-  //
-  // System.exit(0);
-  // }
-  // });
-  //
-  // chooser = new ASAThreddsDatasetChooser(p, null, parentFrame, true,
-  // usePopup);
-  // chooser.setDoResolve( true);
-  //
-  // //
-  // parentFrame.getContentPane().add(chooser);
-  // Rectangle bounds = (Rectangle) p.getBean(FRAME_SIZE, new Rectangle(50,
-  // 50, 800, 450));
-  // parentFrame.setBounds( bounds);
-  //
-  // parentFrame.pack();
-  // parentFrame.setBounds( bounds);
-  // parentFrame.setVisible(true);
-  // }
-  // private static ASAThreddsDatasetChooser chooser;
-  // private static PreferencesExt p;
-  // private static XMLStore store;
+  
 }
-
-/*
- * Change History: $Log: ThreddsDatasetChooser.java,v $ Revision 1.21 2005/08/08
- * 19:38:59 caron minor
- * 
- * Revision 1.20 2005/07/27 23:29:13 caron minor
- * 
- * Revision 1.19 2005/06/23 20:02:55 caron add "View File" button to thredds
- * dataset chooser
- * 
- * Revision 1.18 2005/06/23 19:18:50 caron no message
- * 
- * Revision 1.17 2005/04/20 00:05:38 caron** empty log message ***
- * 
- * Revision 1.16 2004/12/14 15:41:01 caron** empty log message ***
- * 
- * Revision 1.15 2004/11/16 23:35:37 caron no message
- * 
- * Revision 1.14 2004/11/04 20:16:43 caron no message
- * 
- * Revision 1.13 2004/09/30 00:33:37 caron** empty log message ***
- * 
- * Revision 1.12 2004/09/24 03:26:31 caron merge nj22
- * 
- * Revision 1.11 2004/06/19 01:16:37 caron hide search tab for now
- * 
- * Revision 1.10 2004/06/09 00:27:29 caron version 2.0a release; cleanup javadoc
- * 
- * Revision 1.9 2004/05/11 23:30:33 caron release 2.0a
- * 
- * Revision 1.8 2004/03/11 23:35:20 caron minor bugs
- * 
- * Revision 1.7 2004/03/05 23:35:48 caron rel 1.3.1 javadoc
- * 
- * Revision 1.6 2004/03/05 17:21:51 caron 1.3.1 release
- * 
- * Revision 1.5 2004/02/20 00:49:54 caron 1.3 changes
- * 
- * Revision 1.4 2003/12/04 22:27:46 caron** empty log message ***
- * 
- * Revision 1.3 2003/05/29 22:59:50 john refactor choosers into toolkit
- * framework
- * 
- * Revision 1.2 2003/03/17 20:09:35 john improve catalog chooser, use
- * ucar.unidata.geoloc
- * 
- * Revision 1.1 2003/01/31 22:06:16 john ThreddsDatasetChooser standalone
- * 
- * Revision 1.4 2003/01/13 19:54:54 john new prefs usage
- * 
- * Revision 1.3 2002/12/19 23:02:18 caron latest adde mods
- * 
- * Revision 1.2 2002/12/13 00:36:25 caron pass 2 of thredds build environ
- * 
- * Revision 1.1.1.1 2002/11/23 17:49:46 caron thredds reorg
- * 
- * Revision 1.6 2002/10/18 18:21:03 caron thredds server
- * 
- * Revision 1.5 2002/07/01 23:35:44 caron release 0.6 alpha
- * 
- * Revision 1.4 2002/04/30 22:43:09 caron allow 1.3 or 1.4
- * 
- * Revision 1.3 2002/04/29 22:44:06 caron Propert name = Dataset, change button
- * layout
- * 
- * Revision 1.2 2002/03/09 01:47:00 caron seperate JDialog
- * 
- * Revision 1.1.1.1 2002/02/26 17:24:41 caron import sources
- * 
- * Revision 1.2 2001/09/14 15:47:14 caron checkin catalog 0.4
- * 
- * Revision 1.1 2001/08/29 01:11:25 caron RemoteDatasetChooser component added
- */
