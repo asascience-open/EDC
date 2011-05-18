@@ -104,8 +104,8 @@ public class ExtentRectangleLayer extends OMGraphicHandlerLayer implements MapMo
       if (getList() != null && getList().size() > 0) {
         getList().clear();
       }
-      System.err.println("Extent too big for single rectangle:");
-      System.err.println("  orig: " + llr.toString2());
+      //System.err.println("Extent too big for single rectangle:");
+      //System.err.println("  orig: " + llr.toString2());
       List<LatLonRect> rects = quarterExtent(llr);
       // List<LatLonRect> rects = halveExtent(llr);
       allowMulti = true;// temporarily allow multiple rectangles so that
@@ -114,7 +114,7 @@ public class ExtentRectangleLayer extends OMGraphicHandlerLayer implements MapMo
       int q = 1;
       for (Iterator i = rects.iterator(); i.hasNext();) {
         llr = (LatLonRect) i.next();
-        System.err.println("  quad " + q + ":" + llr.toString2());
+        //System.err.println("  quad " + q + ":" + llr.toString2());
         createRectangle(llr.getLatMax(), llr.getLonMin(), llr.getLatMin(), llr.getLonMax());
         q++;
       }
@@ -124,8 +124,8 @@ public class ExtentRectangleLayer extends OMGraphicHandlerLayer implements MapMo
       if (getList() != null && getList().size() > 0) {
         getList().clear();
       }
-      System.err.println("Extent nearly global:");
-      System.err.println("  orig: " + llr.toString2());
+      //System.err.println("Extent nearly global:");
+      //System.err.println("  orig: " + llr.toString2());
       List<LatLonRect> rects = quarterExtent(llr);
       // List<LatLonRect> rects = halveExtent(llr);
       allowMulti = true;// temporarily allow multiple rectangles so that
@@ -137,12 +137,12 @@ public class ExtentRectangleLayer extends OMGraphicHandlerLayer implements MapMo
       LatLonRect llr3;
       for (Iterator i = rects.iterator(); i.hasNext();) {
         llr2 = (LatLonRect) i.next();
-        System.err.println("  quad " + q + ":" + llr2.toString2());
+        //System.err.println("  quad " + q + ":" + llr2.toString2());
         rects2 = quarterExtent(llr2);
         sub = 1;
         for (Iterator i2 = rects2.iterator(); i2.hasNext();) {
           llr3 = (LatLonRect) i2.next();
-          System.err.println("    sub-quad " + q + "-" + sub + ":" + llr3.toString2());
+          //System.err.println("    sub-quad " + q + "-" + sub + ":" + llr3.toString2());
           createRectangle(llr3.getLatMax(), llr3.getLonMin(), llr3.getLatMin(), llr3.getLonMax());
           sub++;
         }
