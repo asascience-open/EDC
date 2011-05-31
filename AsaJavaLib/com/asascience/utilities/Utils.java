@@ -629,6 +629,21 @@ public class Utils {
     }
     return new Color(cVal);
   }
+  
+  public static String getABGRFromColor(Color color) {
+    return getABGRFromColor("ff",color);
+  }
+  
+  public static String getABGRFromColor(String alpha, Color color) {
+    String red = Integer.toHexString(color.getRed());
+    String green = Integer.toHexString(color.getGreen());
+    String blue = Integer.toHexString(color.getBlue());
+
+    return  (alpha.length() == 1? "f" + alpha : alpha) + 
+            (blue.length() == 1? "0" + blue : blue) +
+            (green.length() == 1? "0" + green : green) +
+            (red.length() == 1? "0" + red : red);
+  }
 
   public static boolean comboBoxContains(javax.swing.ComboBoxModel model, Object o) {
     int size = model.getSize();

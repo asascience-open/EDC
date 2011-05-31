@@ -68,7 +68,6 @@ import ucar.util.prefs.XMLStore;
 
 import com.asascience.edc.Configuration;
 import com.asascience.edc.History;
-import com.asascience.edc.erddap.ErddapServer;
 import com.asascience.edc.erddap.gui.ErddapDatasetViewer;
 import com.asascience.edc.nc.NetcdfConstraints;
 import com.asascience.edc.nc.io.NcProperties;
@@ -83,8 +82,9 @@ import com.asascience.openmap.ui.OMLayerPanel;
 import com.asascience.openmap.ui.OMTimeSlider;
 import com.asascience.openmap.utilities.MapUtils;
 import com.asascience.openmap.utilities.listener.VectorInterrogationPropertyListener;
-import com.asascience.edc.sos.parsers.SosServer;
-import com.asascience.edc.sos.SosProcessPanel;
+import com.asascience.edc.sos.SosServer;
+import com.asascience.edc.sos.ui.SosProcessPanel;
+import com.asascience.edc.sos.ui.SosWorldwindProcessPanel;
 import com.asascience.ui.ErrorDisplayDialog;
 import com.asascience.ui.ImagePanel;
 import com.asascience.ui.JCloseableTabbedPane;
@@ -104,7 +104,7 @@ public class OpendapInterface {
   JFrame mainFrame = null;
   private ASAThreddsDatasetChooser datasetChooser = null;
   private SubsetProcessPanel spPanel = null;
-  private SosProcessPanel sosPanel = null;
+  private SosWorldwindProcessPanel sosPanel = null;
   private ThreddsDataFactory threddsDataFactory = new ThreddsDataFactory();
   private PreferencesExt prefs = null;
   private XMLStore store;
@@ -525,7 +525,7 @@ public class OpendapInterface {
   public boolean openSOSDataset(SosServer sosData, SwingWorker task) {
     try {
       if (!task.isCancelled()) {
-        sosPanel = new SosProcessPanel((PreferencesExt) prefs, fileChooser,
+        sosPanel = new SosWorldwindProcessPanel((PreferencesExt) prefs, fileChooser,
               this, sosData, homeDir, sysDir);
       }
       if (task.isCancelled() || !sosPanel.initData()) {

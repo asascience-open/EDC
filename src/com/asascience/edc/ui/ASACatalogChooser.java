@@ -74,13 +74,14 @@ import com.asascience.edc.ui.combos.ErddapComboBox;
 import com.asascience.edc.ui.combos.SosComboBox;
 import com.asascience.ui.CheckBoxList;
 import com.asascience.utilities.BusyCursorActions;
-import com.asascience.edc.sos.parsers.SosServer;
-import com.asascience.edc.sos.SosGetCapProgressMonitor;
+import com.asascience.edc.sos.SosServer;
+import com.asascience.edc.sos.ui.SosGetCapProgressMonitor;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 
 /**
@@ -304,7 +305,7 @@ public class ASACatalogChooser extends JPanel {
               frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
               String sosServerURL = sosListBox.getSelectedItem().toString();
-              SosServer myData = new SosServer(sosServerURL);
+              final SosServer myData = new SosServer(sosServerURL);
               JComponent newContentPanel = new SosGetCapProgressMonitor(myData, odapInterface);
               sosListBox.addItem(sosServerURL);
               newContentPanel.addPropertyChangeListener(new PropertyChangeListener() {
@@ -314,6 +315,12 @@ public class ASACatalogChooser extends JPanel {
                   if (name.equals("closed")) {
                     frame.setVisible(false);
                     frame.dispose();
+                  }
+                  if (name.equals("taskcomplete")) {
+                    frame.setVisible(false);
+                    frame.dispose();
+                    myData.getRequest().setHomeDir(odapInterface.getHomeDir());
+                    odapInterface.openSOSDataset(myData,(SwingWorker)e.getOldValue());
                   }
                 }
               });

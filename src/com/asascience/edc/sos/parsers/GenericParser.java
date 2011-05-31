@@ -4,6 +4,7 @@
  */
 package com.asascience.edc.sos.parsers;
 
+import com.asascience.edc.sos.SosServer;
 import cern.colt.Timer;
 import com.asascience.edc.Configuration;
 import java.beans.PropertyChangeEvent;
@@ -13,7 +14,7 @@ import java.util.List;
 
 import org.jdom.Document;
 import com.asascience.edc.sos.SensorContainer;
-import com.asascience.edc.sos.SensorPoint;
+import com.asascience.edc.sos.map.SensorPoint;
 import com.asascience.edc.sos.VariableContainer;
 import com.asascience.edc.sos.requests.ResponseFormat;
 import java.beans.PropertyChangeListener;

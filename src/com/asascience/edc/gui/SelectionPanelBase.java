@@ -25,7 +25,7 @@ import ucar.nc2.Variable;
 import ucar.nc2.dt.grid.GeoGrid;
 
 import com.asascience.edc.nc.NetcdfConstraints;
-import com.asascience.edc.sos.SosProcessPanel;
+import com.asascience.edc.sos.ui.SosProcessPanel;
 import com.asascience.ui.CheckBoxList;
 
 /**

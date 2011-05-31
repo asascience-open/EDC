@@ -48,7 +48,7 @@ import com.asascience.openmap.mousemode.NavMouseMode3;
 import com.asascience.openmap.mousemode.PanMouseMode2;
 import com.asascience.openmap.utilities.GeoConstraints;
 import com.asascience.edc.sos.SensorContainer;
-import com.asascience.edc.sos.SosLayer;
+import com.asascience.edc.sos.map.SosLayer;
 import com.asascience.utilities.NumFieldUtilities;
 import com.asascience.utilities.Utils;
 import com.bbn.openmap.InformationDelegator;
@@ -412,7 +412,7 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
     layerHandler.addLayer(sensorLayer);
     sensorLayer.addPropertyChangeListener(new PropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent evt) {
-        pcs.firePropertyChange("loaded", false, true);
+        pcs.firePropertyChange(evt);
       }
     });
     sensorLayer.setSensors(sensorList);

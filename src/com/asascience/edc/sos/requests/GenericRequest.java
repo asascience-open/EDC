@@ -7,7 +7,7 @@ package com.asascience.edc.sos.requests;
 
 import cern.colt.Timer;
 import com.asascience.edc.sos.SensorContainer;
-import com.asascience.edc.sos.SensorPoint;
+import com.asascience.edc.sos.map.SensorPoint;
 import com.asascience.edc.sos.VariableContainer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
