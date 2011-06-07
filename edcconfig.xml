@@ -29,7 +29,7 @@
 	one directory above the EDC.jar file.  If the indicated directory does not exist,
 	the user will be notified and asked if they would like to create the directory.
 	-->
-  <OUTPUT_LOCATION>C:\Dev\EDC\EDC_Standalone\output\</OUTPUT_LOCATION>
+  <OUTPUT_LOCATION>output</OUTPUT_LOCATION>
 	
 	<!--ALLOW_FILE_REPLACEMENT:  MUST BE A BOOLEAN VALUE.
 	If true, if the choosen output file name exists, the user will be asked if they want

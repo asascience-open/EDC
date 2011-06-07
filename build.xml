@@ -71,4 +71,18 @@
     nbproject/build-impl.xml file. 
 
     -->
+    
+  <target name="-post-jar">
+    <copy todir="dist/lib/wwj">
+      <fileset dir="lib/wwj/"/>
+    </copy>
+    <copy todir="dist/data">
+      <fileset dir="data"/>
+    </copy>
+    <copy file="EDC_WIN.bat" todir="dist"/>
+    <copy file="EDC_MAC.command" todir="dist"/>
+    <copy file="EDC_LINUX.sh" todir="dist"/>
+    <copy file="edcconfig.xml" todir="dist"/>
+    <copy file="edcstore.xml" todir="dist"/>
+  </target>
 </project>
