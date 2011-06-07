@@ -21,7 +21,7 @@ import net.miginfocom.swing.MigLayout;
 
 import com.asascience.openmap.utilities.GeoConstraints;
 import com.asascience.edc.sos.map.WorldwindSosLayer;
-import com.asascience.edc.sos.ui.SosWorldwindPolygonTool;
+import com.asascience.edc.sos.ui.SosWorldwindBoundingBoxTool;
 import com.asascience.utilities.Utils;
 import com.bbn.openmap.MapBean;
 import com.bbn.openmap.MapHandler;
@@ -82,7 +82,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
   private JButton toggleViewButton;
   private String LABEL_2D = "2D";
   private String LABEL_3D = "3D";
-  private SosWorldwindPolygonTool polygonTool;
+  private SosWorldwindBoundingBoxTool polygonTool;
 
   /**
    * Creates a new instance of OMSelectionMapPanel
@@ -144,7 +144,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
 
     toolbar.add(toggleViewButton);
 
-    polygonTool = new SosWorldwindPolygonTool(mapCanvas);
+    polygonTool = new SosWorldwindBoundingBoxTool(mapCanvas);
     polygonTool.addPropertyChangeListener("boundsStored",new PropertyChangeListener() {
 
       public void propertyChange(PropertyChangeEvent evt) {

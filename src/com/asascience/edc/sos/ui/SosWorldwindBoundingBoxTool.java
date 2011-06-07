@@ -4,7 +4,7 @@
  */
 package com.asascience.edc.sos.ui;
 
-import com.asascience.edc.sos.map.WorldwindPolygonBuilder;
+import com.asascience.edc.sos.map.WorldwindBoundingBoxBuilder;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
@@ -27,23 +27,27 @@ import ucar.unidata.geoloc.LatLonRect;
  *
  * @author Kyle
  */
-public class SosWorldwindPolygonTool extends JPanel {
+public class SosWorldwindBoundingBoxTool extends JPanel {
 
   private final WorldWindow wwd;
-  private final WorldwindPolygonBuilder lb;
+  private final WorldwindBoundingBoxBuilder lb;
   private JButton newButton;
-  private JButton endButton;
   private LatLonRect bbox;
 
-  public SosWorldwindPolygonTool(WorldWindow wwd) {
+  public SosWorldwindBoundingBoxTool(WorldWindow wwdd) {
     super(new BorderLayout());
-    this.wwd = wwd;
-    lb = new WorldwindPolygonBuilder(wwd, null, null);
+    this.wwd = wwdd;
+    lb = new WorldwindBoundingBoxBuilder(wwd, null, null);
     lb.addPropertyChangeListener(new PropertyChangeListener() {
 
       public void propertyChange(PropertyChangeEvent evt) {
-        if (!evt.getPropertyName().equals("WorldwindPolygonBuilder.ReplacePosition")) {
+        if (evt.getPropertyName().equals("WorldwindBoundingBoxBuilder.BBOXDrawn")) {
           calculateBBOX(lb.getPolygon());
+        }
+        if (evt.getPropertyName().equals("WorldwindBoundingBoxBuilder.BBOXComplete")) {
+          ((Component) wwd).setCursor(Cursor.getDefaultCursor());
+          lb.setArmed(false);
+          newButton.setEnabled(true);
         }
       }
     });
@@ -58,26 +62,12 @@ public class SosWorldwindPolygonTool extends JPanel {
       public void actionPerformed(ActionEvent actionEvent) {
         lb.clear();
         lb.setArmed(true);
-        endButton.setEnabled(true);
         newButton.setEnabled(false);
         ((Component) wwd).setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
       }
     });
     buttonPanel.add(newButton);
     newButton.setEnabled(true);
-
-    endButton = new JButton("End drawing");
-    endButton.addActionListener(new ActionListener() {
-
-      public void actionPerformed(ActionEvent actionEvent) {
-        lb.setArmed(false);
-        newButton.setEnabled(true);
-        endButton.setEnabled(false);
-        ((Component) wwd).setCursor(Cursor.getDefaultCursor());
-      }
-    });
-    buttonPanel.add(endButton);
-    endButton.setEnabled(false);
 
     add(buttonPanel);
   }
@@ -106,10 +96,9 @@ public class SosWorldwindPolygonTool extends JPanel {
 
   public void setBBOX(LatLonRect llr) {
     lb.clear();
-    lb.addPosition(Position.fromDegrees(llr.getLowerLeftPoint().getLatitude(), llr.getLowerLeftPoint().getLongitude()));
-    lb.addPosition(Position.fromDegrees(llr.getUpperLeftPoint().getLatitude(), llr.getUpperLeftPoint().getLongitude()));
-    lb.addPosition(Position.fromDegrees(llr.getUpperRightPoint().getLatitude(), llr.getUpperRightPoint().getLongitude()));
-    lb.addPosition(Position.fromDegrees(llr.getLowerRightPoint().getLatitude(), llr.getLowerRightPoint().getLongitude()));
+    lb.setUpperLeftPoint(Position.fromDegrees(llr.getUpperLeftPoint().getLatitude(), llr.getUpperLeftPoint().getLongitude()));
+    lb.setLowerRightPoint(Position.fromDegrees(llr.getLowerRightPoint().getLatitude(), llr.getLowerRightPoint().getLongitude()));
+    lb.redraw();
     calculateBBOX(lb.getPolygon());
   }
 }
