@@ -63,9 +63,9 @@ public class BoundingBoxPanel extends JPanel {
 
   private void removeListeners() {
     north.removePropertyChangeListener("value", bboxEvent);
-    east.addPropertyChangeListener("value", bboxEvent);
-    south.addPropertyChangeListener("value", bboxEvent);
-    west.addPropertyChangeListener("value", bboxEvent);
+    east.removePropertyChangeListener("value", bboxEvent);
+    south.removePropertyChangeListener("value", bboxEvent);
+    west.removePropertyChangeListener("value", bboxEvent);
   }
 
   private void addListeners() {

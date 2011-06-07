@@ -10,7 +10,6 @@ import com.asascience.edc.gui.BoundingBoxPanel;
 import com.asascience.edc.gui.OpendapInterface;
 import com.asascience.edc.gui.WorldwindSelectionMap;
 import com.asascience.edc.nc.NetcdfConstraints;
-import com.asascience.edc.sos.map.SensorPoint;
 import gov.noaa.pmel.swing.JSlider2Date;
 
 import javax.swing.JButton;
@@ -130,8 +129,12 @@ public class SosWorldwindProcessPanel extends JPanel {
               sensorSelected = !(mapPanel.getSensorLayer().getPickedSensors().isEmpty());
               shouldWeEnableGetObservations();
             }
-          } else if (name.equals("clicked") || name.equals("sensorsloaded")) {
+          } else if (name.equals("sensorsloaded")) {
             sensorPanel.setWorldwindSensors(mapPanel.getSensorLayer().getSensors());
+            sensorSelected = !(mapPanel.getSensorLayer().getPickedSensors().isEmpty());
+            shouldWeEnableGetObservations();
+          } else if (name.equals("clicked")) {
+            sensorPanel.toggleOneSensor((PointPlacemark)e.getNewValue());
             sensorSelected = !(mapPanel.getSensorLayer().getPickedSensors().isEmpty());
             shouldWeEnableGetObservations();
           }
@@ -165,7 +168,7 @@ public class SosWorldwindProcessPanel extends JPanel {
 
         public void propertyChange(PropertyChangeEvent evt) {
           if (evt.getPropertyName().equals("bboxchange")) {
-            //mapPanel.makeSelectedExtentLayer(bboxGui.getBoundingBox());
+            mapPanel.makeSelectedExtentLayer(bboxGui.getBoundingBox());
           }
         }
       });
@@ -221,7 +224,7 @@ public class SosWorldwindProcessPanel extends JPanel {
                   }
                 });
                 sosServer.getParser().setPanelType(Configuration.DISPLAY_TYPE);
-                //sosServer.getParser().parseResponseFormats(mapPanel.getSensorLayer().getPickedSensors());
+                sosServer.getParser().parseWorldwindResponseFormats(mapPanel.getSensorLayer().getPickedSensors());
                 responsePanel.setResponseFormats(sosServer.getParser().getResponseFormats());
                 frame.add(responsePanel);
                 frame.add(newContentPane, "grow");
@@ -247,15 +250,15 @@ public class SosWorldwindProcessPanel extends JPanel {
   private boolean validateAndSetInput() {
 
     // SENSORS
-    /*
+    
     if ((mapPanel.getSensorLayer().getPickedSensors().isEmpty())) {
       JOptionPane.showConfirmDialog(this,
                 "No Sensors are selected.", "Invalid Sensor",
                 JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
       return false;
     }
-    sosServer.getRequest().setSelectedSensors((mapPanel.getSensorLayer().getPickedSensors()));
-    */
+    sosServer.getRequest().setWorldwindSelectedSensors((mapPanel.getSensorLayer().getPickedSensors()));
+    
     
     // VARIABLES
     if (!variableSelected) {

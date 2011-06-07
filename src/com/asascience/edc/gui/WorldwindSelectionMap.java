@@ -19,25 +19,20 @@ import javax.swing.JSeparator;
 
 import net.miginfocom.swing.MigLayout;
 
-
-
-import com.asascience.openmap.layer.ExtentRectangleLayer;
-import com.asascience.openmap.mousemode.AreaSelectionMouseMode;
 import com.asascience.openmap.utilities.GeoConstraints;
 import com.asascience.edc.sos.map.WorldwindSosLayer;
+import com.asascience.edc.sos.ui.SosWorldwindPolygonTool;
 import com.asascience.utilities.Utils;
-import com.bbn.openmap.LayerHandler;
 import com.bbn.openmap.MapBean;
 import com.bbn.openmap.MapHandler;
 import com.bbn.openmap.MouseDelegator;
 import com.bbn.openmap.gui.OMToolSet;
 import com.bbn.openmap.gui.ToolPanel;
-import com.bbn.openmap.layer.shape.ShapeLayer;
 import gov.nasa.worldwind.BasicModel;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
+import gov.nasa.worldwind.event.SelectEvent;
+import gov.nasa.worldwind.event.SelectListener;
 import gov.nasa.worldwind.geom.Angle;
-import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Earth;
 import gov.nasa.worldwind.globes.EarthFlat;
@@ -45,12 +40,10 @@ import gov.nasa.worldwind.layers.LayerList;
 import gov.nasa.worldwind.layers.SkyColorLayer;
 import gov.nasa.worldwind.layers.SkyGradientLayer;
 import gov.nasa.worldwind.render.PointPlacemark;
-import gov.nasa.worldwind.view.ViewPropertyAccessor.EyePositionAccessor;
 import gov.nasa.worldwind.view.orbit.BasicOrbitView;
 import gov.nasa.worldwind.view.orbit.BasicOrbitViewLimits;
 import gov.nasa.worldwind.view.orbit.FlatOrbitView;
 import gov.nasa.worldwind.view.orbit.OrbitViewLimits;
-import java.awt.Button;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
@@ -61,7 +54,7 @@ import ucar.unidata.geoloc.LatLonRect;
  * @author Kyle
  */
 public class WorldwindSelectionMap extends JPanel implements PropertyChangeListener {
-  
+
   public static final String AOI_CLEAR = "aoiclear";
   public static final String AOI_SAVE = "aoisave";
   public static final String AOI_APPLY = "aoiapply";
@@ -78,24 +71,19 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
   protected GeoConstraints geoCons;
   protected String dataDir;
   protected MapHandler mHandler;
-  private LayerHandler layerHandler;
-  private ShapeLayer basemapLayer;
   private WorldwindSosLayer sensorLayer;
   protected MapBean mBean;
   protected Properties lyrProps;
   protected OMToolSet tools;
   protected ToolPanel toolPanel;
   protected MouseDelegator mouseDelegator;
-  protected AreaSelectionMouseMode asmm;
-  protected ExtentRectangleLayer selectedExtent;
-  protected ExtentRectangleLayer dataExtent;
   protected boolean showAOIButton = false;
   private WorldWindowGLCanvas mapCanvas;
-  private Button toggleViewButton;
-
+  private JButton toggleViewButton;
   private String LABEL_2D = "2D";
   private String LABEL_3D = "3D";
-  
+  private SosWorldwindPolygonTool polygonTool;
+
   /**
    * Creates a new instance of OMSelectionMapPanel
    *
@@ -123,19 +111,29 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
   private void initComponents() {
     setLayout(new MigLayout("gap 0, fill"));
     setBorder(new EtchedBorder());
-    
+
     mapCanvas = new WorldWindowGLCanvas();
     mapCanvas.setModel(new BasicModel());
-    
+    // Select the stations by clicking
+    mapCanvas.addSelectListener(new SelectListener(){
+      public void selected(SelectEvent event){
+        if (event.getEventAction().equals(SelectEvent.LEFT_CLICK)) {
+          if (event.getTopObject() instanceof PointPlacemark) {
+            pcs.firePropertyChange("clicked",null,event.getTopObject());
+          }
+        }
+      }}
+    );
+
     // Default view is Globe
     makeGlobe();
-    
+
     add(mapCanvas, "gap 0, grow, wrap");
-    
+
     // Toolbar
     JPanel toolbar = new JPanel(new MigLayout("gap 0, fill"));
-    
-    toggleViewButton = new Button();
+
+    toggleViewButton = new JButton();
     toggleViewButton.setLabel(getButtonLabel());
     toggleViewButton.addActionListener(new ActionListener() {
 
@@ -143,10 +141,21 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
         toggleView();
       }
     });
-    
+
     toolbar.add(toggleViewButton);
+
+    polygonTool = new SosWorldwindPolygonTool(mapCanvas);
+    polygonTool.addPropertyChangeListener("boundsStored",new PropertyChangeListener() {
+
+      public void propertyChange(PropertyChangeEvent evt) {
+        sensorLayer.setPickedByBBOX(polygonTool.getBBOX());
+        pcs.firePropertyChange(evt);
+      }
+    });
+    toolbar.add(polygonTool);
+
     add(toolbar, "gap 0, growx");
-    
+
     // <editor-fold defaultstate="collapsed" desc="AOI Menu">
     // if desired, add the AOI Menu Button to the toolbar
     if (showAOIButton) {
@@ -204,7 +213,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
       aoiButton.addActionListener(new ActionListener() {
 
         public void actionPerformed(ActionEvent ae) {
-          if (selectedExtent != null) {
+          if (polygonTool.getBBOX() != null) {
             addAoi.setEnabled(true);
             clearAoi.setEnabled(true);
           } else {
@@ -230,7 +239,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
       return LABEL_3D;
     }
   }
-  
+
   private void toggleView() {
     if (getButtonLabel().equals(LABEL_2D)) {
       makeFlat();
@@ -239,71 +248,75 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
     }
     toggleViewButton.setLabel(getButtonLabel());
   }
-  
+
   public WorldwindSosLayer getSensorLayer() {
     return sensorLayer;
   }
-  
+
   public void addSensors(List<SensorContainer> sensorList) {
     sensorLayer = new WorldwindSosLayer();
     sensorLayer.addPropertyChangeListener(new PropertyChangeListener() {
+
       public void propertyChange(PropertyChangeEvent evt) {
         pcs.firePropertyChange("sensorsloaded", false, true);
-        //mapCanvas.getView().goTo(new Position(LatLon.fromDegrees(sosServer.getParser().getBBOX().getLatMin(), sosServer.getParser().getBBOX().getCenterLon()),180),1000);
       }
     });
     mapCanvas.getModel().getLayers().add(sensorLayer);
     sensorLayer.setSensors(sensorList);
     mapCanvas.getView().setEyePosition(sensorLayer.getEyePosition());
   }
-  
+
   public void toggleSensor(PointPlacemark sensor) {
     sensorLayer.toggleSensor(sensor);
-    mapCanvas.redraw();
+    mapCanvas.repaint();
   }
-  
+
   private void makeFlat() {
     FlatOrbitView fov = new FlatOrbitView();
     OrbitViewLimits ovl = fov.getOrbitViewLimits();
-    ovl.setZoomLimits(0,20e6);
+    ovl.setZoomLimits(0, 20e6);
     ovl.setCenterLocationLimits(Sector.FULL_SPHERE);
     ovl.setPitchLimits(Angle.ZERO, Angle.ZERO);
     BasicOrbitViewLimits.applyLimits(fov, ovl);
     fov.setEyePosition(mapCanvas.getView().getCurrentEyePosition());
-    
+
     mapCanvas.getModel().setGlobe(new EarthFlat());
     mapCanvas.setView(fov);
-    
+
     LayerList layers = mapCanvas.getModel().getLayers();
-    for(int i = 0; i < layers.size(); i++) {
-      if(layers.get(i) instanceof SkyGradientLayer) {
+    for (int i = 0; i < layers.size(); i++) {
+      if (layers.get(i) instanceof SkyGradientLayer) {
         layers.set(i, new SkyColorLayer());
       }
     }
   }
-  
+
   public void makeGlobe() {
     BasicOrbitView bov = new BasicOrbitView();
     bov.setEyePosition(mapCanvas.getView().getCurrentEyePosition());
-    
+
     mapCanvas.getModel().setGlobe(new Earth());
     mapCanvas.setView(bov);
-    
+
     LayerList layers = mapCanvas.getModel().getLayers();
-    for(int i = 0; i < layers.size(); i++) {
-      if(layers.get(i) instanceof SkyColorLayer) {
+    for (int i = 0; i < layers.size(); i++) {
+      if (layers.get(i) instanceof SkyColorLayer) {
         layers.set(i, new SkyGradientLayer());
       }
     }
   }
-  
+
   public LatLonRect getSelectedExtent() {
-    if (selectedExtent != null) {
-      return selectedExtent.getExtentRectangle();
+    if (polygonTool.getBBOX() != null) {
+      return polygonTool.getBBOX();
     }
     return null;
   }
   
+  public void makeSelectedExtentLayer(LatLonRect llr) {
+    polygonTool.setBBOX(llr);
+  }
+
   public void propertyChange(PropertyChangeEvent evt) {
     pcs.firePropertyChange(evt);// pass the event along to the calling class
   }

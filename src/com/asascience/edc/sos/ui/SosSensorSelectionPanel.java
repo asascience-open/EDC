@@ -41,6 +41,9 @@ public final class SosSensorSelectionPanel extends JPanel {
     getSensorChecks().addPropertyChangeListener(new CheckBoxPropertyListener());
   }
 
+  public void toggleWorldwindSensor() {
+    
+  }
   
   public void setWorldwindSensors(List<PointPlacemark> sensors) {
     localWorldwindSensors = sensors;
@@ -90,6 +93,10 @@ public final class SosSensorSelectionPanel extends JPanel {
     for (int i = pcls.length - 1; i >= 0; i--) {
       getSensorChecks().removePropertyChangeListener(pcls[i]);
     }
+  }
+  
+  public void toggleOneSensor(PointPlacemark point) {
+    cblVars.toggleSingle(point);
   }
   
   public SensorCheckBoxList getSensorChecks() {

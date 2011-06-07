@@ -9,6 +9,7 @@ import cern.colt.Timer;
 import com.asascience.edc.sos.SensorContainer;
 import com.asascience.edc.sos.map.SensorPoint;
 import com.asascience.edc.sos.VariableContainer;
+import gov.nasa.worldwind.render.PointPlacemark;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -238,6 +239,12 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
     }
   }
 
+  public void setWorldwindSelectedSensors(List<PointPlacemark> sensorPoints) {
+    selectedSensors = new ArrayList();
+    for (PointPlacemark p : sensorPoints) {
+      selectedSensors.add((SensorContainer)p.getValue("sensor"));
+    }
+  }
   public void setSelectedSensors(List<SensorPoint> sensorPoints) {
     selectedSensors = new ArrayList();
     for (SensorPoint p : sensorPoints) {

@@ -17,6 +17,8 @@ import com.asascience.edc.sos.SensorContainer;
 import com.asascience.edc.sos.map.SensorPoint;
 import com.asascience.edc.sos.VariableContainer;
 import com.asascience.edc.sos.requests.ResponseFormat;
+import gov.nasa.worldwind.render.PointPlacemark;
+import gov.noaa.pmel.util.Point2D;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.ParseException;
@@ -84,10 +86,10 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
     displayType = type;
   }
 
-  public void parseResponseFormats(List<SensorPoint> selectedPoints) {
+  public void setResponseFormats(List<SensorContainer> sensors) {
     List<ResponseFormat> formats = new ArrayList<ResponseFormat>();
-    for (SensorPoint sp : selectedPoints) {
-      for (String f : sp.getSensor().getResponseFormats()) {
+    for (SensorContainer sp : sensors) {
+      for (String f : sp.getResponseFormats()) {
         ResponseFormat format = new ResponseFormat(f);
         if (!formats.contains(format)) {
           formats.add(format);
@@ -98,7 +100,6 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
         }
       }
     }
-
     // This makes the list unique
     responseFormatList = new ArrayList<ResponseFormat>(new HashSet(formats));
 
@@ -113,6 +114,22 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
     }
 
     pcs.firePropertyChange("message", null, "Found " + responseFormatList.size() + " unique response formats");
+  }
+  
+  public void parseWorldwindResponseFormats(List<PointPlacemark> selectedPoints) {
+    List<SensorContainer> scs = new ArrayList<SensorContainer>();
+    for (PointPlacemark sp : selectedPoints) {
+      scs.add((SensorContainer)sp.getValue("sensor"));
+    }
+    setResponseFormats(scs);
+  }
+  
+  public void parseResponseFormats(List<SensorPoint> selectedPoints) {
+    List<SensorContainer> scs = new ArrayList<SensorContainer>();
+    for (SensorPoint sp : selectedPoints) {
+      scs.add(sp.getSensor());
+    }
+    setResponseFormats(scs);
   }
 
   public void parseVariables() {

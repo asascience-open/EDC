@@ -6,6 +6,7 @@ package com.asascience.edc.sos.map;
 
 import com.asascience.edc.sos.SensorContainer;
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.PointPlacemark;
@@ -25,13 +26,14 @@ import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Earth;
+import java.awt.event.MouseListener;
 
 /**
  *
  * @author Kyle
  */
 public class WorldwindSosLayer extends RenderableLayer {
-  
+
   private ArrayList<PointPlacemark> sensorPoints;
   private ArrayList<LatLon> sensorLatLons;
   private ArrayList<PointPlacemark> pickedSensors;
@@ -44,21 +46,21 @@ public class WorldwindSosLayer extends RenderableLayer {
     sensorPoints = new ArrayList();
     sensorLatLons = new ArrayList();
     pcs = new PropertyChangeSupport(this);
-    
+
     // Default attributes
     attrs = new PointPlacemarkAttributes();
     attrs.setLineColor(Utils.getABGRFromColor(Color.RED));
-    attrs.setLabelColor(Utils.getABGRFromColor("00",Color.WHITE));
+    attrs.setLabelColor(Utils.getABGRFromColor("00", Color.WHITE));
     attrs.setUsePointAsDefaultImage(true);
     attrs.setScale(4d);
-    
+
     selected_attrs = new PointPlacemarkAttributes(attrs);
     selected_attrs.setLineColor(Utils.getABGRFromColor(Color.GREEN));
     selected_attrs.setLabelFont(Font.decode("Arial-BOLD-14"));
     selected_attrs.setLabelColor(Utils.getABGRFromColor(Color.WHITE));
     selected_attrs.setScale(6d);
   }
-
+  
   public void setPickedByBBOX(LatLonRect bbox) {
     pickedSensors.clear();
     for (PointPlacemark sp : sensorPoints) {
@@ -69,12 +71,12 @@ public class WorldwindSosLayer extends RenderableLayer {
       }
     }
   }
-  
-  public Position getEyePosition() { 
+
+  public Position getEyePosition() {
     Sector sector = Sector.boundingSector(sensorLatLons);
     Angle delta = sector.getDeltaLat();
     if (sector.getDeltaLon().compareTo(delta) > 0) {
-        delta = sector.getDeltaLon();
+      delta = sector.getDeltaLon();
     }
     double arcLength = delta.radians * Earth.WGS84_EQUATORIAL_RADIUS;
     double fieldOfView = Configuration.getDoubleValue(AVKey.FOV, 45.0);
@@ -84,7 +86,7 @@ public class WorldwindSosLayer extends RenderableLayer {
   public void toggleSensor(PointPlacemark sensor) {
     sensor.setHighlighted(!sensor.isHighlighted());
   }
-  
+
   public void setSensors(List<SensorContainer> sensors) {
     try {
       sensorPoints.clear();
@@ -128,19 +130,6 @@ public class WorldwindSosLayer extends RenderableLayer {
     return sensorPoints;
   }
 
-  public void mouseEntered(MouseEvent me) {
-  }
-
-  public void mouseExited(MouseEvent me) {
-  }
-
-  public boolean mouseDragged(MouseEvent me) {
-    return false;
-  }
-
-  public void mouseMoved() {
-  }
-
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
     pcs.firePropertyChange(evt);
@@ -155,5 +144,18 @@ public class WorldwindSosLayer extends RenderableLayer {
   public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
     pcs.removePropertyChangeListener(l);
   }
-  
+
+  public void selected(SelectEvent event) {
+    if (event.getEventAction().equals(SelectEvent.LEFT_CLICK)) {
+      // This is a left click
+      if (event.hasObjects() && event.getTopPickedObject().hasPosition()) {
+        // There is a picked object with a position
+        if (event.getTopObject().getClass().equals(PointPlacemark.class)) {
+          // This object class we handle and we have an orbit view
+          PointPlacemark sen = (PointPlacemark)event.getTopPickedObject().getObject();
+          sen.setHighlighted(!sen.isHighlighted());
+        }
+      }
+    }
+  }
 }

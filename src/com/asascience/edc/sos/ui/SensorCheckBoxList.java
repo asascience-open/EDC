@@ -187,12 +187,19 @@ public class SensorCheckBoxList extends JPanel implements ActionListener {
     }
   }
 
-  public void selectSingleItem(String name) {
+  public void toggleSingle(String name) {
     for (SensorCheckbox j : sensorChecks) {
       if (j.getText().equals(name)) {
-        if (j.isSelected()) {
-          j.doClick();
-        }
+        j.doClick();
+      }
+    }
+  }
+  
+  public void toggleSingle(PointPlacemark point) {
+    for (SensorCheckbox j : sensorChecks) {
+      PointPlacemark o = (PointPlacemark)j.getSensor();
+      PointPlacemark sc = point;
+      if (o == sc) {
         j.doClick();
       }
     }
