@@ -106,7 +106,7 @@ public final class SosSensorSelectionPanel extends JPanel {
   public void initComponents() {
     setLayout(new MigLayout("gap 0, fill"));
     setBorder(new EtchedBorder());
-    cblVars = new SensorCheckBoxList(true, true, true);
+    cblVars = new SensorCheckBoxList(false, false, false);
     cblVars.setLabelLengthLimit(40);
 
     JScrollPane sp = new JScrollPane();

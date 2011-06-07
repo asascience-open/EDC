@@ -8,6 +8,7 @@
  */
 package com.asascience.edc.sos.ui;
 
+import com.asascience.edc.sos.SensorContainer;
 import com.asascience.edc.sos.map.SensorPoint;
 import gov.nasa.worldwind.render.PointPlacemark;
 import java.awt.event.ActionEvent;
@@ -162,14 +163,6 @@ public class SensorCheckBoxList extends JPanel implements ActionListener {
     return null;
   }
 
-  // public List<String> getSelectedItems(){
-  // List<String> list = new ArrayList();
-  // for(JCheckBox cb : itemCBs){
-  // if(cb.isSelected()) list.add(cb.getName());
-  // }
-  //
-  // return list;
-  // }
   /**
    * This event is fired each time a checkbox is clicked on/off. The selected
    * checkbox is added/removed from the list and a propertyChangeSupport event
