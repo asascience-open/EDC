@@ -6,8 +6,9 @@
  * Applied Science Associates, Inc.
  * Copyright 2007.  All rights reserved.
  */
-package com.asascience.edc.gui;
+package com.asascience.edc.dap.ui.variables;
 
+import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,7 +42,7 @@ import com.asascience.ui.CheckBoxList;
  * 
  * @author CBM
  */
-public class EsriSelectionPanel extends SelectionPanelBase {
+public class EsriVariableSelectionPanel extends VariableSelectionPanel {
 
   // private JRadioButton rbRaster;
   // private JRadioButton rbVector;
@@ -70,7 +71,7 @@ public class EsriSelectionPanel extends SelectionPanelBase {
    *            The <CODE>SubsetProcessPanel</CODE> that contains this
    *            control.
    */
-  public EsriSelectionPanel(NetcdfConstraints cons, SubsetProcessPanel parent) {
+  public EsriVariableSelectionPanel(NetcdfConstraints cons, DapWorldwindProcessPanel parent) {
     this("", cons, parent);
   }
 
@@ -87,10 +88,10 @@ public class EsriSelectionPanel extends SelectionPanelBase {
    *            The <CODE>SubsetProcessPanel</CODE> that contains this
    *            control.
    */
-  public EsriSelectionPanel(String borderTitle, NetcdfConstraints cons, SubsetProcessPanel parent) {
+  public EsriVariableSelectionPanel(String borderTitle, NetcdfConstraints cons, DapWorldwindProcessPanel parent) {
 
     super(borderTitle, cons, parent);
-    setPanelType(SelectionPanelBase.ESRI);
+    setPanelType(VariableSelectionPanel.ESRI);
 
     createPanel();
   }
@@ -327,7 +328,7 @@ public class EsriSelectionPanel extends SelectionPanelBase {
 
       // get the grid for the selected variable
       // GeoGrid grid = parentSpp.getGridByName(vName);
-      GridCoordSystem coordSys = ((SubsetProcessPanel) parentSpp).getGridByName(vName, true).getCoordinateSystem();
+      GridCoordSystem coordSys = ((DapWorldwindProcessPanel) parentSpp).getGridByName(vName, true).getCoordinateSystem();
       CoordinateAxis1D vert;// = coordSys.getVerticalAxis();
 
       vert = coordSys.getVerticalAxis();
@@ -560,7 +561,7 @@ public class EsriSelectionPanel extends SelectionPanelBase {
 
           boolean keepVerts = false;
           for (String s : getCblVars().getSelectedItems()) {
-            vert = ((SubsetProcessPanel) parentSpp).getGridByName(s, true).getCoordinateSystem().getVerticalAxis();
+            vert = ((DapWorldwindProcessPanel) parentSpp).getGridByName(s, true).getCoordinateSystem().getVerticalAxis();
             if (vert != null) {
               keepVerts = true;
               constraints.setTrimByDim(vert.getName());

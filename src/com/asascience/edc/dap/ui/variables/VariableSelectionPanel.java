@@ -6,8 +6,9 @@
  * Applied Science Associates, Inc.
  * Copyright 2007.  All rights reserved.
  */
-package com.asascience.edc.gui;
+package com.asascience.edc.dap.ui.variables;
 
+import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -25,14 +26,13 @@ import ucar.nc2.Variable;
 import ucar.nc2.dt.grid.GeoGrid;
 
 import com.asascience.edc.nc.NetcdfConstraints;
-import com.asascience.edc.sos.ui.SosProcessPanel;
 import com.asascience.ui.CheckBoxList;
 
 /**
  * 
  * @author CBM
  */
-public class SelectionPanelBase extends JPanel {
+public class VariableSelectionPanel extends JPanel {
 
   protected boolean hasGeoGrids;
   protected JPanel parentSpp;
@@ -73,17 +73,7 @@ public class SelectionPanelBase extends JPanel {
    * @param cons
    * @param parent
    */
-  public SelectionPanelBase(String borderTitle, NetcdfConstraints cons, SubsetProcessPanel parent) {
-    super(new MigLayout("fill"));
-
-    TitledBorder tb = BorderFactory.createTitledBorder(borderTitle);
-    tb.setTitleJustification(TitledBorder.CENTER);
-    this.setBorder(tb);
-    this.constraints = cons;
-    this.parentSpp = parent;
-  }
-
-  public SelectionPanelBase(String borderTitle, NetcdfConstraints cons, SosProcessPanel parent) {
+  public VariableSelectionPanel(String borderTitle, NetcdfConstraints cons, DapWorldwindProcessPanel parent) {
     super(new MigLayout("fill"));
 
     TitledBorder tb = BorderFactory.createTitledBorder(borderTitle);

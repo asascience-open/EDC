@@ -6,11 +6,14 @@
  * Applied Science Associates, Inc.
  * Copyright 2007.  All rights reserved.
  */
-package com.asascience.edc.gui;
+package com.asascience.edc.dap.ui;
 
+import com.asascience.edc.dap.ui.variables.GeneralVariableSelectionPanel;
+import com.asascience.edc.dap.ui.variables.EsriVariableSelectionPanel;
+import com.asascience.edc.dap.ui.variables.OilmapVariableSelectionPanel;
+import com.asascience.edc.dap.ui.variables.VariableSelectionPanel;
 import gov.noaa.pmel.swing.JSlider2Date;
 
-import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,10 +27,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -57,13 +58,15 @@ import ucar.util.prefs.PreferencesExt;
 import com.asascience.edc.ArcType;
 import com.asascience.edc.Configuration;
 import com.asascience.edc.History;
+import com.asascience.edc.gui.BoundingBoxPanel;
+import com.asascience.edc.gui.DimMapDialog;
+import com.asascience.edc.gui.OpendapInterface;
+import com.asascience.edc.gui.WorldwindSelectionMap;
 import com.asascience.edc.nc.GridReader;
 import com.asascience.edc.nc.NcReaderBase;
 import com.asascience.edc.nc.NetcdfConstraints;
 import com.asascience.edc.nc.io.NcProperties;
 import com.asascience.edc.nc.io.NetcdfGridWriter;
-import com.asascience.openmap.ui.OMSelectionMapPanel;
-import com.asascience.openmap.utilities.GeoConstraints;
 import com.asascience.ui.IndeterminateProgressDialog;
 import com.asascience.utilities.FileMonitor;
 import com.asascience.utilities.Utils;
@@ -76,25 +79,20 @@ import java.util.Random;
  * 
  * @author CBM
  */
-public class SubsetProcessPanel extends JPanel {
+public class DapWorldwindProcessPanel extends JPanel {
 
   private static final String GRIDVIEW_FRAME_SIZE = "GridUIWindowSize";
   public static final String AOI_LIST = "aoilist";
   private PreferencesExt mainPrefs;
   private JFrame mainFrame;
   private NetcdfConstraints constraints;
-  // private MapPanel mapPanel;
-  private OMSelectionMapPanel mapPanel;
-  private SelectionPanelBase selPanel;
+  private WorldwindSelectionMap mapPanel;
+  private VariableSelectionPanel selPanel;
   private IndependentWindow viewerWindow;
   private GridUI gridUI;
-  // private Date[] timeDates;
-  // private Date startTime;
-  // private Date endTime;
   private NetcdfDataset ncd;
   private GridDataset gridDataset;
   private List<GridDataset> gdsList;
-  // private GridReader gridReader;
   protected NcReaderBase ncReader;
   private OpendapInterface parent;
   private FileManager fileChooser;
@@ -116,12 +114,12 @@ public class SubsetProcessPanel extends JPanel {
    * @param homeDir
    * @param sysDir
    */
-  public SubsetProcessPanel(ucar.util.prefs.PreferencesExt prefs, FileManager fileChooser, OpendapInterface caller,
+  public DapWorldwindProcessPanel(ucar.util.prefs.PreferencesExt prefs, FileManager fileChooser, OpendapInterface caller,
           NetcdfConstraints cons, NetcdfDataset ncd, String homeDir, String sysDir) {
     // try {
 
     this.mainPrefs = prefs;
-    this.mainFrame = caller.mainFrame;
+    this.mainFrame = caller.getMainFrame();
     this.parent = caller;
     this.fileChooser = fileChooser;
     this.constraints = cons;
@@ -168,7 +166,7 @@ public class SubsetProcessPanel extends JPanel {
           // setBandDims();
 
           if (!((GridReader) ncReader).isRegularSpatial()) {
-            if (selPanel.getPanelType() == SelectionPanelBase.ESRI) {
+            if (selPanel.getPanelType() == VariableSelectionPanel.ESRI) {
               selPanel.gridRegularity(((GridReader) ncReader).isRegularSpatial());
             }
           }
@@ -223,8 +221,10 @@ public class SubsetProcessPanel extends JPanel {
 
   private void initComponents() {
     try {
-      setLayout(new BorderLayout());
-      setBorder(BorderFactory.createRaisedBevelBorder());
+      setLayout(new MigLayout("gap 0, fill"));
+      setBorder(new EtchedBorder());
+      
+      JPanel pageTopPanel = new JPanel(new MigLayout("gap 0, fill"));
 
       lblNcName = new JLabel("NetCDF Filename:");
       btnAddDataset = new JButton("Add Dataset");
@@ -234,7 +234,7 @@ public class SubsetProcessPanel extends JPanel {
           // use a method in the parent OpendapInterface to add the
           // variables to the
           // current S&P tab
-          parent.addDataset(SubsetProcessPanel.this);
+          parent.addDataset(DapWorldwindProcessPanel.this);
         }
       });
 
@@ -242,12 +242,10 @@ public class SubsetProcessPanel extends JPanel {
       JPanel namePanel = new JPanel();
       namePanel.add(lblNcName, "center");
       namePanel.add(btnAddDataset);
-      add(namePanel, BorderLayout.PAGE_START);
 
       // create the map panel
       String gisDataDir = sysDir + "data";
-      mapPanel = new OMSelectionMapPanel(constraints, gisDataDir, true);
-      mapPanel.setBorder(new EtchedBorder());
+      mapPanel = new WorldwindSelectionMap(constraints, gisDataDir);
       mapPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent e) {
@@ -258,99 +256,21 @@ public class SubsetProcessPanel extends JPanel {
               selPanel.setHasGeoSub(true);
               bboxGui.setBoundingBox(mapPanel.getSelectedExtent());
             }
-          } else if (name.equals(OMSelectionMapPanel.AOI_SAVE)) {
-            String s = javax.swing.JOptionPane.showInputDialog(mainFrame, "Enter a name for the AOI:", e.getOldValue().toString());
-            if (s == null) {
-              return;
-            }
-            if (mapPanel.getSelectedExtent() != null) {
-              GeoConstraints cons = new GeoConstraints();
-              cons.setExtentName(s);
-              cons.setBoundingBox(mapPanel.getSelectedExtent());
-
-              if (aoiList == null) {
-                aoiList = new ArrayList();
-              }
-
-              aoiList.add(cons);
-              saveAois();
-            }
-          } else if (name.equals(OMSelectionMapPanel.AOI_APPLY)) {
-            /** unnecessary - aoiList already loaded. */
-            // aoiList = (ArrayList)mainPrefs.getList(AOI_LIST,
-            // null);
-            boolean bail = false;
-            if (aoiList == null) {
-              bail = true;
-            }
-            if (aoiList.size() == 0) {
-              bail = true;
-            }
-            if (bail) {
-              JOptionPane.showMessageDialog(mainFrame, "There are no saved AOI's to select from.");
-              return;
-            }
-
-            Object[] aois = new Object[aoiList.size()];
-            GeoConstraints cons;
-            for (int i = 0; i < aoiList.size(); i++) {
-              cons = (GeoConstraints) aoiList.get(i);
-              aois[i] = cons.getExtentName();
-            }
-            String s = (String) JOptionPane.showInputDialog(mainFrame, "Choose an AOI from the list:",
-                    "Select AOI", javax.swing.JOptionPane.PLAIN_MESSAGE, null, aois, aois[0].toString());
-
-            if (s == null) {
-              return;
-            }
-
-            for (int i = 0; i < aoiList.size(); i++) {
-              cons = (GeoConstraints) aoiList.get(i);
-              if (s.equals(cons.getExtentName())) {
-                mapPanel.makeSelectedExtentLayer(cons.getBoundingBox());
-                break;
-              }
-            }
-          } else if (name.equals(OMSelectionMapPanel.AOI_CLEAR)) {
-            mapPanel.clearSelectedExtent();
-          } else if (name.equals(OMSelectionMapPanel.AOI_REMALL)) {
-            boolean bail = false;
-            if (aoiList == null) {
-              bail = true;
-            }
-            if (aoiList.size() == 0) {
-              bail = true;
-            }
-            if (bail) {
-              JOptionPane.showMessageDialog(mainFrame, "There are no saved AOI's to select from.");
-              return;
-            }
-
-            if (JOptionPane.showConfirmDialog(mainFrame,
-                    "Are you sure you wish to clear the list of saved AOI's?\n"
-                    + "This action cannot be undone.", "Clear AOI List", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-
-              aoiList = new ArrayList();
-              saveAois();
-            }
-          } else if (name.equals(OMSelectionMapPanel.AOI_MANUAL)) {
-            JDialog red = mapPanel.makeRectEntryDialog(mainFrame, "Enter Rectangle Coordinates", true);
-            red.setVisible(true);
           }
         }
       });
 
-      add(mapPanel, BorderLayout.CENTER);
+      pageTopPanel.add(mapPanel, "gap 0, grow");
 
-      selPanel = new GeneralSelectionPanel(constraints, this);
+      selPanel = new GeneralVariableSelectionPanel(constraints, this);
       switch (Configuration.DISPLAY_TYPE) {
         case Configuration.DisplayType.GENERAL:
           break;
         case Configuration.DisplayType.ESRI:
-          selPanel = new EsriSelectionPanel(constraints, this);
+          selPanel = new EsriVariableSelectionPanel(constraints, this);
           break;
         case Configuration.DisplayType.OILMAP:
-          selPanel = new OilmapSelectionPanel(constraints, this);
+          selPanel = new OilmapVariableSelectionPanel(constraints, this);
           break;
       }
 
@@ -365,11 +285,10 @@ public class SubsetProcessPanel extends JPanel {
           }
         }
       });
-      add(selPanel, BorderLayout.LINE_END);
+      pageTopPanel.add(selPanel, "gap 0, growy, wrap");
 
-      // PARENT panel
+      // Bottom panel
       JPanel pageEndPanel = new JPanel(new MigLayout("gap 2, fill"));
-      pageEndPanel.setBorder(new EtchedBorder());
 
       // BBOX panel
       bboxGui = new BoundingBoxPanel();
@@ -388,16 +307,10 @@ public class SubsetProcessPanel extends JPanel {
       timePanel.setBorder(new EtchedBorder());
       dateSlider = new JSlider2Date();
       dateSlider.setAlwaysPost(true);
-      dateSlider.setHandleSize(7);// default is 6
+      dateSlider.setHandleSize(6);// default is 6
       dateSlider.addPropertyChangeListener(new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent evt) {
-          String name = evt.getPropertyName();
-          if (name.equals("minValue")) {
-            // constraints.setStartTime(dateSlider.getMinValue().getCalendar().getTime());
-          } else if (name.equals("maxValue")) {
-            // constraints.setEndTime(dateSlider.getMaxValue().getCalendar().getTime());
-          }
           if (ncReader.isHasTime()) {
             lblNumDatesSelected.setText("# Timesteps Selected: " + Math.round(calcNumTimesteps()));
           }
@@ -405,15 +318,14 @@ public class SubsetProcessPanel extends JPanel {
       });
       lblDateIncrement = new JLabel("Time Interval (sec): ");
       lblNumDatesSelected = new JLabel("# Timesteps Selected: ");
-      // TODO: add a means for remembering time-ranges?
+
       timePanel.add(lblDateIncrement, "gap 0, gapright 20, center, split 2");
       timePanel.add(lblNumDatesSelected, "gap 0, gapleft 20, center, wrap");
       timePanel.add(dateSlider, "gap 0, grow, center");
 
-      pageEndPanel.add(timePanel, "gap 0, wrap, grow");
+      pageEndPanel.add(timePanel, "gap 0, grow");
 
       JPanel processPanel = new JPanel();
-      processPanel.setBorder(new EtchedBorder());
       btnProcess = new JButton("Process");
       btnProcess.setToolTipText("Apply the specified spatial & temporal constraints\n"
               + "and export the selected variables to the desired output format.");
@@ -441,10 +353,10 @@ public class SubsetProcessPanel extends JPanel {
       });
       processPanel.add(preview);
        */
-
-      pageEndPanel.add(processPanel, "spanx 2, grow");
-
-      add(pageEndPanel, BorderLayout.PAGE_END);
+      add(namePanel, "spanx 3, growx, wrap");
+      add(pageTopPanel, "spanx 3, grow, wrap");
+      add(pageEndPanel, "spanx 3, growx, wrap, hmax 200");
+      add(processPanel, "spanx 3, growx");
 
     } catch (Exception ex) {
       ex.printStackTrace();
@@ -763,17 +675,6 @@ public class SubsetProcessPanel extends JPanel {
     }
   }
 
-  // public void setVariables(List<Variable> vars){
-  // if(selPanel != null){
-  // selPanel.setVariables(vars);
-  // }
-  // }
-  //
-  // public void setVariables(List<GeoGrid> geoGrids) {
-  // if(selPanel != null){
-  // selPanel.setGeoGridVars(geoGrids);
-  // }
-  // }
   public void setVariables() {
     if (selPanel != null) {
       selPanel.setGeoGridVars();
@@ -781,9 +682,6 @@ public class SubsetProcessPanel extends JPanel {
   }
 
   public void setNcExtent(LatLonRect llRect) {
-    // //for testing extent
-    // llRect = new LatLonRect(new LatLonPointImpl(-90, -0),
-    // new LatLonPointImpl(90, 360));
     mapPanel.makeDataExtentLayer(llRect);
   }
 
@@ -987,7 +885,7 @@ public class SubsetProcessPanel extends JPanel {
 
       ncOutPath = f.getAbsolutePath();
 
-      IndeterminateProgressDialog pd = new IndeterminateProgressDialog(mainFrame, "Progress", new ImageIcon(Utils.getImageResource("ASA.png", SubsetProcessPanel.class)));
+      IndeterminateProgressDialog pd = new IndeterminateProgressDialog(mainFrame, "Progress", new ImageIcon(Utils.getImageResource("ASA.png", OpendapInterface.class)));
       ProcessDataTask pdt = new ProcessDataTask("Processing Data...", ncOutPath, outname);
       pdt.addPropertyChangeListener(new ProcessPropertyListener());
       pd.setRunTask(pdt);
@@ -1250,132 +1148,4 @@ public class SubsetProcessPanel extends JPanel {
       return tStrings;
     }
   }
-  /* Original runnable class for processing data */
-  // // class ProcessData implements Runnable {
-  // //
-  // // private String ncPath;
-  // // private String outname;
-  // //
-  // // public ProcessData(String ncpath, String out) {
-  // // ncPath = ncpath;
-  // // outname = out;
-  // // }
-  // //
-  // // public void run() {
-  // // try{
-  // //// System.err.println("StartRun: " +
-  // constraints.getBoundingBox().toString2());
-  // // constraints.resetVariables();
-  // // for(String s : selPanel.getCblVars().getSelectedItems()){
-  // // constraints.addVariable(s);
-  // // }
-  // //
-  // //// //MOVED TO PROCESSDATALISTENER
-  // //// LatLonRect bounds = mapPanel.getSelectedExtent();
-  // //// //if no user extent, use entire extent
-  // //// if(bounds == null) bounds = gridReader.getBounds();//bounds =
-  // parent.getNcExtent();
-  // //// constraints.setBoundingBox(bounds);
-  // //
-  // // NcProperties props = new NcProperties();
-  // // ArcType type = ArcType.NULL;
-  // // List<String> vars = constraints.getSelVars();
-  // //
-  // //// if(makeRaster){
-  // // switch(selPanel.getPanelType()){
-  // // case 0://general
-  // //
-  // // break;
-  // // case 1://ESRI
-  // // type = ArcType.FEATURE;
-  // // if(selPanel.isMakeRaster()){//RASTER
-  // // type = ArcType.RASTER;
-  // //// constraints.setBandDim((String)cbBandDim.getSelectedItem());
-  // //// constraints.setTrimByIndex(cbTrimBy.getSelectedIndex());
-  // // constraints.setTrimByIndex(selPanel.getTrimByIndex());
-  // // props.setBandDim(constraints.getBandDim());
-  // // props.setTrimByDim(constraints.getTrimByDim());
-  // // props.setTrimByValue(selPanel.getTrimByValue());
-  // //
-  // // //ensure that the correct variable dimensions are used
-  // // GeoGrid grid = getGridByName(vars.get(0));
-  // // if(grid != null){
-  // // constraints.setXDim(grid.getXDimension().getName());
-  // // constraints.setYDim(grid.getYDimension().getName());
-  // // }
-  // //// }else if(constraints.getSelVars().size() > 1){
-  // // }else if(selPanel.isMakeVector()){//VECTOR
-  // // type = ArcType.VECTOR;
-  // // vars.clear();
-  // // props.setUVar(selPanel.getUVar());
-  // // props.setVVar(selPanel.getVVar());
-  // // vars.add(props.getUVar());
-  // // vars.add(props.getVVar());
-  // // }
-  // // break;
-  // // case 2://OILMAP
-  // // props.setUVar(selPanel.getUVar());
-  // // props.setVVar(selPanel.getVVar());
-  // // props.setSurfLayer(selPanel.getSurfaceLevel());
-  // // props.setVectorType(selPanel.isVectorType());
-  // // break;
-  // // }
-  // //
-  // // //ensure that the zVar tag and tVar tag are null unless one of the
-  // variables has a z dimension
-  // // boolean hasZ = false;
-  // // boolean hasT = false;
-  // // for(String s : vars){
-  // // GeoGrid g = getGridByName(s);
-  // // if(g != null){
-  // // GridCoordSystem gcs = g.getCoordinateSystem();
-  // // CoordinateAxis1D vAxis = gcs.getVerticalAxis();
-  // // if(vAxis != null){
-  // // hasZ = true;
-  // // }
-  // // if(gcs.hasTimeAxis()){
-  // // hasT = true;
-  // // }
-  // // }
-  // // }
-  // // if(!hasZ){
-  // // constraints.setZDim("null");
-  // // }
-  // // String sTime;
-  // // if(!hasT){
-  // // constraints.setTimeDim("null");
-  // // constraints.setTVar("null");
-  // // sTime = "null";
-  // // }else{
-  // // sTime = constraints.getStartTime().toString();
-  // // }
-  // //
-  // // props.setNcPath(ncPath);
-  // // props.setOutPath(outname);
-  // // props.setStartTime(sTime);
-  // // props.setTimeInterval(constraints.getTimeInterval());
-  // // props.setTimeUnits(constraints.getTimeUnits());
-  // // props.setTime(constraints.getTimeDim());
-  // // props.setTVar(constraints.getTVar());
-  // // props.setXCoord(constraints.getXDim());
-  // // props.setYCoord(constraints.getYDim());
-  // // props.setZCoord(constraints.getZDim());
-  // // props.setProjection(constraints.getProjection());
-  // //
-  // //
-  // // props.setType(type);
-  // // props.setVars(vars);
-  // //
-  // // runOK = gridReader.extractData2(constraints, ncPath);
-  // // System.err.println("runOK = " + runOK);
-  // // //only write the props file if the nc file was generated properly
-  // // if(runOK){
-  // // props.writeFile();
-  // // }
-  // // }catch(Exception ex){
-  // // System.err.println("PD:run:");
-  // // ex.printStackTrace();
-  // // }
-  // // }
-  // // }
 }

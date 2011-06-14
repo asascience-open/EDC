@@ -5,6 +5,7 @@
 package com.asascience.edc.sos.map;
 
 import com.asascience.edc.sos.SensorContainer;
+import com.asascience.edc.utils.WorldwindUtils;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.geom.Position;
@@ -13,20 +14,13 @@ import gov.nasa.worldwind.render.PointPlacemark;
 import gov.nasa.worldwind.render.PointPlacemarkAttributes;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 import ucar.unidata.geoloc.LatLonRect;
 import com.asascience.utilities.Utils;
-import gov.nasa.worldwind.Configuration;
-import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.geom.Sector;
-import gov.nasa.worldwind.globes.Earth;
-import java.awt.event.MouseListener;
 
 /**
  *
@@ -73,14 +67,7 @@ public class WorldwindSosLayer extends RenderableLayer {
   }
 
   public Position getEyePosition() {
-    Sector sector = Sector.boundingSector(sensorLatLons);
-    Angle delta = sector.getDeltaLat();
-    if (sector.getDeltaLon().compareTo(delta) > 0) {
-      delta = sector.getDeltaLon();
-    }
-    double arcLength = delta.radians * Earth.WGS84_EQUATORIAL_RADIUS;
-    double fieldOfView = Configuration.getDoubleValue(AVKey.FOV, 45.0);
-    return new Position(sector.getCentroid(), arcLength / (1.5 * Math.tan(fieldOfView / 2.0)));
+    return WorldwindUtils.getEyePositionFromPositions(sensorLatLons);
   }
 
   public void toggleSensor(PointPlacemark sensor) {

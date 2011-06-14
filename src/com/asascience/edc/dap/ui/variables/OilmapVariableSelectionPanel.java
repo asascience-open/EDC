@@ -9,8 +9,9 @@
  * Created on Jan 1, 2008, 12:00:00 AM
  *
  */
-package com.asascience.edc.gui;
+package com.asascience.edc.dap.ui.variables;
 
+import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,7 +45,7 @@ import com.asascience.utilities.Utils;
  * 
  * @author CBM <cmueller@asascience.com>
  */
-public class OilmapSelectionPanel extends SelectionPanelBase {
+public class OilmapVariableSelectionPanel extends VariableSelectionPanel {
 
   private int minLevel = 0;
   private int maxLevel = 0;
@@ -67,13 +68,13 @@ public class OilmapSelectionPanel extends SelectionPanelBase {
   private boolean ckEnableState;
   private boolean cbEnableState;
 
-  public OilmapSelectionPanel(NetcdfConstraints cons, SubsetProcessPanel parent) {
+  public OilmapVariableSelectionPanel(NetcdfConstraints cons, DapWorldwindProcessPanel parent) {
     this("", cons, parent);
   }
 
-  public OilmapSelectionPanel(String borderTitle, NetcdfConstraints cons, SubsetProcessPanel parent) {
+  public OilmapVariableSelectionPanel(String borderTitle, NetcdfConstraints cons, DapWorldwindProcessPanel parent) {
     super(borderTitle, cons, parent);
-    super.setPanelType(SelectionPanelBase.OILMAP);
+    super.setPanelType(VariableSelectionPanel.OILMAP);
 
     setUseAllLevels(true);
     createPanel();
@@ -201,7 +202,7 @@ public class OilmapSelectionPanel extends SelectionPanelBase {
     cbUVar.setEnabled(false);
     cbVVar.setEnabled(false);
 
-    ImageIcon warn = new ImageIcon(Utils.getImageResource("warn.png", OilmapSelectionPanel.class));
+    ImageIcon warn = new ImageIcon(Utils.getImageResource("warn.png", OilmapVariableSelectionPanel.class));
     btnWarn = new JLabel(warn);
     btnWarn.addMouseListener(new MouseAdapter() {
 
@@ -307,11 +308,11 @@ public class OilmapSelectionPanel extends SelectionPanelBase {
       CoordinateAxis1D time1;
       CoordinateAxis1D time2;
 
-      coordSys1 = ((SubsetProcessPanel) parentSpp).getGridByName(g1, true).getCoordinateSystem();
+      coordSys1 = ((DapWorldwindProcessPanel) parentSpp).getGridByName(g1, true).getCoordinateSystem();
       vert1 = coordSys1.getVerticalAxis();
       time1 = coordSys1.getTimeAxis1D();
 
-      coordSys2 = ((SubsetProcessPanel) parentSpp).getGridByName(g2, true).getCoordinateSystem();
+      coordSys2 = ((DapWorldwindProcessPanel) parentSpp).getGridByName(g2, true).getCoordinateSystem();
       vert2 = coordSys2.getVerticalAxis();
       time2 = coordSys2.getTimeAxis1D();
 
@@ -421,7 +422,7 @@ public class OilmapSelectionPanel extends SelectionPanelBase {
     String[] vars = new String[]{cbUVar.getSelectedItem().toString(), cbVVar.getSelectedItem().toString()};
     if (!vars[0].equals(vars[1])) {
       for (String vName : vars) {
-        grid = ((SubsetProcessPanel) parentSpp).getGridByName(vName, true);
+        grid = ((DapWorldwindProcessPanel) parentSpp).getGridByName(vName, true);
         coordSys = grid.getCoordinateSystem();
         vert = coordSys.getVerticalAxis();
 

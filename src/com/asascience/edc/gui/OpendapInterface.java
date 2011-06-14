@@ -68,6 +68,7 @@ import ucar.util.prefs.XMLStore;
 
 import com.asascience.edc.Configuration;
 import com.asascience.edc.History;
+import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
 import com.asascience.edc.erddap.gui.ErddapDatasetViewer;
 import com.asascience.edc.nc.NetcdfConstraints;
 import com.asascience.edc.nc.io.NcProperties;
@@ -83,7 +84,6 @@ import com.asascience.openmap.ui.OMTimeSlider;
 import com.asascience.openmap.utilities.MapUtils;
 import com.asascience.openmap.utilities.listener.VectorInterrogationPropertyListener;
 import com.asascience.edc.sos.SosServer;
-import com.asascience.edc.sos.ui.SosProcessPanel;
 import com.asascience.edc.sos.ui.SosWorldwindProcessPanel;
 import com.asascience.ui.ErrorDisplayDialog;
 import com.asascience.ui.ImagePanel;
@@ -103,7 +103,7 @@ public class OpendapInterface {
   private static String FRAME_SIZE = "frameSize";
   JFrame mainFrame = null;
   private ASAThreddsDatasetChooser datasetChooser = null;
-  private SubsetProcessPanel spPanel = null;
+  private DapWorldwindProcessPanel spPanel = null;
   private SosWorldwindProcessPanel sosPanel = null;
   private ThreddsDataFactory threddsDataFactory = new ThreddsDataFactory();
   private PreferencesExt prefs = null;
@@ -512,9 +512,9 @@ public class OpendapInterface {
     return datasetChooser;
   }
   private boolean addDatasetToExisting = false;
-  private SubsetProcessPanel addToSpp = null;
+  private DapWorldwindProcessPanel addToSpp = null;
 
-  public void addDataset(SubsetProcessPanel spp) {
+  public void addDataset(DapWorldwindProcessPanel spp) {
     if (spp != null) {
       addToSpp = spp;
       addDatasetToExisting = true;
@@ -566,7 +566,7 @@ public class OpendapInterface {
           // gridReader = new GridReader(ncd, constraints);
           // if(!gridReader.initData()) return;
 
-          spPanel = new SubsetProcessPanel((PreferencesExt) prefs, fileChooser, this, constraints, ncd,
+          spPanel = new DapWorldwindProcessPanel((PreferencesExt) prefs, fileChooser, this, constraints, ncd,
                   homeDir, sysDir);
           if (!spPanel.initData()) {
             return false;

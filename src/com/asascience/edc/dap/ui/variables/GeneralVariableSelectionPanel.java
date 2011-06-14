@@ -6,8 +6,9 @@
  * Applied Science Associates, Inc.
  * Copyright 2007.  All rights reserved.
  */
-package com.asascience.edc.gui;
+package com.asascience.edc.dap.ui.variables;
 
+import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,7 +32,7 @@ import com.asascience.ui.CheckBoxList;
  * 
  * @author CBM
  */
-public class GeneralSelectionPanel extends SelectionPanelBase {
+public class GeneralVariableSelectionPanel extends VariableSelectionPanel {
 
   private JComboBox cbTrimBy;
   private JLabel lblTrimBy;
@@ -43,13 +44,13 @@ public class GeneralSelectionPanel extends SelectionPanelBase {
    * @param cons
    * @param parent
    */
-  public GeneralSelectionPanel(NetcdfConstraints cons, SubsetProcessPanel parent) {
+  public GeneralVariableSelectionPanel(NetcdfConstraints cons, DapWorldwindProcessPanel parent) {
     this("", cons, parent);
   }
 
-  public GeneralSelectionPanel(String borderTitle, NetcdfConstraints cons, SubsetProcessPanel parent) {
+  public GeneralVariableSelectionPanel(String borderTitle, NetcdfConstraints cons, DapWorldwindProcessPanel parent) {
     super(borderTitle, cons, parent);
-    setPanelType(SelectionPanelBase.GENERAL);
+    setPanelType(VariableSelectionPanel.GENERAL);
     createPanel();
 
     getCblVars().addPropertyChangeListener(new CheckBoxPropertyListener());
@@ -124,7 +125,7 @@ public class GeneralSelectionPanel extends SelectionPanelBase {
       String propName = e.getPropertyName();
       String vName = (String) e.getOldValue();
 
-      GridCoordSystem coordSys = ((SubsetProcessPanel) parentSpp).getGridByName(vName, true).getCoordinateSystem();
+      GridCoordSystem coordSys = ((DapWorldwindProcessPanel) parentSpp).getGridByName(vName, true).getCoordinateSystem();
       CoordinateAxis1D vert = coordSys.getVerticalAxis();
 
       if (propName.equals(CheckBoxList.ADDED)) {
@@ -157,7 +158,7 @@ public class GeneralSelectionPanel extends SelectionPanelBase {
       } else if (propName.equals(CheckBoxList.REMOVED)) {
         boolean keepVerts = false;
         for (String s : getCblVars().getSelectedItems()) {
-          vert = ((SubsetProcessPanel) parentSpp).getGridByName(s, true).getCoordinateSystem().getVerticalAxis();
+          vert = ((DapWorldwindProcessPanel) parentSpp).getGridByName(s, true).getCoordinateSystem().getVerticalAxis();
           if (vert != null) {
             keepVerts = true;
             constraints.setTrimByDim(vert.getName());

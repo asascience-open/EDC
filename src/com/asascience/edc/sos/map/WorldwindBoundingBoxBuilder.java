@@ -43,20 +43,19 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
       this.polygon = polygon;
     } else {
       ShapeAttributes atts = new BasicShapeAttributes();
-      atts.setInteriorMaterial(Material.PINK);
+      atts.setInteriorMaterial(Material.WHITE);
       atts.setOutlineOpacity(0.8);
       atts.setInteriorOpacity(0.3);
-      atts.setOutlineMaterial(Material.MAGENTA);
+      atts.setOutlineMaterial(Material.GREEN);
       atts.setOutlineWidth(1);
       atts.setDrawOutline(true);
       atts.setDrawInterior(true);
-      atts.setEnableAntialiasing(true);
       this.polygon = new SurfacePolygon();
       this.polygon.setAttributes(atts);
     }
     this.layer = lineLayer != null ? lineLayer : new RenderableLayer();
     this.layer.addRenderable(this.polygon);
-    this.wwd.getModel().getLayers().add(this.layer);
+    this.wwd.getModel().getLayers().add(this.wwd.getModel().getLayers().size() - 1, this.layer);
     this.wwd.getInputHandler().addMouseListener(new MouseAdapter() {
       
       @Override

@@ -4,6 +4,7 @@
  */
 package com.asascience.edc.gui;
 
+import com.asascience.edc.dap.map.DataExtentLayer;
 import com.asascience.edc.sos.SensorContainer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,7 +16,6 @@ import java.util.Properties;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -72,6 +72,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
   protected String dataDir;
   protected MapHandler mHandler;
   private WorldwindSosLayer sensorLayer;
+  private DataExtentLayer dataExtentLayer;
   protected MapBean mBean;
   protected Properties lyrProps;
   protected OMToolSet tools;
@@ -134,7 +135,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
     JPanel toolbar = new JPanel(new MigLayout("gap 0, fill"));
 
     toggleViewButton = new JButton();
-    toggleViewButton.setLabel(getButtonLabel());
+    toggleViewButton.setText(getButtonLabel());
     toggleViewButton.addActionListener(new ActionListener() {
 
       public void actionPerformed(ActionEvent e) {
@@ -148,87 +149,15 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
     polygonTool.addPropertyChangeListener("boundsStored",new PropertyChangeListener() {
 
       public void propertyChange(PropertyChangeEvent evt) {
-        sensorLayer.setPickedByBBOX(polygonTool.getBBOX());
+        if (sensorLayer != null) {
+          sensorLayer.setPickedByBBOX(polygonTool.getBBOX());
+        }
         pcs.firePropertyChange(evt);
       }
     });
     toolbar.add(polygonTool);
 
     add(toolbar, "gap 0, growx");
-
-    // <editor-fold defaultstate="collapsed" desc="AOI Menu">
-    // if desired, add the AOI Menu Button to the toolbar
-    if (showAOIButton) {
-      // create an action listener for the AOI menu items
-      ActionListener menuActionListener = new ActionListener() {
-
-        public void actionPerformed(ActionEvent e) {
-          if (e.getActionCommand().equals(AOI_SAVE)) {
-            pcs.firePropertyChange(AOI_SAVE, false, true);
-          } else if (e.getActionCommand().equals(AOI_APPLY)) {
-            pcs.firePropertyChange(AOI_APPLY, false, true);
-          } else if (e.getActionCommand().equals(AOI_CLEAR)) {
-            pcs.firePropertyChange(AOI_CLEAR, false, true);
-          } else if (e.getActionCommand().equals(AOI_REMALL)) {
-            pcs.firePropertyChange(AOI_REMALL, false, true);
-          } else if (e.getActionCommand().equals(AOI_MANUAL)) {
-            pcs.firePropertyChange(AOI_MANUAL, false, true);
-          }
-        }
-      };
-
-      // make the AOI menu items
-      aoiMenu = new JPopupMenu("AOIs");
-      addAoi = new JMenuItem("Save Current AOI...");
-      addAoi.setActionCommand(AOI_SAVE);
-      addAoi.addActionListener(menuActionListener);
-
-      useAoi = new JMenuItem("Apply Existing AOI...");
-      useAoi.setActionCommand(AOI_APPLY);
-      useAoi.addActionListener(menuActionListener);
-
-      clearAoi = new JMenuItem("Clear Current AOI");
-      clearAoi.setActionCommand(AOI_CLEAR);
-      clearAoi.addActionListener(menuActionListener);
-
-      remAllAoi = new JMenuItem("Clear AOI List");
-      remAllAoi.setActionCommand(AOI_REMALL);
-      remAllAoi.addActionListener(menuActionListener);
-
-      manEntryAoi = new JMenuItem("Enter an AOI Maually...");
-      manEntryAoi.setActionCommand(AOI_MANUAL);
-      manEntryAoi.addActionListener(menuActionListener);
-
-      // construct the AOI menu
-      aoiMenu.add(addAoi);
-      aoiMenu.add(useAoi);
-      aoiMenu.add(manEntryAoi);
-      aoiMenu.add(new JSeparator());
-      aoiMenu.add(clearAoi);
-      aoiMenu.add(new JSeparator());
-      aoiMenu.add(remAllAoi);
-
-      // attach the AOI menu to a button on the toolbar
-      aoiButton = new JButton("AOIs");
-      aoiButton.addActionListener(new ActionListener() {
-
-        public void actionPerformed(ActionEvent ae) {
-          if (polygonTool.getBBOX() != null) {
-            addAoi.setEnabled(true);
-            clearAoi.setEnabled(true);
-          } else {
-            addAoi.setEnabled(false);
-            clearAoi.setEnabled(false);
-          }
-
-          aoiMenu.show(aoiButton, 0, aoiButton.getHeight());
-        }
-      });
-
-      toolPanel.add(aoiButton);
-    }
-
-    // </editor-fold>
 
   }
 
@@ -246,7 +175,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
     } else {
       makeGlobe();
     }
-    toggleViewButton.setLabel(getButtonLabel());
+    toggleViewButton.setText(getButtonLabel());
   }
 
   public WorldwindSosLayer getSensorLayer() {
@@ -261,7 +190,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
         pcs.firePropertyChange("sensorsloaded", false, true);
       }
     });
-    mapCanvas.getModel().getLayers().add(sensorLayer);
+    mapCanvas.getModel().getLayers().add(0,sensorLayer);
     sensorLayer.setSensors(sensorList);
     mapCanvas.getView().setEyePosition(sensorLayer.getEyePosition());
   }
@@ -274,7 +203,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
   private void makeFlat() {
     FlatOrbitView fov = new FlatOrbitView();
     OrbitViewLimits ovl = fov.getOrbitViewLimits();
-    ovl.setZoomLimits(0, 20e6);
+    ovl.setZoomLimits(0, 10e7);
     ovl.setCenterLocationLimits(Sector.FULL_SPHERE);
     ovl.setPitchLimits(Angle.ZERO, Angle.ZERO);
     BasicOrbitViewLimits.applyLimits(fov, ovl);
@@ -311,6 +240,16 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
       return polygonTool.getBBOX();
     }
     return null;
+  }
+  
+  public void makeDataExtentLayer(LatLonRect llr) {
+    if (dataExtentLayer == null) {
+      dataExtentLayer = new DataExtentLayer(mapCanvas.getModel().getGlobe());
+      mapCanvas.getModel().getLayers().add(0,dataExtentLayer);
+    }
+    dataExtentLayer.setDataExtent(llr);
+    mapCanvas.getView().setEyePosition(dataExtentLayer.getEyePosition());
+    mapCanvas.redraw();
   }
   
   public void makeSelectedExtentLayer(LatLonRect llr) {
