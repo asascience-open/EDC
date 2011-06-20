@@ -4,6 +4,7 @@
  */
 package com.asascience.edc.sos.ui;
 
+import com.asascience.edc.gui.ResponseFormatRadioButton;
 import com.asascience.edc.sos.requests.ResponseFormat;
 import com.asascience.ui.RadioList;
 import java.beans.PropertyChangeEvent;
@@ -12,7 +13,6 @@ import java.beans.PropertyChangeSupport;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import net.miginfocom.swing.MigLayout;
 

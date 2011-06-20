@@ -69,7 +69,9 @@ import ucar.util.prefs.XMLStore;
 import com.asascience.edc.Configuration;
 import com.asascience.edc.History;
 import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
+import com.asascience.edc.erddap.ErddapDataset;
 import com.asascience.edc.erddap.gui.ErddapDatasetViewer;
+import com.asascience.edc.erddap.gui.ErddapTabledapGui;
 import com.asascience.edc.nc.NetcdfConstraints;
 import com.asascience.edc.nc.io.NcProperties;
 import com.asascience.edc.particle.ParticleOutputLayer;
@@ -553,6 +555,13 @@ public class OpendapInterface {
     }
   }
 
+   public void openTabledap(ErddapDataset erd) {
+     erd.buildVariables();
+     ErddapTabledapGui tdg = new ErddapTabledapGui(erd, this, homeDir);
+     tabbedPane.addTabClose("ERDDAP - Tabledap", tdg);
+     tabbedPane.setSelectedComponent(tdg);
+   }
+  
   public boolean openDataset(NetcdfDataset ncd) {
     try {
       if (ncd != null) {

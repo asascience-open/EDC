@@ -22,7 +22,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class ErddapDatasetList extends JPanel {
 
-  private ErddapDataset[] datasets = {};
+  private ErddapDataset[] datasets = null;
   private JList datasetList;
 
   public ErddapDatasetList() {

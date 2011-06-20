@@ -5,6 +5,17 @@
 
 package com.asascience.edc.erddap;
 
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.json.JSONConfiguration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
+
 /**
  *
  * @author Kyle
@@ -21,6 +32,7 @@ public class ErddapDataset {
   private boolean tabledap;
   private boolean subset;
   private boolean wms;
+  private ArrayList<ErddapVariable> variables;
 
   public ErddapDataset(String id) {
     this.id = id;
@@ -114,7 +126,7 @@ public class ErddapDataset {
   }
 
   public String getInfo() {
-    return erddapServer.getURL() + "info/" + this.id + "/index.htmlTable";
+    return erddapServer.getURL() + "info/" + this.id + "/index.json";
   }
 
   public String getRSS() {
@@ -145,6 +157,13 @@ public class ErddapDataset {
     }
     return null;
   }
+  
+  public String getTabledapHtml() {
+    if (isTabledap()) {
+      return getTabledap() + ".html";
+    }
+    return null;
+  }
 
   public String getWms() {
     if (isWms()) {
@@ -162,6 +181,59 @@ public class ErddapDataset {
       }
     }
     return null;
+  }
+  
+  public List<ErddapVariable> getVariables() {
+    return variables;
+  }
+  
+  public void buildVariables() {
+    try {
+      ClientConfig clientConfig = new DefaultClientConfig();
+      clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+      Client c = Client.create(clientConfig);
+      WebResource wr = c.resource(this.getInfo());
+      JSONObject result = wr.get(JSONObject.class);
+      JSONArray ar = result.getJSONObject("table").getJSONArray("rows");
+      variables = new ArrayList<ErddapVariable>();
+      ErddapVariable edv = null;
+      String[] subsetVars = null;
+      for (int i = 0 ; i < ar.length() ; i++) {
+        if (ar.getJSONArray(i).getString(2).equals("subsetVariables")) {
+          subsetVars = ar.getJSONArray(i).getString(4).split(",");
+          for (int j = 0 ; j < subsetVars.length ; j++) {
+            subsetVars[j] = subsetVars[j].trim();
+          }
+          continue;
+        }
+        if (ar.getJSONArray(i).getString(0).equals("variable")) {
+          if (edv != null) {
+            variables.add(edv);
+          }
+          edv = new ErddapVariable(this,ar.getJSONArray(i).getString(1),Arrays.asList(subsetVars).contains(ar.getJSONArray(i).getString(1).trim()));
+          continue;
+        }
+          
+        if (ar.getJSONArray(i).getString(0).equals("attribute")) {
+          if (ar.getJSONArray(i).getString(2).equals("actual_range")) {
+            edv.setMin(ar.getJSONArray(i).getString(4).split(",")[0].trim());
+            edv.setMax(ar.getJSONArray(i).getString(4).split(",")[1].trim());
+          } else if (ar.getJSONArray(i).getString(2).equals("long_name")) {
+            edv.setLongname(ar.getJSONArray(i).getString(4).trim());
+          } else if (ar.getJSONArray(i).getString(2).equals("units")) {
+            edv.setUnits(ar.getJSONArray(i).getString(4).trim());
+          } else if (ar.getJSONArray(i).getString(2).equals("axis")) {
+            edv.setAxis(ar.getJSONArray(i).getString(4).trim());
+          }
+        }
+      }
+      // Get the last iteration's edv variable
+      if (edv != null) {
+        variables.add(edv);
+      }
+    } catch (Exception e) {
+      //
+    }
   }
 
   @Override

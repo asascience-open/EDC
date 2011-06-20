@@ -55,7 +55,7 @@ public class ErddapDatasetViewer extends JComponent {
     datasetList.addPropertyChangeListener("datasetSelected", new PropertyChangeListener() {
 
       public void propertyChange(PropertyChangeEvent evt) {
-        datasetInfo.setDataset((ErddapDataset)evt.getNewValue());
+        datasetInfo.setDatasetPublic((ErddapDataset)evt.getNewValue());
       }
     });
 
@@ -64,7 +64,7 @@ public class ErddapDatasetViewer extends JComponent {
     datasetInfo.addPropertyChangeListener(new PropertyChangeListener() {
 
       public void propertyChange(PropertyChangeEvent evt) {
-        firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+        firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());    
       }
     });
 

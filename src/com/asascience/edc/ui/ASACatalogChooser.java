@@ -201,10 +201,10 @@ public class ASACatalogChooser extends JPanel {
 
       public void propertyChange(PropertyChangeEvent evt) {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        ErddapDataset erd;
         // GRIDDAP
         if (evt.getPropertyName().equals("griddap")) {
-          
-          ErddapDataset erd = (ErddapDataset)evt.getNewValue();
+          erd = (ErddapDataset)evt.getNewValue();
           try {
             daDataset = NetcdfDataset.openDataset(erd.getGriddap());
             daDataset.setTitle(erd.getTitle());
@@ -219,7 +219,8 @@ public class ASACatalogChooser extends JPanel {
             ex.printStackTrace();
           }
         } else if (evt.getPropertyName().equals("tabledap")) {
-          
+          erd = (ErddapDataset)evt.getNewValue();
+          odapInterface.openTabledap(erd);
         }
         
         setCursor(Cursor.getDefaultCursor());

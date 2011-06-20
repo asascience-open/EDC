@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package com.asascience.edc.sos.ui;
+package com.asascience.edc.gui;
 
 import com.asascience.edc.sos.requests.ResponseFormat;
 import javax.swing.JRadioButton;

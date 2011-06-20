@@ -9,6 +9,7 @@ import org.jdom.Document;
 import cern.colt.Timer;
 import com.asascience.edc.sos.SensorContainer;
 import com.asascience.edc.sos.requests.GenericRequest;
+import com.asascience.edc.utils.FileSaveUtils;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -63,7 +64,7 @@ public class DifToArc extends GenericRequest {
     String requestURL;
     List filenames = new ArrayList<String>();
 
-    File savePath = chooseSavePath();
+    File savePath = FileSaveUtils.chooseSavePath(parentFrame, homeDir, sosURL);
 
     // Are we loading an XSL?
     String schemaLoc = "/resources/schemas/ioos_gmlv061_to_arc.xsl";

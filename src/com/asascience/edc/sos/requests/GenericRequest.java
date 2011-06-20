@@ -9,6 +9,7 @@ import cern.colt.Timer;
 import com.asascience.edc.sos.SensorContainer;
 import com.asascience.edc.sos.map.SensorPoint;
 import com.asascience.edc.sos.VariableContainer;
+import com.asascience.edc.utils.FileSaveUtils;
 import gov.nasa.worldwind.render.PointPlacemark;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -27,7 +28,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.awt.FileDialog;
 import javax.swing.JFrame;
 import org.apache.commons.lang.StringUtils;
 
@@ -76,7 +76,7 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
     double countSens = 0;
     String requestURL;
 
-    File savePath = chooseSavePath();
+    File savePath = FileSaveUtils.chooseSavePath(parentFrame, homeDir, sosURL);
 
     Timer stopwatch = new Timer();
 
@@ -165,46 +165,6 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
     } catch (Exception e) {
       return "";
     }
-  }
-
-  protected String getNameFromURL(String url) {
-    try {
-      URL target = new URL(url);
-      return target.getHost().replace('.','_') + File.separator + getNameFromDate();
-    } catch (MalformedURLException e) {
-      return "";
-    }
-  }
-  
-  protected String getNameFromDate() {
-    Date dateNow = new Date ();
-    SimpleDateFormat formatted = new SimpleDateFormat("yyyy-MM-dd_HHmma");
-    return new StringBuilder( formatted.format( dateNow ) ).toString();
-  }
-
-  public File chooseSavePath() {
-    FileDialog outputPath = new FileDialog(parentFrame, "Create directory and save output files here...", FileDialog.SAVE);
-    File containingFolder = new File(homeDir + File.separator + getNameFromURL(sosURL) + File.separator);
-    if (!containingFolder.exists()) {
-      containingFolder.mkdirs();
-    }
-    outputPath.setDirectory(containingFolder.getAbsolutePath());
-    outputPath.setFile("Choose Output Directory (ignore this filename)");
-    outputPath.setVisible(true);
-    
-    
-    
-    File newHomeDir = new File(outputPath.getDirectory());
-    // Did the user use the new directory we created for them?
-    if (!newHomeDir.getAbsolutePath().contains(containingFolder.getAbsolutePath())) {
-      if (containingFolder.length() == 0) {
-        containingFolder.delete();
-        // Create a timestamped directory where the user has chosen
-        newHomeDir = new File(outputPath.getDirectory() + File.separator + getNameFromDate());
-        newHomeDir.mkdirs();
-      }
-    }
-    return newHomeDir;
   }
 
   public String chooseFilename(File path, String sensorName) {
