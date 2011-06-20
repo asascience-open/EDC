@@ -49,32 +49,37 @@ public class ErddapDatasetSearch extends JTextField {
       public void actionPerformed(ActionEvent e) {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-          ClientConfig clientConfig = new DefaultClientConfig();
-          clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-          Client c = Client.create(clientConfig);
-          WebResource wr = c.resource(erddapServer.getSearchURL().concat(getText()));
-          JSONObject listResult = wr.get(JSONObject.class);
-          JSONArray ls = listResult.getJSONObject("table").getJSONArray("rows");
-          datasets = new ArrayList<ErddapDataset>(ls.length());
-          JSONArray ds;
-          ErddapDataset erds;
-          for (int j = 0 ; j < ls.length() ; j++) {
-            ds = ls.getJSONArray(j);
-            erds = new ErddapDataset(ds.getString(12));
-            erds.setTitle(ds.getString(5));
-            erds.setSummary(ds.getString(6));
-            erds.setBackgroundInfo(ds.getString(8));
-            erds.setInstitution(ds.getString(11));
-            erds.setErddapServer(erddapServer);
-            erds.setGriddap(!ds.getString(0).isEmpty());
-            erds.setSubset(!ds.getString(1).isEmpty());
-            erds.setTabledap(!ds.getString(2).isEmpty());
-            erds.setWms(!ds.getString(4).isEmpty());
-            datasets.add(erds);
+          if (getText().isEmpty()) {
+            datasets = erddapServer.getDatasets();
+          } else {
+            ClientConfig clientConfig = new DefaultClientConfig();
+            clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+            Client c = Client.create(clientConfig);
+            WebResource wr = c.resource(erddapServer.getSearchURL().concat(getText()));
+            JSONObject listResult = wr.get(JSONObject.class);
+            JSONArray ls = listResult.getJSONObject("table").getJSONArray("rows");
+            datasets = new ArrayList<ErddapDataset>(ls.length());
+            JSONArray ds;
+            ErddapDataset erds;
+            for (int j = 0 ; j < ls.length() ; j++) {
+              ds = ls.getJSONArray(j);
+              erds = new ErddapDataset(ds.getString(12));
+              erds.setTitle(ds.getString(5));
+              erds.setSummary(ds.getString(6));
+              erds.setBackgroundInfo(ds.getString(8));
+              erds.setInstitution(ds.getString(11));
+              erds.setErddapServer(erddapServer);
+              erds.setGriddap(!ds.getString(0).isEmpty());
+              erds.setSubset(!ds.getString(1).isEmpty());
+              erds.setTabledap(!ds.getString(2).isEmpty());
+              erds.setWms(!ds.getString(4).isEmpty());
+              datasets.add(erds);
+            }
           }
           fireActionPerformed();
         } catch (Exception ex) {
         }
+        
         setCursor(Cursor.getDefaultCursor());
       }
     });
