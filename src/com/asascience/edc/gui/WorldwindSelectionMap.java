@@ -127,7 +127,8 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
     );
 
     // Default view is Globe
-    makeGlobe();
+    //makeGlobe();
+    makeFlat();
 
     add(mapCanvas, "gap 0, grow, wrap");
 
