@@ -211,7 +211,7 @@ public class ErddapTabledapGui extends JPanel {
     
     public void getData() {
       File savePath = FileSaveUtils.chooseSavePath(parent, homeDir, baseUrl);
-      String filename = chooseFilename(savePath, "erddap_response");
+      String filename = FileSaveUtils.chooseFilename(savePath, "erddap_response" + responseFormat);
 
       Timer stopwatch = new Timer();
 
@@ -247,10 +247,6 @@ public class ErddapTabledapGui extends JPanel {
       pcs.firePropertyChange("message", null, "- Completed " + written + " bytes in " + stopwatch.elapsedTime() + " seconds.");
       pcs.firePropertyChange("progress", null, 100);
     }
-    
-    private String chooseFilename(File path, String filename) {
-      return path.getAbsolutePath() + File.separator + filename + responseFormat;
-    } 
   }
   
 }

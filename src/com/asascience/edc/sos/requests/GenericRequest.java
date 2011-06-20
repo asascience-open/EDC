@@ -75,6 +75,7 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
     double numSens = getSelectedSensorCount();
     double countSens = 0;
     String requestURL;
+    List filenames = new ArrayList<String>();
 
     File savePath = FileSaveUtils.chooseSavePath(parentFrame, homeDir, sosURL);
 
@@ -97,7 +98,7 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
         ht.setRequestMethod("GET");
         InputStream is = ht.getInputStream();
         pcs.firePropertyChange("message", null, "- Streaming Results to File");
-        String filename = chooseFilename(savePath, sensor.getName());
+        String filename = FileSaveUtils.chooseFilename(savePath, sensor.getName(), fileSuffix);
         File f = new File(filename);
         OutputStream output = new BufferedOutputStream(new FileOutputStream(f));
         byte[] buffer = new byte[2048];
@@ -110,6 +111,7 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
         is.close();
         output.flush();
         output.close();
+        filenames.add(filename);
       } catch (MalformedURLException e) {
         pcs.firePropertyChange("message", null, "- BAD URL, skipping sensor");
         continue;
@@ -124,6 +126,7 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
       pcs.firePropertyChange("progress", null, prog);
     } // End Sensor List
     pcs.firePropertyChange("progress", null, 100);
+    pcs.firePropertyChange("done", null, filenames.toString());
   }
 
   public String getResponseFormatValue() {
@@ -165,10 +168,6 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
     } catch (Exception e) {
       return "";
     }
-  }
-
-  public String chooseFilename(File path, String sensorName) {
-    return path.getAbsolutePath() + File.separator + sensorName + "." + fileSuffix;
   }
 
   public void validate() throws Exception {

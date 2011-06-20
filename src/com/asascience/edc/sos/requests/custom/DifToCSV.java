@@ -123,7 +123,7 @@ public class DifToCSV extends GenericRequest {
         pcs.firePropertyChange("message", null, "- Transforming XML to CSV");
         myList = transform(difDoc, xslDoc);
         if (!myList.get(0).getText().substring(0, 20).contains("No")) {
-          String filename = chooseFilename(savePath, sensor.getName());
+          String filename = FileSaveUtils.chooseFilename(savePath, sensor.getName(), fileSuffix);
           Writer fstream = new FileWriter(new File(filename));
           pcs.firePropertyChange("message", null, "- Streaming transformed results to file");
           BufferedWriter out = new BufferedWriter(fstream);

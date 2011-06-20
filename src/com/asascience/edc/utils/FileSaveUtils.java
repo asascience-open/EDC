@@ -56,4 +56,37 @@ public class FileSaveUtils {
     return newHomeDir;
   }
   
+  public static String chooseFilename(File path, String filename) {
+    // Strip out the suffix
+    String suffix;
+    int per = filename.lastIndexOf(".");
+    if (per != -1) {
+      suffix = filename.substring(per+1,filename.length());
+      filename = filename.substring(0,per);
+    } else {
+      suffix = "none";
+    }
+    return FileSaveUtils.chooseFilename(path, filename, suffix, 0);
+  }
+  
+  public static String chooseFilename(File path, String filename, String suffix) {
+    return FileSaveUtils.chooseFilename(path, filename, suffix, 0);
+  }
+  
+  private static String chooseFilename(File path, String filename, String suffix, int count) {
+    String modfilename = filename;
+    if (count != 0) {
+      modfilename = filename + "_" + count;
+    }
+    modfilename = modfilename.replace("-","_");
+    File f = new File(path.getAbsolutePath() + File.separator + modfilename + "." + suffix);
+    
+    if (f.exists()) {
+      return FileSaveUtils.chooseFilename(path, filename, suffix, count + 1);
+    } else {
+      return f.getAbsolutePath();
+    }
+  }
+
+  
 }
