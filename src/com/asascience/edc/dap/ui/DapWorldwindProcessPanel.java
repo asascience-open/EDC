@@ -699,7 +699,6 @@ public class DapWorldwindProcessPanel extends JPanel {
         if (runOK == NetcdfGridWriter.SUCCESSFUL_PROCESS) {
           System.err.println("Processing completed successfully: \"" + ncPath + "\"");
           if (Configuration.CLOSE_AFTER_PROCESSING) {
-            // parent.closeInterface();
             parent.formWindowClose(ncPath.replace(".nc", ".xml"));
           } else {
             parent.loadDatasetInViewer(ncPath);
