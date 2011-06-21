@@ -7,6 +7,7 @@ package com.asascience.edc.sos.requests.custom;
 
 import org.jdom.Document;
 import cern.colt.Timer;
+import com.asascience.edc.CsvProperties;
 import com.asascience.edc.sos.SensorContainer;
 import com.asascience.edc.sos.requests.GenericRequest;
 import com.asascience.edc.utils.FileSaveUtils;
@@ -17,10 +18,13 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.Text;
 import org.jdom.input.SAXBuilder;
@@ -28,13 +32,14 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.jdom.transform.JDOMResult;
 import org.jdom.transform.JDOMSource;
+import org.jdom.xpath.XPath;
 
 /**
  *
  * @author Kyle
  */
 public class DifToArc extends GenericRequest {
-
+  
   public DifToArc(GenericRequest gr) {
     super(gr);
   }
@@ -56,6 +61,41 @@ public class DifToArc extends GenericRequest {
     }
   }
 
+  private void parseProperties(Document doc, CsvProperties properties) {
+    try {    
+      
+      ArrayList<String> els;
+      
+      // Get unique times
+      List<Element> timeList = XPath.selectNodes(doc, ".//gml:timePosition");
+      if (!timeList.isEmpty()) {
+        ArrayList<String> times = new ArrayList<String>(timeList.size());
+        for (Element e : timeList) {
+          times.add(e.getValue());
+        }
+        els = new ArrayList(new HashSet(times));
+        Collections.sort(els);
+        properties.setTimesteps(els);
+      }
+      
+      // Get unique variable names
+      List<Element> varList = XPath.selectNodes(doc, ".//ioos:Quantity");
+      if (!varList.isEmpty()) {
+        ArrayList<String> vars = new ArrayList<String>(varList.size());
+        for (Element e : varList) {
+          vars.add(e.getAttributeValue("name"));
+        }
+        els = new ArrayList(new HashSet(vars));
+        properties.setVariableHeaders(els);
+      }
+      
+      
+      
+    } catch (JDOMException e1) {
+      e1.printStackTrace();
+    }
+  }
+  
   @Override
   public void getObservations() {
 
@@ -71,7 +111,7 @@ public class DifToArc extends GenericRequest {
     SAXBuilder xslBuilder = new SAXBuilder();
     Document xslDoc = null;
     try {
-      pcs.firePropertyChange("message", null, "Loading DIF to CSV XSL Schema from " + schemaLoc);
+      pcs.firePropertyChange("message", null, "Loading DIF to ERSI CSV XSL Schema from " + schemaLoc);
       xslDoc = xslBuilder.build(this.getClass().getResourceAsStream(schemaLoc));
     } catch (JDOMException e) {
       pcs.firePropertyChange("message", null, "XSL is not well-formed");
@@ -84,8 +124,10 @@ public class DifToArc extends GenericRequest {
     Timer stopwatch = new Timer();
     SAXBuilder difBuilder;
     Document difDoc;
-
+    CsvProperties properties;
+    
     for (SensorContainer sensor : selectedSensors) {
+      properties = new CsvProperties();
       stopwatch.reset();
       stopwatch.start();
       pcs.firePropertyChange("message", null, "Sensor: " + sensor.getName());
@@ -98,6 +140,7 @@ public class DifToArc extends GenericRequest {
       try {
         pcs.firePropertyChange("message", null, "- Making Request (" + requestURL + ")");
         difDoc = difBuilder.build(requestURL);
+        parseProperties(difDoc, properties);
       } catch (JDOMException e) {
         pcs.firePropertyChange("message", null, "- SOS at: " + requestURL + "; is not well-formed");
         continue;
@@ -117,6 +160,7 @@ public class DifToArc extends GenericRequest {
       }
       
       stopwatch.start();
+      
 
       List<Text> myList = null;
       try {
@@ -124,6 +168,12 @@ public class DifToArc extends GenericRequest {
         myList = transform(difDoc, xslDoc);
         if (!myList.get(0).getText().substring(0, 20).contains("No")) {
           String filename = FileSaveUtils.chooseFilename(savePath, sensor.getName(), fileSuffix);
+          properties.setPath(filename);
+          properties.setSuffix(fileSuffix);
+          properties.setIdHeader("Station");
+          properties.setLatHeader("Latitude");
+          properties.setLonHeader("Longitude");
+          properties.setTimeHeader("DateTime");
           Writer fstream = new FileWriter(new File(filename));
           pcs.firePropertyChange("message", null, "- Streaming transformed results to file");
           BufferedWriter out = new BufferedWriter(fstream);
@@ -142,6 +192,7 @@ public class DifToArc extends GenericRequest {
       pcs.firePropertyChange("message", null, "- Completed in " + stopwatch.elapsedTime() + " seconds");
       int prog = Double.valueOf(countSens / numSens * 100).intValue();
       pcs.firePropertyChange("progress", null, prog);
+      properties.writeFile();
     } // End Sensor List
     pcs.firePropertyChange("progress", null, 100);
     pcs.firePropertyChange("done", null, filenames.toString());

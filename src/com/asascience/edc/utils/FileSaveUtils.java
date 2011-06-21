@@ -87,6 +87,15 @@ public class FileSaveUtils {
       return f.getAbsolutePath();
     }
   }
+  
+  public static String getFilePathNoSuffix(String path) {
+    int per = path.lastIndexOf(".");
+    if (per != -1) {
+      return path.substring(0,per);
+    } else {
+      return path;
+    }
+  }
 
   
 }

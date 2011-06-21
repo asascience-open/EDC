@@ -117,9 +117,10 @@ public class DifToCSV extends GenericRequest {
       }
       
       stopwatch.start();
-
+      
       List<Text> myList = null;
       try {
+        
         pcs.firePropertyChange("message", null, "- Transforming XML to CSV");
         myList = transform(difDoc, xslDoc);
         if (!myList.get(0).getText().substring(0, 20).contains("No")) {
