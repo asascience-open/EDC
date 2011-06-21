@@ -130,7 +130,7 @@ public class NetcdfGridWriter {
             continue;
           }
           varNames.add(gridName);
-          System.out.println(grid.getName());
+
           GridCoordSystem gcsOrg = grid.getCoordinateSystem();
 
           // create a subset if needed
