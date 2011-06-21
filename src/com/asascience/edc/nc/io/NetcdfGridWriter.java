@@ -117,18 +117,20 @@ public class NetcdfGridWriter {
           if (Thread.currentThread().isInterrupted()) {
             return NetcdfGridWriter.CANCELLED_PROCESS;
           }
-          pcs.firePropertyChange("note", null, "Preparing: " + gridName);
+          pcs.firePropertyChange("note", null, "Preparing: " + gridName);        
+          
+          // get the grid and it's coordinate system
+          //GridDatatype grid = gds.findGridDatatype(gridName);
+          GridDatatype grid = gds.findGridDatatype(gridName);
+          if (grid == null) {
+            continue;
+          }
+          
           if (varNames.contains(gridName)) {
             continue;
           }
-          // System.err.println(gridName);
-
-          // add the name to the list
           varNames.add(gridName);
-
-          // get the grid and it's coordinate system
-          GridDatatype grid = gds.findGridDatatype(gridName);
-
+          System.out.println(grid.getName());
           GridCoordSystem gcsOrg = grid.getCoordinateSystem();
 
           // create a subset if needed
