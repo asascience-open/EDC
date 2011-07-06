@@ -232,19 +232,22 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
   public List getCapXPath(Document doc) {
     List<SensorContainer> sensorList = null;
 
-    String XPATH_GETEACH_OBS_OFFERING = "//asa:ObservationOffering";
+    String XPATH_GETEACH_OBS_OFFERING = "//*[local-name()='ObservationOffering']";
     String XPATH_GETEACH_OBS_ATTRIBUTE = "./@gml:id";
     String XPATH_GETEACH_LOWER_CORNER = ".//gml:lowerCorner";
     String XPATH_GETEACH_UPPER_CORNER = ".//gml:upperCorner";
     String XPATH_GETEACH_DESCRIPTION = ".//gml:description";
-    String XPATH_GETEACH_PROCEDURE = ".//asa:procedure";
+    String XPATH_GETEACH_PROCEDURE = ".//*[local-name()='procedure']";
+    
+    String XPATH_GETEACH_PARAMETER = "//*[local-name()='Parameter'][@name='observedProperty']/*[local-name()='AllowedValues']/*[local-name()='Value']";
+    
     String XPATH_GETEACH_XLINK_ATTRIBUTE = "./@xlink:href";
     String XPATH_GETEACH_GML_NAME = ".//gml:name";
-    String XPATH_GETEACH_PROPERTY = ".//asa:observedProperty";
+    String XPATH_GETEACH_PROPERTY = ".//*[local-name()='observedProperty']";
     String XPATH_GETEACH_BEGINPOSITION = ".//gml:beginPosition";
     String XPATH_GETEACH_ENDPOSITION = ".//gml:endPosition";
     String XPATH_GETEACH_INDETERMINATEPOSITION = "./@indeterminatePosition";
-    String XPATH_GETEACH_RESPONSEFORMAT = ".//asa:responseFormat";
+    String XPATH_GETEACH_RESPONSEFORMAT = ".//*[local-name()='responseFormat']";
 
     XPath XPATH_Obs_Offering = null;
     XPath XPATH_Obs_Attribute = null;
@@ -254,6 +257,7 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
 
     XPath XPATH_Description = null;
     XPath XPATH_Procedure = null;
+    XPath XPATH_Parameter = null;
     XPath XPATH_Xlink_Attribute = null;
     XPath XPATH_Gml_Name = null;
     XPath XPATH_Property = null;
@@ -267,7 +271,6 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
     try {
 
       XPATH_Obs_Offering = XPath.newInstance(XPATH_GETEACH_OBS_OFFERING);
-      XPATH_Obs_Offering.addNamespace("asa", "http://www.opengis.net/sos/1.0");
       XPATH_Obs_Attribute = XPath.newInstance(XPATH_GETEACH_OBS_ATTRIBUTE);
 
       XPATH_Lower_Corner = XPath.newInstance(XPATH_GETEACH_LOWER_CORNER);
@@ -275,20 +278,20 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
 
       XPATH_Description = XPath.newInstance(XPATH_GETEACH_DESCRIPTION);
       XPATH_Procedure = XPath.newInstance(XPATH_GETEACH_PROCEDURE);
-      XPATH_Procedure.addNamespace("asa", "http://www.opengis.net/sos/1.0");
+      
+      XPATH_Parameter = XPath.newInstance(XPATH_GETEACH_PARAMETER);
+      
       XPATH_Xlink_Attribute = XPath.newInstance(XPATH_GETEACH_XLINK_ATTRIBUTE);
 
       XPATH_Gml_Name = XPath.newInstance(XPATH_GETEACH_GML_NAME);
 
       XPATH_Property = XPath.newInstance(XPATH_GETEACH_PROPERTY);
-      XPATH_Property.addNamespace("asa", "http://www.opengis.net/sos/1.0");
 
       XPATH_BeginPosition = XPath.newInstance(XPATH_GETEACH_BEGINPOSITION);
       XPATH_EndPosition = XPath.newInstance(XPATH_GETEACH_ENDPOSITION);
       XPATH_IndeterminatePosition = XPath.newInstance(XPATH_GETEACH_INDETERMINATEPOSITION);
 
       XPATH_ResponseFormat = XPath.newInstance(XPATH_GETEACH_RESPONSEFORMAT);
-      XPATH_ResponseFormat.addNamespace("asa", "http://www.opengis.net/sos/1.0");
 
     } catch (JDOMException e1) {
       e1.printStackTrace();
@@ -297,8 +300,7 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
     // Get the list of variables in this service
     List parameterObjects = null;
     try {
-      parameterObjects = XPath.selectNodes(doc,
-              "//ows:Parameter[@name='observedProperty']/ows:AllowedValues/ows:Value");
+      parameterObjects = XPATH_Parameter.selectNodes(doc);
       int cnt = parameterObjects.size();
       int index = 0;
       for (Object o : parameterObjects) {
@@ -546,7 +548,7 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
           System.out.println("xpathGetCapabilities: error casting procedure and properties!");
           continue;
         } catch (IndexOutOfBoundsException ee) {
-          // System.out.println("xpathGetCapabilities: More properties than procedures!");
+          //System.out.println("xpathGetCapabilities: More properties than procedures!");
         }
 
         try {
