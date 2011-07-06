@@ -89,8 +89,6 @@ public class DifToArc extends GenericRequest {
         properties.setVariableHeaders(els);
       }
       
-      
-      
     } catch (JDOMException e1) {
       e1.printStackTrace();
     }

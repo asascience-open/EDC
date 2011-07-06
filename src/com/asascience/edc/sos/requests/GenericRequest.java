@@ -6,7 +6,6 @@
 package com.asascience.edc.sos.requests;
 
 import cern.colt.Timer;
-import com.asascience.edc.CsvProperties;
 import com.asascience.edc.sos.SensorContainer;
 import com.asascience.edc.sos.map.SensorPoint;
 import com.asascience.edc.sos.VariableContainer;
