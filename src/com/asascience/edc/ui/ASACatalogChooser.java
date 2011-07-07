@@ -21,7 +21,7 @@
 package com.asascience.edc.ui;
 
 import com.asascience.edc.erddap.ErddapDataset;
-import com.asascience.edc.erddap.ErddapGetDatasetsProgressMonitor;
+import com.asascience.edc.erddap.gui.ErddapGetDatasetsProgressMonitor;
 import com.asascience.edc.erddap.ErddapServer;
 import com.asascience.edc.erddap.gui.ErddapDatasetViewer;
 import com.asascience.edc.ui.combos.HistoryComboBox;

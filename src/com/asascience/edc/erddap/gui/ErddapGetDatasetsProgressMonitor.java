@@ -3,9 +3,8 @@
  * and open the template in the editor.
  */
 
-package com.asascience.edc.erddap;
+package com.asascience.edc.erddap.gui;
 
-import com.asascience.edc.erddap.gui.ErddapDatasetViewer;
 import com.asascience.edc.gui.OpendapInterface;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
