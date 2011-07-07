@@ -84,6 +84,7 @@ public class DifToCSV extends GenericRequest {
     Timer stopwatch = new Timer();
     SAXBuilder difBuilder;
     Document difDoc;
+    Long filesize = Long.parseLong("0");
 
     for (SensorContainer sensor : selectedSensors) {
       stopwatch.reset();
@@ -123,14 +124,20 @@ public class DifToCSV extends GenericRequest {
         
         pcs.firePropertyChange("message", null, "- Transforming XML to CSV");
         myList = transform(difDoc, xslDoc);
-        if (!myList.get(0).getText().substring(0, 20).contains("No")) {
+        if ((!myList.get(0).getText().trim().substring(0, 20).contains("No")) 
+            && (!myList.get(0).getText().trim().substring(0, 20).contains("Response format"))) {
           String filename = FileSaveUtils.chooseFilename(savePath, sensor.getName(), fileSuffix);
-          Writer fstream = new FileWriter(new File(filename));
+          File savedfile = new File(filename);
+          Writer fstream = new FileWriter(savedfile);
           pcs.firePropertyChange("message", null, "- Streaming transformed results to file");
           BufferedWriter out = new BufferedWriter(fstream);
           out.write(myList.get(0).getText());
           out.close();
-          filenames.add(filename);
+          filesize = Long.valueOf(savedfile.length());
+          // Don't add empty files to the output path
+          if (filesize > 0) {
+            filenames.add(savedfile.getAbsolutePath());
+          }
         } else {
           pcs.firePropertyChange("message", null, "- No data returned at this station for selected parameters!");
         }
@@ -140,7 +147,7 @@ public class DifToCSV extends GenericRequest {
         pcs.firePropertyChange("message", null, "- JDOM tranform failed!");
       }
       countSens++;
-      pcs.firePropertyChange("message", null, "- Completed in " + stopwatch.elapsedTime() + " seconds");
+      pcs.firePropertyChange("message", null, "- Completed " + filesize.toString() + " bytes in " + stopwatch.elapsedTime() + " seconds");
       int prog = Double.valueOf(countSens / numSens * 100).intValue();
       pcs.firePropertyChange("progress", null, prog);
     } // End Sensor List
