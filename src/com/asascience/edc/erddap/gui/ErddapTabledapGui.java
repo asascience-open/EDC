@@ -118,6 +118,10 @@ public class ErddapTabledapGui extends JPanel {
     String params = selections.toString().replace(" ","").replace("[","").replace("]","");
     params += "&";
     params += constraints.toString().replace(", ", "&").replace("[","").replace("]","");
+    // Strip off final '&'
+    if (params.endsWith("&")) {
+      params = params.substring(0,params.length() - 1);
+    }
 
     request.setBaseUrl(erd.getTabledap());
     request.setParameters(params);
