@@ -214,7 +214,8 @@ public class ErddapTabledapGui extends JPanel {
       String filename = FileSaveUtils.chooseFilename(savePath, "erddap_response" + responseFormat);
 
       Timer stopwatch = new Timer();
-
+      File f = null;
+              
       stopwatch.reset();
 
       int written = 0;
@@ -226,7 +227,7 @@ public class ErddapTabledapGui extends JPanel {
         ht.setRequestMethod("GET");
         InputStream is = ht.getInputStream();
         pcs.firePropertyChange("message", null, "- Streaming Results to File: " + filename);
-        File f = new File(filename);
+        f = new File(filename);
         OutputStream output = new BufferedOutputStream(new FileOutputStream(f));
         byte[] buffer = new byte[2048];
         int len = 0;
@@ -246,6 +247,9 @@ public class ErddapTabledapGui extends JPanel {
 
       pcs.firePropertyChange("message", null, "- Completed " + written + " bytes in " + stopwatch.elapsedTime() + " seconds.");
       pcs.firePropertyChange("progress", null, 100);
+      if (f != null) {
+        pcs.firePropertyChange("done", null, f.getAbsolutePath());
+      }
     }
   }
   
