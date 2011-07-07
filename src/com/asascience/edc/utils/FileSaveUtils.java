@@ -33,14 +33,41 @@ public class FileSaveUtils {
     return new StringBuilder( formatted.format( dateNow ) ).toString();
   }
 
-  public static File chooseSavePath(JFrame parentFrame, String homeDir, String domain) {
+  public static File chooseDirectSavePath(JFrame parentFrame, String homeDir, String folder_name) {
     FileDialog outputPath = new FileDialog(parentFrame, "Create directory and save output files here...", FileDialog.SAVE);
-    File containingFolder = new File(homeDir + File.separator + getNameFromURL(domain) + File.separator);
+    
+    String file_name = chooseDirectory(new File(homeDir), folder_name, 0);
+    File containingFolder = new File(file_name + File.separator);
     if (!containingFolder.exists()) {
       containingFolder.mkdirs();
     }
     outputPath.setDirectory(containingFolder.getAbsolutePath());
-    outputPath.setFile("Choose Output Directory (ignore this filename)");
+    outputPath.setFile(folder_name);
+    outputPath.setVisible(true);
+    
+    File newHomeDir = new File(outputPath.getDirectory());
+    // Did the user use the new directory we created for them?
+    if (!newHomeDir.getAbsolutePath().contains(containingFolder.getAbsolutePath())) {
+      if (containingFolder.length() == 0) {
+        containingFolder.delete();
+        newHomeDir.mkdirs();
+      }
+    }
+    return new File(outputPath.getDirectory());
+  }
+  
+  public static File chooseSavePath(JFrame parentFrame, String homeDir, String folder_name) {
+    return chooseSavePath(parentFrame, homeDir, folder_name, "Choose Output Directory (ignore this filename)");
+  }
+  
+  public static File chooseSavePath(JFrame parentFrame, String homeDir, String folder_name, String file_name) {
+    FileDialog outputPath = new FileDialog(parentFrame, "Create directory and save output files here...", FileDialog.SAVE);
+    File containingFolder = new File(homeDir + File.separator + getNameFromURL(folder_name) + File.separator);
+    if (!containingFolder.exists()) {
+      containingFolder.mkdirs();
+    }
+    outputPath.setDirectory(containingFolder.getAbsolutePath());
+    outputPath.setFile(file_name);
     outputPath.setVisible(true);
     
     File newHomeDir = new File(outputPath.getDirectory());
@@ -56,6 +83,21 @@ public class FileSaveUtils {
     return newHomeDir;
   }
   
+  public static String chooseDirectory(File path, String dirname, int count) {
+    String modfilename = dirname;
+    if (count != 0) {
+      modfilename = dirname + "_" + count;
+    }
+    modfilename = modfilename.replace("-","_");
+    File f = new File(path.getAbsolutePath() + File.separator + modfilename);
+    
+    if (f.exists()) {
+      return FileSaveUtils.chooseDirectory(path, dirname, count + 1);
+    } else {
+      return f.getAbsolutePath();
+    }
+  }
+  
   public static String chooseFilename(File path, String filename) {
     // Strip out the suffix
     String suffix;
@@ -64,7 +106,7 @@ public class FileSaveUtils {
       suffix = filename.substring(per+1,filename.length());
       filename = filename.substring(0,per);
     } else {
-      suffix = "none";
+      suffix = "";
     }
     return FileSaveUtils.chooseFilename(path, filename, suffix, 0);
   }

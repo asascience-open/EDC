@@ -14,7 +14,6 @@ import com.asascience.edc.dap.ui.variables.OilmapVariableSelectionPanel;
 import com.asascience.edc.dap.ui.variables.VariableSelectionPanel;
 import gov.noaa.pmel.swing.JSlider2Date;
 
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -36,10 +35,6 @@ import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 
 import net.miginfocom.swing.MigLayout;
-import ucar.nc2.ui.widget.BAMutil;
-import ucar.nc2.ui.widget.FileManager;
-import ucar.nc2.ui.widget.IndependentWindow;
-import ucar.nc2.ui.gis.worldmap.WorldMapBean;
 import ucar.ma2.Array;
 import ucar.ma2.IndexIterator;
 import ucar.nc2.NetcdfFile;
@@ -50,7 +45,6 @@ import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dt.GridCoordSystem;
 import ucar.nc2.dt.grid.GeoGrid;
 import ucar.nc2.dt.grid.GridDataset;
-import ucar.nc2.ui.grid.GridUI;
 import ucar.nc2.units.DateUnit;
 import ucar.unidata.geoloc.LatLonRect;
 import ucar.util.prefs.PreferencesExt;
@@ -59,7 +53,6 @@ import com.asascience.edc.ArcType;
 import com.asascience.edc.Configuration;
 import com.asascience.edc.History;
 import com.asascience.edc.gui.BoundingBoxPanel;
-import com.asascience.edc.gui.DimMapDialog;
 import com.asascience.edc.gui.OpendapInterface;
 import com.asascience.edc.gui.WorldwindSelectionMap;
 import com.asascience.edc.nc.GridReader;
@@ -67,10 +60,10 @@ import com.asascience.edc.nc.NcReaderBase;
 import com.asascience.edc.nc.NetcdfConstraints;
 import com.asascience.edc.nc.io.NcProperties;
 import com.asascience.edc.nc.io.NetcdfGridWriter;
+import com.asascience.edc.utils.FileSaveUtils;
 import com.asascience.ui.IndeterminateProgressDialog;
 import com.asascience.utilities.FileMonitor;
 import com.asascience.utilities.Utils;
-import java.awt.FileDialog;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.Random;
@@ -81,25 +74,19 @@ import java.util.Random;
  */
 public class DapWorldwindProcessPanel extends JPanel {
 
-  private static final String GRIDVIEW_FRAME_SIZE = "GridUIWindowSize";
   public static final String AOI_LIST = "aoilist";
   private PreferencesExt mainPrefs;
   private JFrame mainFrame;
   private NetcdfConstraints constraints;
   private WorldwindSelectionMap mapPanel;
   private VariableSelectionPanel selPanel;
-  private IndependentWindow viewerWindow;
-  private GridUI gridUI;
   private NetcdfDataset ncd;
-  private GridDataset gridDataset;
   private List<GridDataset> gdsList;
   protected NcReaderBase ncReader;
   private OpendapInterface parent;
-  private FileManager fileChooser;
   private List aoiList;
   private String homeDir;
   private String sysDir;
-  private DimMapDialog dimMap;
   private String ncOutPath;
   private BoundingBoxPanel bboxGui;
 
@@ -114,14 +101,13 @@ public class DapWorldwindProcessPanel extends JPanel {
    * @param homeDir
    * @param sysDir
    */
-  public DapWorldwindProcessPanel(ucar.util.prefs.PreferencesExt prefs, FileManager fileChooser, OpendapInterface caller,
+  public DapWorldwindProcessPanel(ucar.util.prefs.PreferencesExt prefs, OpendapInterface caller,
           NetcdfConstraints cons, NetcdfDataset ncd, String homeDir, String sysDir) {
     // try {
 
     this.mainPrefs = prefs;
     this.mainFrame = caller.getMainFrame();
     this.parent = caller;
-    this.fileChooser = fileChooser;
     this.constraints = cons;
     this.ncd = ncd;
     this.homeDir = Utils.appendSeparator(homeDir);
@@ -333,26 +319,6 @@ public class DapWorldwindProcessPanel extends JPanel {
       btnProcess.addActionListener(new ProcessDataListener());
       processPanel.add(btnProcess);
 
-      /*
-      JButton preview = new JButton("Preview Entire Dataset");
-      preview.setToolTipText("Preview the entire dataset without applying\n"
-      + "any spatial or temporal subsetting.");
-      preview.addActionListener(new ActionListener() {
-
-      public void actionPerformed(ActionEvent e) {
-      if (gridDataset != null) {
-      if (gridUI == null) {
-      makeGridUI();
-      }
-      gridUI.setDataset(gridDataset);
-      viewerWindow.show();
-      } else {
-      System.err.println("LinkingPanel: gridDataset = null");
-      }
-      }
-      });
-      processPanel.add(preview);
-       */
       add(namePanel, "spanx 3, growx, wrap");
       add(pageTopPanel, "spanx 3, grow, wrap");
       add(pageEndPanel, "spanx 3, growx, wrap, hmax 200");
@@ -504,23 +470,23 @@ public class DapWorldwindProcessPanel extends JPanel {
                 if (c1.getDataType() == c2.getDataType()) {
                   continue;
                 } else {
-                  ret.append("Unequal coordinate axis data type: name=" + c1.getName() + ": c1="
-                          + c1.getDataType() + " c2=" + c2.getDataType());
+                  ret.append("Unequal coordinate axis data type: name=").append(c1.getName()).append(": c1=")
+                     .append(c1.getDataType()).append(" c2=").append(c2.getDataType());
                   break;
                 }
               } else {
-                ret.append("Unequal coordinate axis maximum value: name=" + c1.getName() + ": c1="
-                        + c1.getMaxValue() + " c2=" + c2.getMaxValue());
+                ret.append("Unequal coordinate axis maximum value: name=").append(c1.getName()).append(": c1=")
+                   .append(c1.getMaxValue()).append(" c2=").append(c2.getMaxValue());
                 break;
               }
             } else {
-              ret.append("Unequal coordinate axis minimum value: name=" + c1.getName() + ": c1="
-                      + c1.getMinValue() + " c2=" + c2.getMinValue());
+              ret.append("Unequal coordinate axis minimum value: name=").append(c1.getName()).append(": c1=")
+                 .append(c1.getMinValue()).append(" c2=").append(c2.getMinValue());
               break;
             }
           } else {
-            ret.append("Unequal coordinate axis type: name=" + c1.getName() + ": c1=" + c1.getAxisType()
-                    + " c2=" + c2.getAxisType());
+            ret.append("Unequal coordinate axis type: name=").append(c1.getName()).append(": c1=")
+               .append(c1.getAxisType()).append(" c2=").append(c2.getAxisType());
             break;
           }
         }
@@ -530,7 +496,7 @@ public class DapWorldwindProcessPanel extends JPanel {
           ret.append("equal");
         }
       } else {
-        ret.append("Unequal number of coordinate axes: c1=" + coords1.size() + " c2=" + coords2.size());
+        ret.append("Unequal number of coordinate axes: c1=").append(coords1.size()).append(" c2=").append(coords2.size());
       }
     } catch (Exception ex) {
       ret.delete(0, ret.length() - 1);
@@ -590,27 +556,6 @@ public class DapWorldwindProcessPanel extends JPanel {
     if (mainPrefs != null) {
       mainPrefs.putList(AOI_LIST, aoiList);
     }
-  }
-
-  public void setGridDataset(GridDataset ds) {
-    gridDataset = ds;
-  }
-
-  private void makeGridUI() {
-    // a little tricky to get the parent right for GridUI
-    viewerWindow = new IndependentWindow("Grid Viewer", BAMutil.getImage("netcdfUI"));
-
-    gridUI = new GridUI((PreferencesExt) mainPrefs.node("GridUI"), viewerWindow, fileChooser, 800);
-    gridUI.addMapBean(new WorldMapBean());
-    // gridUI.addMapBean(new
-    // thredds.viewer.gis.shapefile.ShapeFileBean("WorldDetailMap",
-    // "Global Detailed Map", "WorldDetailMap", WorldDetailMap));
-    // gridUI.addMapBean(new
-    // thredds.viewer.gis.shapefile.ShapeFileBean("USDetailMap",
-    // "US Detailed Map", "USMap", USMap));
-
-    viewerWindow.setComponent(gridUI);
-    viewerWindow.setBounds((Rectangle) mainPrefs.getBean(GRIDVIEW_FRAME_SIZE, new Rectangle(77, 22, 700, 900)));
   }
 
   public void setNcName(String name, String location) {
@@ -812,10 +757,8 @@ public class DapWorldwindProcessPanel extends JPanel {
         }
       }
 
-      File f;
-      f = Utils.createIncrementalName(homeDir, outname, ".nc");
-      outname = createSuitableLayerName(f.getName().replace(".nc", ""));
-
+      File f = null;
+      
       do {
         skip = false;
 
@@ -831,24 +774,12 @@ public class DapWorldwindProcessPanel extends JPanel {
           }
         }
 
-        FileDialog outputPath = new FileDialog(mainFrame, "Create folder and save output files here...", FileDialog.SAVE);
-        outputPath.setDirectory(homeDir);
-        outputPath.setFile(outname);
-        outputPath.setVisible(true);
-
-        String userOutname = outputPath.getFile();
-
-        File containingFolder = new File(outputPath.getDirectory() + File.separator + userOutname + File.separator);
-        if (!containingFolder.exists()) {
-          containingFolder.mkdir();
-        }
+        File find_file = FileSaveUtils.chooseDirectSavePath(mainFrame, homeDir, createSuitableLayerName(outname.replace(".nc", "")));
         
-        if (!userOutname.equals(outname)) {
-          outname = createSuitableLayerName(userOutname);
-        }
+        String userOutname = createSuitableLayerName(find_file.getName());
 
         if (!skip) {
-          f = new File(containingFolder.getAbsolutePath() + File.separator + userOutname + ".nc");
+          f = new File(find_file.getAbsolutePath() + File.separator + userOutname + ".nc");
 
           if (f.exists()) {
             if (Configuration.ALLOW_FILE_REPLACEMENT) {

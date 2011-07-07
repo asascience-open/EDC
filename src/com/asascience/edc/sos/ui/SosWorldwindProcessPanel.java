@@ -17,7 +17,6 @@ import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 
 import net.miginfocom.swing.MigLayout;
-import ucar.nc2.ui.widget.FileManager;
 
 import com.asascience.edc.sos.requests.ResponseFormat;
 import com.asascience.utilities.Utils;
@@ -54,9 +53,7 @@ public class SosWorldwindProcessPanel extends JPanel {
   private boolean variableSelected;
   private boolean sensorSelected;
 
-  public SosWorldwindProcessPanel(ucar.util.prefs.PreferencesExt prefs,
-          FileManager fileChooser, OpendapInterface caller,
-          SosServer sosd, String homeDir, String sysDir) {
+  public SosWorldwindProcessPanel(OpendapInterface caller, SosServer sosd, String homeDir, String sysDir) {
     this.sosServer = sosd;
     this.sysDir = Utils.appendSeparator(sysDir);
     this.parent = caller;

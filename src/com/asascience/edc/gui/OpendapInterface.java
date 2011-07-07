@@ -527,8 +527,7 @@ public class OpendapInterface {
   public boolean openSOSDataset(SosServer sosData, SwingWorker task) {
     try {
       if (!task.isCancelled()) {
-        sosPanel = new SosWorldwindProcessPanel((PreferencesExt) prefs, fileChooser,
-              this, sosData, homeDir, sysDir);
+        sosPanel = new SosWorldwindProcessPanel(this, sosData, homeDir, sysDir);
       }
       if (task.isCancelled() || !sosPanel.initData()) {
         return false;
@@ -575,7 +574,7 @@ public class OpendapInterface {
           // gridReader = new GridReader(ncd, constraints);
           // if(!gridReader.initData()) return;
 
-          spPanel = new DapWorldwindProcessPanel((PreferencesExt) prefs, fileChooser, this, constraints, ncd,
+          spPanel = new DapWorldwindProcessPanel((PreferencesExt) prefs, this, constraints, ncd,
                   homeDir, sysDir);
           if (!spPanel.initData()) {
             return false;
