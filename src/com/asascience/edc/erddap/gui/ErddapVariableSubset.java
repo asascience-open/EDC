@@ -12,6 +12,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Date;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
 import ucar.nc2.units.DateUnit;
@@ -45,17 +46,14 @@ public class ErddapVariableSubset extends JPanel {
     add(check);
              
     if (variable.isTime()) {
-      JSlider2Date slider = new JSlider2Date();
-      slider.addPropertyChangeListener(new JDateSliderListener());
-      slider.setShowBorder(false);
-      slider.setHandleSize(6);
-      slider.setAlwaysPost(true);
-      Date st = DateUnit.getStandardDate(variable.getMin() + " " + variable.getUnits());
-      Date et = DateUnit.getStandardDate(variable.getMax() + " " + variable.getUnits());
-      slider.setRange(st,et);
-      slider.setStartValue(new GeoDate(st));
-      slider.setFormat("yyyy-MM-dd");
-      add(slider, "growx");
+      // Just show the checkbox and Label
+    } else if (variable.isX()) {
+      // Just show the checkbox and Label
+    } else if (variable.isY()) {
+      // Just show the checkbox and Label
+    } else if (variable.isSingleValue()) {
+      JLabel singleLabel = new JLabel("Only one value present in dataset: " + variable.getMin());
+      add(singleLabel, "align right");
     } else {
       JSlider2Double slider = new JSlider2Double();
       slider.addPropertyChangeListener(new JSliderListener());
@@ -89,7 +87,7 @@ public class ErddapVariableSubset extends JPanel {
   }
   
   class JSliderListener implements PropertyChangeListener {
-    public void propertyChange(PropertyChangeEvent evt) {     
+    public void propertyChange(PropertyChangeEvent evt) {
       min = Double.toString(((JSlider2Double)evt.getSource()).getStartValue());
       max = Double.toString(((JSlider2Double)evt.getSource()).getEndValue());
     }

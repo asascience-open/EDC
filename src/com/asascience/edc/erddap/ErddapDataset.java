@@ -32,6 +32,10 @@ public class ErddapDataset {
   private boolean tabledap;
   private boolean subset;
   private boolean wms;
+  private ErddapVariable timeVariable;
+  private ErddapVariable yVariable;
+  private ErddapVariable xVariable;
+  private ErddapVariable zVariable;
   private ArrayList<ErddapVariable> variables;
 
   public ErddapDataset(String id) {
@@ -144,6 +148,22 @@ public class ErddapDataset {
     return null;
   }
 
+  public ErddapVariable getX() {
+    return xVariable;
+  }
+  
+  public ErddapVariable getY() {
+    return yVariable;
+  }
+    
+  public ErddapVariable getZ() {
+    return zVariable;
+  }
+      
+  public ErddapVariable getTime() {
+    return timeVariable;
+  }
+
   public String getSubset() {
     if (isSubset()) {
       return getTabledap() + ".subset";
@@ -224,6 +244,7 @@ public class ErddapDataset {
             edv.setUnits(ar.getJSONArray(i).getString(4).trim());
           } else if (ar.getJSONArray(i).getString(2).equals("axis")) {
             edv.setAxis(ar.getJSONArray(i).getString(4).trim());
+            setAxis(edv);
           }
         }
       }
@@ -236,6 +257,19 @@ public class ErddapDataset {
     }
   }
 
+  
+  private void setAxis(ErddapVariable erv) {
+    if (erv.isTime()) {
+      timeVariable = erv;
+    } else if (erv.isX()) {
+      xVariable = erv;
+    } else if (erv.isY()) {
+      yVariable = erv;
+    } else if (erv.isZ()) {
+      zVariable = erv;
+    }
+  }
+  
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();

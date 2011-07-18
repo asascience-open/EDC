@@ -29,6 +29,8 @@ public class ErddapVariable {
   
   private static String TAXIS = "T";
   private static String ZAXIS = "Z";
+  private static String XAXIS = "X";
+  private static String YAXIS = "Y";
 
   public ErddapVariable(ErddapDataset erd, String name, boolean values) {
     this.erd = erd;
@@ -115,12 +117,24 @@ public class ErddapVariable {
     return values;
   }
   
+  public boolean isX() {
+    return axis.equals(XAXIS);
+  }
+  
+  public boolean isY() {
+    return axis.equals(YAXIS);
+  }
+  
   public boolean isTime() {
     return axis.equals(TAXIS);
   }
   
   public boolean isZ() {
     return axis.equals(ZAXIS);
+  }
+  
+  public boolean isSingleValue() {
+    return min.equals(max);
   }
   
   public boolean isDouble() {
