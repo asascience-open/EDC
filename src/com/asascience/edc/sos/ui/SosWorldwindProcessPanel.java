@@ -111,9 +111,8 @@ public class SosWorldwindProcessPanel extends JPanel {
       
       // Map panel with BBOX change event
       String gisDataDir = sysDir + "data";
-      NetcdfConstraints constraints = new NetcdfConstraints();
       
-      mapPanel = new WorldwindSelectionMap(constraints, gisDataDir);
+      mapPanel = new WorldwindSelectionMap(gisDataDir);
       mapPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent e) {

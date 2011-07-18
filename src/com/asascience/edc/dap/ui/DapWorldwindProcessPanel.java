@@ -231,7 +231,7 @@ public class DapWorldwindProcessPanel extends JPanel {
 
       // create the map panel
       String gisDataDir = sysDir + "data";
-      mapPanel = new WorldwindSelectionMap(constraints, gisDataDir);
+      mapPanel = new WorldwindSelectionMap(gisDataDir);
       mapPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent e) {

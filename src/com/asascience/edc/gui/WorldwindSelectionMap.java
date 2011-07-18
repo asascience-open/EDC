@@ -19,7 +19,6 @@ import javax.swing.JPopupMenu;
 
 import net.miginfocom.swing.MigLayout;
 
-import com.asascience.openmap.utilities.GeoConstraints;
 import com.asascience.edc.sos.map.WorldwindSosLayer;
 import com.asascience.edc.sos.ui.SosWorldwindBoundingBoxTool;
 import com.asascience.utilities.Utils;
@@ -68,7 +67,6 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
   protected JMenuItem remAllAoi;
   protected JMenuItem manEntryAoi;
   protected PropertyChangeSupport pcs;
-  protected GeoConstraints geoCons;
   protected String dataDir;
   protected MapHandler mHandler;
   private WorldwindSosLayer sensorLayer;
@@ -92,21 +90,17 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
    * @param dataDir
    * @param showAOIButton
    */
-  public WorldwindSelectionMap(GeoConstraints cons, String dataDir, boolean showAOIButton) {
+  public WorldwindSelectionMap(String dataDir, boolean showAOIButton) {
     this.dataDir = Utils.appendSeparator(dataDir);
     this.showAOIButton = showAOIButton;
-    geoCons = cons;
-    if (geoCons == null) {
-      System.err.println("geoCons == null");
-    }
 
     pcs = new PropertyChangeSupport(this);
 
     initComponents();
   }
 
-  public WorldwindSelectionMap(GeoConstraints cons, String dataDir) {
-    this(cons, dataDir, false);
+  public WorldwindSelectionMap(String dataDir) {
+    this(dataDir, false);
   }
 
   private void initComponents() {
