@@ -291,6 +291,9 @@ public class ErddapTabledapGui extends JPanel {
     
     public void getData() {
       File savePath = FileSaveUtils.chooseSavePath(parent, homeDir, baseUrl);
+      if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI && responseFormat.equals(".esriCSV")) {
+        responseFormat = ".csv";
+      }
       String filename = FileSaveUtils.chooseFilename(savePath, "erddap_response" + responseFormat);
 
       Timer stopwatch = new Timer();
