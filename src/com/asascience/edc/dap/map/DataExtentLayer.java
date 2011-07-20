@@ -50,9 +50,9 @@ public class DataExtentLayer extends RenderableLayer {
     this.sector.setAttributes(satts);
     
     this.box = new Box();
-    this.sector.setVisible(true);
-    this.sector.setAttributes(satts);
-
+    this.box.setVisible(true);
+    this.box.setAttributes(satts);
+            
     addRenderable(polygon);
     addRenderable(sector);
     addRenderable(box);
