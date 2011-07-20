@@ -32,22 +32,22 @@ import org.apache.commons.lang.ArrayUtils;
  */
 public class ErddapJSlider2Double extends JComponent implements Serializable
 {
-  boolean twoHandles_;
-  Range2D range_;
-  double minValue_, oldMinValue_;
-  double maxValue_, oldMaxValue_;
-  double scale_;
-  String format_ = "";
-  DecimalFormat form_;
-  boolean indexed_ = false;
-  double[] values_;
-  double[] scaled_;
-  JSlider2 slider_;
-  JComboBox minOps_;
-  JComboBox maxOps_;
-  JTextField minField_;
-  JTextField maxField_;
-  JPanel panel_;
+  private boolean twoHandles_;
+  private Range2D range_;
+  private double minValue_, oldMinValue_;
+  private double maxValue_, oldMaxValue_;
+  private double scale_;
+  private String format_ = "";
+  private DecimalFormat form_;
+  private boolean indexed_ = false;
+  private double[] values_;
+  private double[] scaled_;
+  private JSlider2 slider_;
+  private JComboBox minOps_;
+  private JComboBox maxOps_;
+  private JTextField minField_;
+  private JTextField maxField_;
+  private JPanel panel_;
 
   private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
   
@@ -76,13 +76,13 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
     JPanel bottom_panel = new JPanel(new MigLayout("gap 0, fill"));
     
     slider_ = new JSlider2(twoHandles_);
-    top_panel.add(slider_, "gap 0, growx, spanx, wrap");
     
-    String[] operators = {"<=","<","=~","!=","=",">",">="};
+    
+    String[] operators = {">=",">","=~","","!=","=","<","<="};
     
     /* Min block */
     minOps_ = new JComboBox(operators);
-    bottom_panel.add(minOps_, "align right");
+    minOps_.addActionListener(new OperatorListener());
     minField_ = new JTextField();
     minField_.addActionListener(new ActionListener() {
 
@@ -93,13 +93,13 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
         slider_.setMinValue(min);
       }
     });
-    bottom_panel.add(minField_, "gap 0, width 50");
+    
     
     /* Max block */
     // Reverse operators
     ArrayUtils.reverse(operators);
     maxOps_ = new JComboBox(operators);
-    bottom_panel.add(maxOps_, "align right");
+    maxOps_.addActionListener(new OperatorListener());
     maxField_ = new JTextField();
     maxField_.addActionListener(new ActionListener() {
 
@@ -110,9 +110,6 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
         slider_.setMaxValue(max);
       }
     });
-    if(twoHandles_) {
-      bottom_panel.add(maxField_, "gap 0, width 50");
-    }
 		
     slider_.addPropertyChangeListener(new PropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent evt) {
@@ -133,9 +130,16 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
     range_ = new Range2D(0.0f, 1.0f);
     this.setRange(range_);
     
+    top_panel.add(minOps_);
+    top_panel.add(minField_, "gap 0, width 50");
+    top_panel.add(slider_, "gap 0, growx");
+    if(twoHandles_) {
+      top_panel.add(maxOps_);
+      top_panel.add(maxField_, "gap 0, width 50");
+    }
     
     add(top_panel,"growx, wrap");
-    add(bottom_panel,"growx");
+    //add(bottom_panel,"growx");
   }
   /**
    * Set the range for the slider. The minimum value must be
@@ -289,6 +293,14 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
     return maxValue_;
   }
   
+  public String getStartConstraint() {
+    return (String)minOps_.getSelectedItem();
+  }
+  
+  public String getEndConstraint() {
+    return (String)maxOps_.getSelectedItem();
+  }
+  
   public void setStartValue(double min) {
     if(range_.start > range_.end) {
       minValue_ = Math.min(min, range_.start);
@@ -402,6 +414,7 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
    *
    * @param l property change listener
    */
+  @Override
   public void addPropertyChangeListener(PropertyChangeListener l) {
     pcs.addPropertyChangeListener(l);
   }
@@ -410,6 +423,7 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
    *
    * @param l property change listener
    */
+  @Override
   public void removePropertyChangeListener(PropertyChangeListener l) {
     pcs.removePropertyChangeListener(l);
   }
@@ -439,7 +453,7 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
     if(oldMaxValue_ != maxValue_) {
       Double tempOldValue = new Double(oldMaxValue_);
       oldMaxValue_ = maxValue_;
-      pcs.firePropertyChange("maxValue", tempOldValue, new Double(maxValue_)); 
+      pcs.firePropertyChange("maxValue", tempOldValue, new Double(maxValue_));
     }
   }
   void testMin() {
@@ -467,4 +481,10 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
     jf.setVisible(true);
   }
 
+  class OperatorListener implements ActionListener {
+    public void actionPerformed(ActionEvent e) {
+      pcs.firePropertyChange("minValue", null, minField_.getText()); 
+    }
+  }
+  
 }

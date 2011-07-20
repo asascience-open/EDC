@@ -5,6 +5,7 @@
 
 package com.asascience.edc.erddap;
 
+import com.asascience.edc.sos.SensorContainer;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
@@ -12,7 +13,9 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import org.apache.commons.lang.time.DateUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -36,7 +39,9 @@ public class ErddapDataset {
   private ErddapVariable yVariable;
   private ErddapVariable xVariable;
   private ErddapVariable zVariable;
+  private ErddapVariable sVariable;
   private ArrayList<ErddapVariable> variables;
+  private ArrayList<SensorContainer> locations = null;
 
   public ErddapDataset(String id) {
     this.id = id;
@@ -148,18 +153,42 @@ public class ErddapDataset {
     return null;
   }
 
+  public boolean hasX() {
+    return getX() != null;
+  }
+  
   public ErddapVariable getX() {
     return xVariable;
+  }
+  
+  public boolean hasY() {
+    return getY() != null;
   }
   
   public ErddapVariable getY() {
     return yVariable;
   }
-    
+  
   public ErddapVariable getZ() {
     return zVariable;
   }
+  
+  public ErddapVariable getS() {
+    return sVariable;
+  }
+  
+  public boolean hasLocations() {
+    return getLocations() != null;
+  }
+  
+  public List<SensorContainer> getLocations() {
+    return locations;
+  }
       
+  public boolean hasTime() {
+    return getTime() != null;
+  }
+  
   public ErddapVariable getTime() {
     return timeVariable;
   }
@@ -228,9 +257,10 @@ public class ErddapDataset {
         }
         if (ar.getJSONArray(i).getString(0).equals("variable")) {
           if (edv != null) {
+            setAxis(edv);
             variables.add(edv);
           }
-          edv = new ErddapVariable(this,ar.getJSONArray(i).getString(1),Arrays.asList(subsetVars).contains(ar.getJSONArray(i).getString(1).trim()));
+          edv = new ErddapVariable(this,ar.getJSONArray(i).getString(1),ar.getJSONArray(i).getString(3),Arrays.asList(subsetVars).contains(ar.getJSONArray(i).getString(1).trim()));
           continue;
         }
           
@@ -242,9 +272,12 @@ public class ErddapDataset {
             edv.setLongname(ar.getJSONArray(i).getString(4).trim());
           } else if (ar.getJSONArray(i).getString(2).equals("units")) {
             edv.setUnits(ar.getJSONArray(i).getString(4).trim());
-          } else if (ar.getJSONArray(i).getString(2).equals("axis")) {
-            edv.setAxis(ar.getJSONArray(i).getString(4).trim());
-            setAxis(edv);
+          } else if (ar.getJSONArray(i).getString(2).equals("cf_role")) {
+            if (ar.getJSONArray(i).getString(4).trim().equalsIgnoreCase("timeseries_id")) {
+              edv.setAxis(ar.getJSONArray(i).getString(4).trim());
+            }
+          } else if (ar.getJSONArray(i).getString(2).equalsIgnoreCase("description")) {
+            edv.setDescription(ar.getJSONArray(i).getString(4).trim());
           }
         }
       }
@@ -252,11 +285,44 @@ public class ErddapDataset {
       if (edv != null) {
         variables.add(edv);
       }
+      
+      // Does this dataset have points we can strip out?
+      // latitude and longitude also need to be subsetVariables or
+      // this might be a long and hard query (from Bob Simmons).
+      if (hasX() && hasY() && !getX().getValues().isEmpty() && !getX().getValues().isEmpty()) {
+        buildLocations();
+      }
+      
     } catch (Exception e) {
       //
     }
   }
-
+  
+  private void buildLocations() {
+    try {
+      ClientConfig clientConfig = new DefaultClientConfig();
+      clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+      Client c = Client.create(clientConfig);
+      WebResource wr = c.resource(this.getTabledap() + ".json?" + this.getX().getName() + "," + this.getY().getName() + "&distinct()");
+      JSONObject result = wr.get(JSONObject.class);
+      JSONArray ar = result.getJSONObject("table").getJSONArray("rows");
+      locations = new ArrayList<SensorContainer>(ar.length());
+      SensorContainer senc;
+      double[] loc = new double[4];
+      for (int i = 0 ; i < ar.length() ; i++) {
+        senc = new SensorContainer();
+        loc[0] = ar.getJSONArray(i).getDouble(1);
+        loc[1] = ar.getJSONArray(i).getDouble(0);
+        loc[2] = ar.getJSONArray(i).getDouble(1);
+        loc[3] = ar.getJSONArray(i).getDouble(0);
+        senc.setNESW(loc.clone());
+        senc.setName("");
+        locations.add(senc);
+      }
+    } catch (Exception e) {
+      //
+    }
+  }
   
   private void setAxis(ErddapVariable erv) {
     if (erv.isTime()) {
@@ -267,6 +333,8 @@ public class ErddapDataset {
       yVariable = erv;
     } else if (erv.isZ()) {
       zVariable = erv;
+    } else if (erv.isStation()) {
+      sVariable = erv;
     }
   }
   

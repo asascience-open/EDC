@@ -7,8 +7,13 @@ package com.asascience.edc.erddap.gui;
 import com.asascience.edc.erddap.ErddapVariable;
 import com.asascience.edc.gui.jslider.ErddapJSlider2Double;
 import gov.noaa.pmel.swing.JSlider2Date;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -23,7 +28,10 @@ public class ErddapVariableSubset extends JPanel {
   private ErddapVariable variable;
   private String min;
   private String max;
+  private String minConstraint = "";
+  private String maxConstraint = "";
   private JCheckBox check;
+  private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
   
   public ErddapVariableSubset(ErddapVariable variable) {
     this.variable = variable;
@@ -35,11 +43,12 @@ public class ErddapVariableSubset extends JPanel {
   private void initComponents() {
     setLayout(new MigLayout("gap 0, fill"));
     
-    String title = variable.getLongname();
+    String title = variable.getTitle();
     if (variable.getUnits() != null) {
       title += " (" + variable.getUnits() + ")";
     }
     check = new JCheckBox(title);
+    check.addActionListener(new JCheckboxListener());
     add(check, "spany");
              
     if (variable.isTime()) {
@@ -51,6 +60,10 @@ public class ErddapVariableSubset extends JPanel {
     } else if (variable.isSingleValue()) {
       JLabel singleLabel = new JLabel("Only one value present in dataset: " + variable.getMin());
       add(singleLabel, "align right");
+    } else if (variable.hasNoRange()) {
+      ErddapVariableSelector evs = new ErddapVariableSelector();
+      evs.addPropertyChangeListener(new JSelectorListener());
+      add(evs, "width 400, align right");
     } else {
       ErddapJSlider2Double slider = new ErddapJSlider2Double();
       slider.addPropertyChangeListener(new JSliderListener());
@@ -60,14 +73,18 @@ public class ErddapVariableSubset extends JPanel {
       if (!variable.getValues().isEmpty()) {
         if (variable.isDouble()) {
           slider.setRange(Double.parseDouble(variable.getMin()), Double.parseDouble(variable.getMax()));
-          add(slider, "width 300, align right");
+          add(slider, "width 400, align right");
+        } else {
+          ErddapVariableSelector evs = new ErddapVariableSelector(variable.getValues());
+          evs.addPropertyChangeListener(new JSelectorListener());
+          add(evs, "align right");
         }
       } else if (variable.isZ()) {
         slider.setRange(Double.parseDouble(variable.getMin()), Double.parseDouble(variable.getMax()));
-        add(slider, "width 300, align right");
+        add(slider, "width 400, align right");
       } else if (variable.isDouble()) {
         slider.setRange(Double.parseDouble(variable.getMin()), Double.parseDouble(variable.getMax()));
-        add(slider, "width 300, align right");
+        add(slider, "width 400, align right");
       }
     }
   }
@@ -84,10 +101,56 @@ public class ErddapVariableSubset extends JPanel {
     return check.isSelected();
   }
   
+  public List<String> toConstraints() {
+    ArrayList z = new ArrayList<String>();
+    if (getMin().equals(getMax())) {
+      z.add(variable.getName() + "=" + getMin());
+    } else {
+      // Add constraints to URL
+      if (!minConstraint.isEmpty() && !getMin().isEmpty()) {
+        z.add(variable.getName() + minConstraint + getMin());
+      }
+
+      if (!maxConstraint.isEmpty() && !getMax().isEmpty()) {
+        z.add(variable.getName() + maxConstraint + getMax());
+      }
+    }
+    return z;
+  }
+  
+  @Override
+  public void addPropertyChangeListener(PropertyChangeListener l) {
+    pcs.addPropertyChangeListener(l);
+  }
+
+  @Override
+  public void removePropertyChangeListener(PropertyChangeListener l) {
+    pcs.removePropertyChangeListener(l);
+  }
+  
   class JSliderListener implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
       min = Double.toString(((ErddapJSlider2Double)evt.getSource()).getStartValue());
+      minConstraint = ((ErddapJSlider2Double)evt.getSource()).getStartConstraint();
       max = Double.toString(((ErddapJSlider2Double)evt.getSource()).getEndValue());
+      maxConstraint = ((ErddapJSlider2Double)evt.getSource()).getEndConstraint();
+      pcs.firePropertyChange(evt);
+    }
+  }
+  
+  class JSelectorListener implements PropertyChangeListener {
+    public void propertyChange(PropertyChangeEvent evt) {
+      min = ((ErddapVariableSelector)evt.getSource()).getStartValue();
+      minConstraint = ((ErddapVariableSelector)evt.getSource()).getStartConstraint();
+      max = ((ErddapVariableSelector)evt.getSource()).getEndValue();
+      maxConstraint = ((ErddapVariableSelector)evt.getSource()).getEndConstraint();
+      pcs.firePropertyChange(evt);
+    }
+  }
+  
+  class JCheckboxListener implements ActionListener {
+    public void actionPerformed(ActionEvent evt) {
+      pcs.firePropertyChange("update", 0, 1);
     }
   }
   
@@ -95,6 +158,7 @@ public class ErddapVariableSubset extends JPanel {
     public void propertyChange(PropertyChangeEvent evt) {
       min = ((JSlider2Date)evt.getSource()).getStartValue().toString("yyyy-MM-dd");
       max = ((JSlider2Date)evt.getSource()).getEndValue().toString("yyyy-MM-dd");
+      pcs.firePropertyChange(evt);
     }
   }
   

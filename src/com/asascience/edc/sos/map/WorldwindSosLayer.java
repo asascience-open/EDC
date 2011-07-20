@@ -89,7 +89,9 @@ public class WorldwindSosLayer extends RenderableLayer {
 
   public PointPlacemark createPoint(double lat, double lon, SensorContainer sensor) {
     PointPlacemark pp = new PointPlacemark(Position.fromDegrees(lat, lon));
-    pp.setLabelText(sensor.getName());
+    if (!sensor.getName().isEmpty()) {
+      pp.setLabelText(sensor.getName());
+    }
     pp.setValue("sensor", sensor);
     pp.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
     pp.setAttributes(attrs);
