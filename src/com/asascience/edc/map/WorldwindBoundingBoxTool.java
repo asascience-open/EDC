@@ -2,9 +2,8 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.asascience.edc.sos.ui;
+package com.asascience.edc.map;
 
-import com.asascience.edc.sos.map.WorldwindBoundingBoxBuilder;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
@@ -27,14 +26,14 @@ import ucar.unidata.geoloc.LatLonRect;
  *
  * @author Kyle
  */
-public class SosWorldwindBoundingBoxTool extends JPanel {
+public class WorldwindBoundingBoxTool extends JPanel {
 
   private final WorldWindow wwd;
   private final WorldwindBoundingBoxBuilder lb;
   private JButton newButton;
   private LatLonRect bbox;
 
-  public SosWorldwindBoundingBoxTool(WorldWindow wwdd) {
+  public WorldwindBoundingBoxTool(WorldWindow wwdd) {
     super(new BorderLayout());
     this.wwd = wwdd;
     lb = new WorldwindBoundingBoxBuilder(wwd, null, null);

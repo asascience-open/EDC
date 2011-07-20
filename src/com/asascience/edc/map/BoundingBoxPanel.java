@@ -1,6 +1,6 @@
-package com.asascience.edc.gui;
+package com.asascience.edc.map;
 
-import com.asascience.edc.gui.BoundingBoxPanel.BBoxChanged;
+import com.asascience.edc.map.BoundingBoxPanel.BBoxChanged;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

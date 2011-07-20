@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.asascience.edc.gui;
+package com.asascience.edc.map;
 
 import com.asascience.edc.dap.map.DataExtentLayer;
 import com.asascience.edc.sos.SensorContainer;
@@ -20,7 +20,6 @@ import javax.swing.JPopupMenu;
 import net.miginfocom.swing.MigLayout;
 
 import com.asascience.edc.sos.map.WorldwindSosLayer;
-import com.asascience.edc.sos.ui.SosWorldwindBoundingBoxTool;
 import com.asascience.utilities.Utils;
 import com.bbn.openmap.MapBean;
 import com.bbn.openmap.MapHandler;
@@ -28,16 +27,15 @@ import com.bbn.openmap.MouseDelegator;
 import com.bbn.openmap.gui.OMToolSet;
 import com.bbn.openmap.gui.ToolPanel;
 import gov.nasa.worldwind.BasicModel;
+import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.event.SelectListener;
 import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Earth;
 import gov.nasa.worldwind.globes.EarthFlat;
-import gov.nasa.worldwind.layers.LayerList;
-import gov.nasa.worldwind.layers.SkyColorLayer;
-import gov.nasa.worldwind.layers.SkyGradientLayer;
 import gov.nasa.worldwind.render.PointPlacemark;
 import gov.nasa.worldwind.view.orbit.BasicOrbitView;
 import gov.nasa.worldwind.view.orbit.BasicOrbitViewLimits;
@@ -81,7 +79,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
   private JButton toggleViewButton;
   private String LABEL_2D = "2D";
   private String LABEL_3D = "3D";
-  private SosWorldwindBoundingBoxTool polygonTool;
+  private WorldwindBoundingBoxTool polygonTool;
 
   /**
    * Creates a new instance of OMSelectionMapPanel
@@ -119,7 +117,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
         }
       }}
     );
-
+    
     // Default view is Globe
     //makeGlobe();
     makeFlat();
@@ -140,7 +138,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
 
     toolbar.add(toggleViewButton);
 
-    polygonTool = new SosWorldwindBoundingBoxTool(mapCanvas);
+    polygonTool = new WorldwindBoundingBoxTool(mapCanvas);
     polygonTool.addPropertyChangeListener("boundsStored",new PropertyChangeListener() {
 
       public void propertyChange(PropertyChangeEvent evt) {
@@ -185,7 +183,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
         pcs.firePropertyChange("sensorsloaded", false, true);
       }
     });
-    mapCanvas.getModel().getLayers().add(0,sensorLayer);
+    mapCanvas.getModel().getLayers().add(1,sensorLayer);
     sensorLayer.setSensors(sensorList);
     mapCanvas.getView().setEyePosition(sensorLayer.getEyePosition());
   }
@@ -198,7 +196,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
   private void makeFlat() {
     FlatOrbitView fov = new FlatOrbitView();
     OrbitViewLimits ovl = fov.getOrbitViewLimits();
-    ovl.setZoomLimits(0, 10e7);
+    ovl.setZoomLimits(0, 11e7);
     ovl.setCenterLocationLimits(Sector.FULL_SPHERE);
     ovl.setPitchLimits(Angle.ZERO, Angle.ZERO);
     BasicOrbitViewLimits.applyLimits(fov, ovl);
@@ -206,13 +204,14 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
 
     mapCanvas.getModel().setGlobe(new EarthFlat());
     mapCanvas.setView(fov);
+    mapCanvas.redraw();
 
-    LayerList layers = mapCanvas.getModel().getLayers();
-    for (int i = 0; i < layers.size(); i++) {
-      if (layers.get(i) instanceof SkyGradientLayer) {
-        layers.set(i, new SkyColorLayer());
-      }
-    }
+//    LayerList layers = mapCanvas.getModel().getLayers();
+//    for (int i = 0; i < layers.size(); i++) {
+//      if (layers.get(i) instanceof SkyGradientLayer) {
+//        layers.set(i, new SkyColorLayer());
+//      }
+//    }
   }
 
   public void makeGlobe() {
@@ -221,13 +220,14 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
 
     mapCanvas.getModel().setGlobe(new Earth());
     mapCanvas.setView(bov);
+    mapCanvas.redraw();
 
-    LayerList layers = mapCanvas.getModel().getLayers();
-    for (int i = 0; i < layers.size(); i++) {
-      if (layers.get(i) instanceof SkyColorLayer) {
-        layers.set(i, new SkyGradientLayer());
-      }
-    }
+//    LayerList layers = mapCanvas.getModel().getLayers();
+//    for (int i = 0; i < layers.size(); i++) {
+//      if (layers.get(i) instanceof SkyColorLayer) {
+//        layers.set(i, new SkyGradientLayer());
+//      }
+//    }
   }
 
   public LatLonRect getSelectedExtent() {
@@ -240,11 +240,11 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
   public void makeDataExtentLayer(LatLonRect llr) {
     if (dataExtentLayer == null) {
       dataExtentLayer = new DataExtentLayer(mapCanvas.getModel().getGlobe());
-      mapCanvas.getModel().getLayers().add(0,dataExtentLayer);
+      mapCanvas.getModel().getLayers().add(1,dataExtentLayer);
     }
     dataExtentLayer.setDataExtent(llr);
     mapCanvas.getView().setEyePosition(dataExtentLayer.getEyePosition());
-    mapCanvas.redraw();
+    //mapCanvas.redraw();
   }
   
   public void makeSelectedExtentLayer(LatLonRect llr) {

@@ -6,10 +6,9 @@ package com.asascience.edc.sos.ui;
 
 import com.asascience.edc.Configuration;
 import com.asascience.edc.sos.SosServer;
-import com.asascience.edc.gui.BoundingBoxPanel;
+import com.asascience.edc.map.BoundingBoxPanel;
 import com.asascience.edc.gui.OpendapInterface;
-import com.asascience.edc.gui.WorldwindSelectionMap;
-import com.asascience.edc.nc.NetcdfConstraints;
+import com.asascience.edc.map.WorldwindSelectionMap;
 import gov.noaa.pmel.swing.JSlider2Date;
 
 import javax.swing.JButton;

@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.asascience.edc.sos.map;
+package com.asascience.edc.map;
 
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVListImpl;
@@ -55,19 +55,15 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
     }
     this.layer = lineLayer != null ? lineLayer : new RenderableLayer();
     this.layer.addRenderable(this.polygon);
-    this.wwd.getModel().getLayers().add(this.wwd.getModel().getLayers().size() - 1, this.layer);
+    this.wwd.getModel().getLayers().add(this.layer);
     this.wwd.getInputHandler().addMouseListener(new MouseAdapter() {
       
       @Override
       public void mousePressed(MouseEvent mouseEvent) {
         if (armed && mouseEvent.getButton() == MouseEvent.BUTTON1) {
-          if (armed && (mouseEvent.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) != 0) {
-            if (!mouseEvent.isControlDown()) {
-              active = true;
-              clear();
-              addPosition();
-            }
-          }
+          active = true;
+          clear();
+          addPosition();
           mouseEvent.consume();
         }
       }
@@ -174,7 +170,7 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
       positions.add(ll);
 
       this.polygon.setLocations(positions);
-      this.wwd.redraw();
+      //this.wwd.redraw();
       this.firePropertyChange("WorldwindBoundingBoxBuilder.BBOXDrawn", null, true);
     }
   }
