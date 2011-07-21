@@ -54,6 +54,7 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
       this.polygon.setAttributes(atts);
     }
     this.layer = lineLayer != null ? lineLayer : new RenderableLayer();
+    this.layer.setPickEnabled(false);
     this.layer.addRenderable(this.polygon);
     this.wwd.getModel().getLayers().add(this.layer);
     this.wwd.getInputHandler().addMouseListener(new MouseAdapter() {
@@ -170,7 +171,7 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
       positions.add(ll);
 
       this.polygon.setLocations(positions);
-      //this.wwd.redraw();
+      this.wwd.redraw();
       this.firePropertyChange("WorldwindBoundingBoxBuilder.BBOXDrawn", null, true);
     }
   }

@@ -34,6 +34,7 @@ public class DataExtentLayer extends RenderableLayer {
 
   public DataExtentLayer(Globe e) {
     this.globe = e;
+    this.setPickEnabled(false);
     
     ShapeAttributes satts = new BasicShapeAttributes();
     satts.setOutlineMaterial(Material.RED);
