@@ -47,8 +47,7 @@ import com.asascience.openmap.mousemode.MeasureMouseMode;
 import com.asascience.openmap.mousemode.NavMouseMode3;
 import com.asascience.openmap.mousemode.PanMouseMode2;
 import com.asascience.openmap.utilities.GeoConstraints;
-import com.asascience.edc.sos.SensorContainer;
-import com.asascience.edc.sos.map.SosLayer;
+//import com.asascience.edc.sos.map.SosLayer;
 import com.asascience.utilities.NumFieldUtilities;
 import com.asascience.utilities.Utils;
 import com.bbn.openmap.InformationDelegator;
@@ -66,7 +65,6 @@ import com.bbn.openmap.layer.shape.ShapeLayer;
 import com.bbn.openmap.omGraphics.event.StandardMapMouseInterpreter;
 import com.bbn.openmap.proj.ProjectionStack;
 import com.bbn.openmap.util.DataBounds;
-import java.util.List;
 
 /**
  * 
@@ -85,7 +83,7 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
   protected MapHandler mHandler;
   private LayerHandler layerHandler;
   private ShapeLayer basemapLayer;
-  private SosLayer sensorLayer;
+//  private SosLayer sensorLayer;
   protected MapBean mBean;
   protected Properties lyrProps;
   protected OMToolSet tools;
@@ -377,9 +375,9 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
     if (propName.equals("boundsStored")) {
       if ((Boolean) evt.getNewValue()) {
         makeSelectedExtentLayer(geoCons.getBoundingBox());
-        if (sensorLayer != null) {
-          sensorLayer.setPickedByBBOX(geoCons.getBoundingBox());
-        }
+//        if (sensorLayer != null) {
+//          sensorLayer.setPickedByBBOX(geoCons.getBoundingBox());
+//        }
       }
     }
     pcs.firePropertyChange(evt);// pass the event along to the calling class
@@ -403,20 +401,20 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
     return mouseDelegator;
   }
 
-  public SosLayer getSensorLayer() {
-    return sensorLayer;
-  }
+//  public SosLayer getSensorLayer() {
+//    return sensorLayer;
+//  }
 
-  public void addSensors(List<SensorContainer> sensorList) {
-    sensorLayer = new SosLayer();
-    layerHandler.addLayer(sensorLayer);
-    sensorLayer.addPropertyChangeListener(new PropertyChangeListener() {
-      public void propertyChange(PropertyChangeEvent evt) {
-        pcs.firePropertyChange(evt);
-      }
-    });
-    sensorLayer.setSensors(sensorList);
-  }
+//  public void addSensors(List<SensorContainer> sensorList) {
+//    sensorLayer = new SosLayer();
+//    layerHandler.addLayer(sensorLayer);
+//    sensorLayer.addPropertyChangeListener(new PropertyChangeListener() {
+//      public void propertyChange(PropertyChangeEvent evt) {
+//        pcs.firePropertyChange(evt);
+//      }
+//    });
+//    sensorLayer.setSensors(sensorList);
+//  }
 
   public JDialog makeRectEntryDialog(JFrame parent, String title, boolean modal) {
     return new RectangleEntryDialog(parent, title, modal);
