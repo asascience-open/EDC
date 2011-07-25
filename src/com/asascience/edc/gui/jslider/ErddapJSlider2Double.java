@@ -22,9 +22,9 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.lang.ArrayUtils;
+import org.softsmithy.lib.swing.JDoubleField;
 
 /**
  *
@@ -45,9 +45,8 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
   private JSlider2 slider_;
   private JComboBox minOps_;
   private JComboBox maxOps_;
-  private JTextField minField_;
-  private JTextField maxField_;
-  private JPanel panel_;
+  private JDoubleField minField_;
+  private JDoubleField maxField_;
 
   private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
   
@@ -67,44 +66,41 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
     twoHandles_ = twoHandles;
     
     // Format of the Doubles being displayed
-    form_ = new DecimalFormat("#.###");
+    form_ = new DecimalFormat("###.###");
     form_.setGroupingUsed(false);
       
     setLayout(new MigLayout("gap 0, fill"));
     
     JPanel top_panel = new JPanel(new MigLayout("gap 0, fill"));
-    JPanel bottom_panel = new JPanel(new MigLayout("gap 0, fill"));
     
     slider_ = new JSlider2(twoHandles_);
-    
     
     String[] operators = {">=",">","=~","","!=","=","<","<="};
     
     /* Min block */
     minOps_ = new JComboBox(operators);
     minOps_.addActionListener(new OperatorListener());
-    minField_ = new JTextField();
+    minField_ = new JDoubleField(form_);
     minField_.addActionListener(new ActionListener() {
 
       public void actionPerformed(ActionEvent e) {
-        minValue_ = Math.max((Double.valueOf(minField_.getText())).doubleValue(), range_.start);
+        minValue_ = Math.max(minField_.getDoubleValue(), range_.start);
         minValue_ = Math.min(minValue_, maxValue_);
         double min = (minValue_ - range_.start)/scale_;
         slider_.setMinValue(min);
       }
     });
-    
-    
+       
     /* Max block */
     // Reverse operators
     ArrayUtils.reverse(operators);
     maxOps_ = new JComboBox(operators);
     maxOps_.addActionListener(new OperatorListener());
-    maxField_ = new JTextField();
+    maxField_ = new JDoubleField(form_);
     maxField_.addActionListener(new ActionListener() {
 
       public void actionPerformed(ActionEvent e) {
-        maxValue_ = Math.min((Double.valueOf(maxField_.getText())).doubleValue(), range_.end);
+        maxValue_ = Math.min(maxField_.getDoubleValue(), range_.end);
         maxValue_ = Math.max(maxValue_, minValue_);
         double max = (maxValue_ - range_.start)/scale_;
         slider_.setMaxValue(max);
@@ -115,27 +111,24 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
       public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals("minValue")) {
           minValue_ = range_.start + slider_.getMinValue()*scale_;
-          minField_.setText(form_.format(minValue_));
+          minField_.setDoubleValue(minValue_);
           testMin();
           validate();
         } else if(evt.getPropertyName().equals("maxValue")) {
           maxValue_ = range_.start + slider_.getMaxValue()*scale_;
-          maxField_.setText(form_.format(maxValue_));
+          maxField_.setDoubleValue(maxValue_);
           testMax();
           validate();
         }
       }
     });
-    // Default range
-    range_ = new Range2D(0.0f, 1.0f);
-    this.setRange(range_);
     
     top_panel.add(minOps_);
-    top_panel.add(minField_, "gap 0, width 50");
+    top_panel.add(minField_, "gap 0, width 80");
     top_panel.add(slider_, "gap 0, growx");
     if(twoHandles_) {
       top_panel.add(maxOps_);
-      top_panel.add(maxField_, "gap 0, width 50");
+      top_panel.add(maxField_, "gap 0, width 80");
     }
     
     add(top_panel,"growx, wrap");
@@ -160,20 +153,22 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
     double min, max;
     range_ = range;
     scale_ = (double)(range_.end - range_.start);
-    slider_.setMinLabel(form_.format(range_.start));
-    slider_.setMaxLabel(form_.format(range_.end));
+    slider_.setMinLabel(String.valueOf(range_.start));
+    slider_.setMaxLabel(String.valueOf(range_.end));
     
     minValue_ = range_.start;
     oldMinValue_ = minValue_;
     min = (minValue_ - range_.start)/scale_;
     slider_.setMinValue(min); 
-    minField_.setText(form_.format(minValue_));
+    minField_.setDoubleValue(minValue_);
+    minField_.setMinimumDoubleValue(minValue_);
     
     maxValue_ = range_.end;
     oldMaxValue_ = maxValue_;
     max = (maxValue_ - range_.start)/scale_;
     slider_.setMaxValue(max);
-    maxField_.setText(form_.format(maxValue_));
+    maxField_.setDoubleValue(maxValue_);
+    maxField_.setMaximumDoubleValue(maxValue_);
     
     if (indexed_) {
       for(int i=0; i < values_.length; i++) {
@@ -277,18 +272,18 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
   
   public double getStartValue() {
     if(range_.start > range_.end) {
-      minValue_ = Math.min((Double.valueOf(minField_.getText())).doubleValue(), range_.start);
+      minValue_ = Math.min(minField_.getDoubleValue(), range_.start);
     } else {
-      minValue_ = Math.max((Double.valueOf(minField_.getText())).doubleValue(), range_.start);
+      minValue_ = Math.max(minField_.getDoubleValue(), range_.start);
     }
     return minValue_;
   }
   
   public double getEndValue() {
     if(range_.start > range_.end) {
-      maxValue_ = Math.max((Double.valueOf(maxField_.getText())).doubleValue(), range_.end);
+      maxValue_ = Math.max(maxField_.getDoubleValue(), range_.end);
     } else {
-      maxValue_ = Math.min((Double.valueOf(maxField_.getText())).doubleValue(), range_.end);
+      maxValue_ = Math.min(maxField_.getDoubleValue(), range_.end);
     }
     return maxValue_;
   }
@@ -308,7 +303,8 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
       minValue_ = Math.max(min, range_.start);
     }
     min = (minValue_ - range_.start)/scale_;
-    slider_.setMinValue(min); 
+    slider_.setMinValue(min);
+    minField_.setMinimumDoubleValue(min);
   }
   
   public void setEndValue(double max) {
@@ -319,6 +315,7 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
     }
     max = (maxValue_ - range_.start)/scale_;
     slider_.setMaxValue(max);
+    maxField_.setMaximumDoubleValue(max);
   }
   
   /**
@@ -327,7 +324,7 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
    * @return minimum handle value.
    **/
   public double getMinValue() {
-    minValue_ = Math.max((Double.valueOf(minField_.getText())).doubleValue(), range_.start);
+    minValue_ = Math.max(minField_.getDoubleValue(), range_.start);
     minValue_ = Math.min(minValue_, maxValue_);
     return minValue_;
   }
@@ -341,6 +338,7 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
     minValue_ = Math.min(minValue_, maxValue_);
     min = (minValue_ - range_.start)/scale_;
     slider_.setMinValue(min); 
+    minField_.setMinimumDoubleValue(min);
   }
   /**
    * Get the maximum handle value.
@@ -348,7 +346,7 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
    * @return maximum handle value
    **/
   public double getMaxValue() {
-    maxValue_ = Math.min((Double.valueOf(maxField_.getText())).doubleValue(), range_.end);
+    maxValue_ = Math.min(maxField_.getDoubleValue(), range_.end);
     maxValue_ = Math.max(maxValue_, minValue_);
     return maxValue_;
   }
@@ -362,6 +360,7 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
     maxValue_ = Math.max(maxValue_, minValue_);
     max = (maxValue_ - range_.start)/scale_;
     slider_.setMaxValue(max);
+    maxField_.setMaximumDoubleValue(max);
   }
 
    /**
@@ -483,7 +482,7 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
 
   class OperatorListener implements ActionListener {
     public void actionPerformed(ActionEvent e) {
-      pcs.firePropertyChange("minValue", null, minField_.getText()); 
+      pcs.firePropertyChange("minValue", null, minField_.getDoubleValue()); 
     }
   }
   
