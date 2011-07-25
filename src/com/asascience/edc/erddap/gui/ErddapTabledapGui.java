@@ -69,11 +69,12 @@ public class ErddapTabledapGui extends JPanel {
   private void initComponents() {
     setLayout(new MigLayout("gap 0, fill"));
     
+    // Panel for map, bbox, and timeslider
     JPanel mapStuff = new JPanel(new MigLayout("gap 0, fill"));
+    // Panel for bbox and timeslider
+    JPanel mapControls = new JPanel(new MigLayout("gap 0, fill"));
     
     if (erd.hasX() && erd.hasY()) {
-      // Panel for map, bbox, and timeslider
-      
       // Map
       mapPanel = new WorldwindSelectionMap(homeDir);
       mapPanel.addPropertyChangeListener(new PropertyChangeListener() {
@@ -87,7 +88,7 @@ public class ErddapTabledapGui extends JPanel {
           }
         }
       });
-      mapStuff.add(mapPanel, "gap 0, grow, wrap, spanx 2");
+      mapStuff.add(mapPanel, "gap 0, grow, wrap");
     
       // BBOX panel
       bboxGui = new BoundingBoxPanel();
@@ -102,7 +103,7 @@ public class ErddapTabledapGui extends JPanel {
           }
         }
       });
-      mapStuff.add(bboxGui, "gap 0, growx");
+      mapControls.add(bboxGui, "gap 0, growy");
       
       // Add either the sensor layer, or the data extent layer
       if (erd.hasLocations()) {
@@ -138,10 +139,10 @@ public class ErddapTabledapGui extends JPanel {
         }
       });
       timePanel.add(dateSlider, "gap 0, grow, center");
-      mapStuff.add(timePanel, "gap 0, growx");
+      mapControls.add(timePanel, "gap 0, grow");
     }
+    mapStuff.add(mapControls, "gap 0, growx, height 180");
     add(mapStuff, "gap 0, grow");
-    
     
     // Panel with subsetting sliders and such
     sliderPanel = new JPanel(new MigLayout("gap 0, fill"));
