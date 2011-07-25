@@ -4,6 +4,7 @@ import com.asascience.edc.map.BoundingBoxPanel.BBoxChanged;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.DecimalFormat;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
@@ -18,10 +19,13 @@ import ucar.unidata.geoloc.LatLonRect;
  */
 public class BoundingBoxPanel extends JPanel {
 
-  private JDoubleField north = new JDoubleField();
-  private JDoubleField south = new JDoubleField();
-  private JDoubleField east = new JDoubleField();
-  private JDoubleField west = new JDoubleField();
+  
+  
+  private DecimalFormat fmt = new DecimalFormat("###.###");
+  private JDoubleField north = new JDoubleField(fmt);
+  private JDoubleField south = new JDoubleField(fmt);
+  private JDoubleField east = new JDoubleField(fmt);
+  private JDoubleField west = new JDoubleField(fmt);
   private PropertyChangeSupport pcs;
   private BBoxChanged bboxEvent = new BBoxChanged();
 
@@ -29,16 +33,16 @@ public class BoundingBoxPanel extends JPanel {
 
     pcs = new PropertyChangeSupport(this);
 
-    this.setLayout(new MigLayout("fill"));
+    this.setLayout(new MigLayout("gap 0, fill"));
     this.setBorder(new EtchedBorder());
     this.add(new JLabel("North"), "cell 3 1, align center");
-    this.add(north, "cell 3 2, width 50, align center");
+    this.add(north, "cell 3 2, width 55, align center");
     this.add(new JLabel("West"), "cell 1 3, align center");
-    this.add(west, "cell 2 3, width 50, align center");
+    this.add(west, "cell 2 3, width 55, align center");
     this.add(new JLabel("East"), "cell 5 3, align center");
-    this.add(east, "cell 4 3, width 50, align center");
+    this.add(east, "cell 4 3, width 55, align center");
     this.add(new JLabel("South"), "cell 3 5, align center");
-    this.add(south, "cell 3 4, width 50, align center");
+    this.add(south, "cell 3 4, width 55, align center");
   }
 
   public LatLonRect getBoundingBox() {
