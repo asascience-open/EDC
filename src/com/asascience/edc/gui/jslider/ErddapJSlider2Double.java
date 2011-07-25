@@ -21,7 +21,6 @@ import java.text.DecimalFormat;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.lang.ArrayUtils;
 import org.softsmithy.lib.swing.JDoubleField;
@@ -69,9 +68,7 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
     form_ = new DecimalFormat("###.###");
     form_.setGroupingUsed(false);
       
-    setLayout(new MigLayout("gap 0, fill"));
-    
-    JPanel top_panel = new JPanel(new MigLayout("gap 0, fill"));
+    setLayout(new MigLayout("insets 0, gap 0, fill"));
     
     slider_ = new JSlider2(twoHandles_);
     
@@ -123,16 +120,13 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
       }
     });
     
-    top_panel.add(minOps_);
-    top_panel.add(minField_, "gap 0, width 80");
-    top_panel.add(slider_, "gap 0, growx");
+    add(minOps_, "gap 0");
+    add(minField_, "gap 0, width 80");
+    add(slider_, "gap 0, growx");
     if(twoHandles_) {
-      top_panel.add(maxOps_);
-      top_panel.add(maxField_, "gap 0, width 80");
+      add(maxOps_, "gap 0");
+      add(maxField_, "gap 0, width 80");
     }
-    
-    add(top_panel,"growx, wrap");
-    //add(bottom_panel,"growx");
   }
   /**
    * Set the range for the slider. The minimum value must be
@@ -465,11 +459,12 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
 
   public static void main(String[] args) {
     JFrame jf = new JFrame("JSlider2Double Test");
-    jf.setSize(300,200);
-    jf.getContentPane().setLayout(new MigLayout("gap 0, fill"));
+    //jf.setSize(300,200);
+    jf.getContentPane().setLayout(new MigLayout("insets 0, gap 0, fill"));
     ErddapJSlider2Double js2db = new ErddapJSlider2Double();
     js2db.setRange(new Range2D(-20.0, 20.0));
     js2db.setShowBorder(false);
+    
     //js2db.setSize(400, 150);
     //js2db.setStartValue(-10.0);
     //js2db.setEndValue(15.0);
@@ -477,6 +472,10 @@ public class ErddapJSlider2Double extends JComponent implements Serializable
     //js2db.setIndexValues(values);
     js2db.setAlwaysPost(true);
     jf.getContentPane().add(js2db, "gap 0, growx");
+    
+    jf.pack();
+    
+    
     jf.setVisible(true);
   }
 

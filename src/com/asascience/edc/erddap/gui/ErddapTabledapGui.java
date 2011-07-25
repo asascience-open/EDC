@@ -145,10 +145,10 @@ public class ErddapTabledapGui extends JPanel {
     add(mapStuff, "gap 0, grow");
     
     // Panel with subsetting sliders and such
-    sliderPanel = new JPanel(new MigLayout("gap 0, fill"));
+    sliderPanel = new JPanel(new MigLayout("gap 0, fillx"));
     
     // Subsetting Sliders in a scroll pane
-    JScrollPane scroller = new JScrollPane(sliderPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    JScrollPane scroller = new JScrollPane(sliderPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     add(scroller, "gap 0, grow, wrap");
     createSliders();
     
@@ -181,7 +181,7 @@ public class ErddapTabledapGui extends JPanel {
         }
       });
       variables.add(evs);
-      sliderPanel.add(evs, "growx, wrap");
+      sliderPanel.add(evs, "gap 0, growx, wrap");
     }
   }
   

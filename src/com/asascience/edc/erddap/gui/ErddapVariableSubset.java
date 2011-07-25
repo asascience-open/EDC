@@ -7,6 +7,7 @@ package com.asascience.edc.erddap.gui;
 import com.asascience.edc.erddap.ErddapVariable;
 import com.asascience.edc.gui.jslider.ErddapJSlider2Double;
 import gov.noaa.pmel.swing.JSlider2Date;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -14,9 +15,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.EtchedBorder;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -41,7 +44,7 @@ public class ErddapVariableSubset extends JPanel {
   }
   
   private void initComponents() {
-    setLayout(new MigLayout("gap 0, fill"));
+    setLayout(new MigLayout("insets 0, gap 0, fill"));
     
     String title = variable.getTitle();
     if (variable.getUnits() != null) {
@@ -49,7 +52,7 @@ public class ErddapVariableSubset extends JPanel {
     }
     check = new JCheckBox(title);
     check.addActionListener(new JCheckboxListener());
-    add(check, "spany");
+    add(check, "gap 0, grow");
              
     if (variable.isTime()) {
       // Just show the checkbox and Label
@@ -59,11 +62,11 @@ public class ErddapVariableSubset extends JPanel {
       // Just show the checkbox and Label
     } else if (variable.isSingleValue()) {
       JLabel singleLabel = new JLabel("Only one value present in dataset: " + variable.getMin());
-      add(singleLabel, "align right");
+      add(singleLabel, "gap 0, align right");
     } else if (variable.hasNoRange()) {
       ErddapVariableSelector evs = new ErddapVariableSelector();
       evs.addPropertyChangeListener(new JSelectorListener());
-      add(evs, "width 400, align right");
+      add(evs, "gap 0, wmax 400, align right");
     } else {
       ErddapJSlider2Double slider = new ErddapJSlider2Double();
       slider.addPropertyChangeListener(new JSliderListener());
@@ -73,18 +76,18 @@ public class ErddapVariableSubset extends JPanel {
       if (!variable.getValues().isEmpty()) {
         if (variable.isDouble()) {
           slider.setRange(Double.parseDouble(variable.getMin()), Double.parseDouble(variable.getMax()));
-          add(slider, "width 400, align right");
+          add(slider, "gap 0, wmax 400, align right");
         } else {
           ErddapVariableSelector evs = new ErddapVariableSelector(variable.getValues());
           evs.addPropertyChangeListener(new JSelectorListener());
-          add(evs, "align right");
+          add(evs, "gap 0, align right");
         }
       } else if (variable.isZ()) {
         slider.setRange(Double.parseDouble(variable.getMin()), Double.parseDouble(variable.getMax()));
-        add(slider, "width 400, align right");
+        add(slider, "gap 0, wmax 400, align right");
       } else if (variable.isDouble()) {
         slider.setRange(Double.parseDouble(variable.getMin()), Double.parseDouble(variable.getMax()));
-        add(slider, "width 400, align right");
+        add(slider, "gap 0, wmax 400, align right");
       }
     }
   }
