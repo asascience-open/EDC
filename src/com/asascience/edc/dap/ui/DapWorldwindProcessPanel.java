@@ -89,6 +89,12 @@ public class DapWorldwindProcessPanel extends JPanel {
   private String sysDir;
   private String ncOutPath;
   private BoundingBoxPanel bboxGui;
+  private JButton btnProcess;
+  private JButton btnAddDataset;
+  private JSlider2Date dateSlider;
+  private JLabel lblDateIncrement;
+  private JLabel lblNumDatesSelected;
+  private JLabel lblNcName;
 
   /**
    * Creates a new instance of SubsetProcessPanel
@@ -822,21 +828,8 @@ public class DapWorldwindProcessPanel extends JPanel {
       pd.runTask();
     }
   }
-  private JButton btnProcess;
-  private JButton btnAddDataset;
-  private JSlider2Date dateSlider;
-  private JLabel lblDateIncrement;
-  private JLabel lblNumDatesSelected;
-  private JLabel lblNcName;
 
-  // replaced by "dateSlider"...TODO: DONE: remove these controls/methods
-  // private JSlider startSlider;
-  // private JSlider endSlider;
-  // private JLabel lblStartTime;
-  // private JLabel lblEndTime;
-  // private JTextField tfStartTime;
-  // private JTextField tfEndTime;
-  // private JSpinner sTimeSpan;
+
   public class ProcessDataTask extends com.asascience.utilities.BaseTask {
 
     private List<String> ncPaths;
