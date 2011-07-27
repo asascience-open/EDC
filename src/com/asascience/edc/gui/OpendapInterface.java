@@ -91,6 +91,7 @@ import com.asascience.ui.JCloseableTabbedPane;
 import com.asascience.utilities.Utils;
 import com.asascience.utilities.exception.InitializationFailedException;
 import com.bbn.openmap.Layer;
+import java.util.Arrays;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
 import org.apache.log4j.Logger;
@@ -180,7 +181,7 @@ public class OpendapInterface {
         logger.error("AtCreation: xmlstore is null");
       }
     } catch (IOException ex) {
-      ex.printStackTrace();
+      logger.error("IOException", ex);
     }
 
     prefs = store.getPreferences();
@@ -433,11 +434,11 @@ public class OpendapInterface {
             try {
               transData = (List) transObj.getTransferData(DataFlavor.javaFileListFlavor);
             } catch (UnsupportedFlavorException ex) {
-              ex.printStackTrace();
+              logger.error("UnsupportedFlavorException", ex);
               // Logger.getLogger(OmTesterGui.class.getName()).
               // log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
-              ex.printStackTrace();
+              logger.error("IOException", ex);
               // Logger.getLogger(OmTesterGui.class.getName()).
               // log(Level.SEVERE, null, ex);
             }
@@ -448,14 +449,9 @@ public class OpendapInterface {
               File file = (File) i.next();
               logger.info("File Path = " + file.getAbsolutePath());
               if (file.isDirectory()) {
-                for (File f : file.listFiles()) {// new
-                  // CurrentsFileFilter())){
-                  files.add(f);
-                  // loadLayer(f.getAbsolutePath());
-                }
+                files.addAll(Arrays.asList(file.listFiles()));
               } else {
                 files.add(file);
-                // loadLayer(files.getAbsolutePath());
               }
             }
 
@@ -483,7 +479,7 @@ public class OpendapInterface {
       pnl.add(timeHandler, "span, grow");
       return pnl;
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
     }
     return new JPanel();
   }
@@ -537,7 +533,7 @@ public class OpendapInterface {
         return true;
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
     }
     return false;
   }
@@ -589,7 +585,7 @@ public class OpendapInterface {
         }
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
     }
 
     return false;
