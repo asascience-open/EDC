@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.sos.ui;
 
 import com.asascience.edc.sos.VariableContainer;
@@ -17,8 +13,9 @@ import javax.swing.border.EtchedBorder;
 import net.miginfocom.swing.MigLayout;
 
 /**
- *
- * @author Kyle
+ * SosVariableSelectionPanel.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public final class SosVariableSelectionPanel extends JPanel {
 

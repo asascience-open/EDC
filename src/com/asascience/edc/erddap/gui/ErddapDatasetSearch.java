@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.asascience.edc.erddap.gui;
 
 import com.asascience.edc.erddap.ErddapDataset;
@@ -25,8 +20,9 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
 /**
- *
- * @author Kyle
+ * ErddapDatasetSearch.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class ErddapDatasetSearch extends JTextField {
 

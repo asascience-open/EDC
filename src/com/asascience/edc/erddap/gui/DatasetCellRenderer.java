@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.asascience.edc.erddap.gui;
 
 import com.asascience.edc.erddap.ErddapDataset;
@@ -13,8 +8,9 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
 /**
- *
- * @author Kyle
+ * DatasetCallRenderer.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 class DatasetCellRenderer extends JLabel implements ListCellRenderer {
   private static final Color HIGHLIGHT_COLOR = new Color(0, 0, 128);

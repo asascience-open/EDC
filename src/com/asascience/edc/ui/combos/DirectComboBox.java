@@ -1,15 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package com.asascience.edc.ui.combos;
 
 import ucar.util.prefs.PersistenceManager;
 
 /**
- *
- * @author Kyle
+ * DirectComboBox.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class DirectComboBox extends HistoryComboBox {
 

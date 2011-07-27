@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.sos.requests.custom;
 
 
@@ -35,8 +31,9 @@ import org.jdom.transform.JDOMSource;
 import org.jdom.xpath.XPath;
 
 /**
- *
- * @author Kyle
+ * DifToArc.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class DifToArc extends GenericRequest {
   

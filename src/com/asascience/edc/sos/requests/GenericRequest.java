@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.asascience.edc.sos.requests;
 
 import cern.colt.Timer;
@@ -32,8 +27,9 @@ import javax.swing.JFrame;
 import org.apache.commons.lang.StringUtils;
 
 /**
- *
- * @author Kyle
+ * GenericRequest.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class GenericRequest implements PropertyChangeListener, SosRequestInterface {
 

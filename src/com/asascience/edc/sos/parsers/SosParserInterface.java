@@ -1,13 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.asascience.edc.sos.parsers;
 
 /**
- *
- * @author Kyle
+ * SosParserInterface.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public interface SosParserInterface {
 

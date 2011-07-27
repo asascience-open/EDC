@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.asascience.edc.sos.map;
 
 import com.asascience.edc.sos.SensorContainer;
@@ -14,8 +9,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 /**
- *
- * @author Kyle
+ * SensorPoint.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class SensorPoint extends OMPoint implements PropertyChangeListener {
 

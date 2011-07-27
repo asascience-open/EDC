@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.asascience.edc.erddap.gui;
 
 import com.asascience.edc.erddap.ErddapDataset;
@@ -17,8 +12,9 @@ import javax.swing.event.ListSelectionListener;
 import net.miginfocom.swing.MigLayout;
 
 /**
- *
- * @author Kyle
+ * ErddapDatasetList.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class ErddapDatasetList extends JPanel {
 

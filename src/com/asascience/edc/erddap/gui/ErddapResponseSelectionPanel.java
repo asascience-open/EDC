@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.erddap.gui;
 
 import com.asascience.edc.sos.requests.ResponseFormat;
@@ -20,8 +16,9 @@ import javax.swing.JScrollPane;
 import net.miginfocom.swing.MigLayout;
 
 /**
- *
- * @author Kyle
+ * ErddapResponseSelectionPanel.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public final class ErddapResponseSelectionPanel extends JPanel implements ActionListener {
 

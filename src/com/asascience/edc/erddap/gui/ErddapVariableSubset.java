@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.erddap.gui;
 
 import com.asascience.edc.erddap.ErddapVariable;
@@ -23,8 +19,9 @@ import javax.swing.border.EtchedBorder;
 import net.miginfocom.swing.MigLayout;
 
 /**
- *
- * @author Kyle
+ * ErddapVariableSubset.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class ErddapVariableSubset extends JPanel {
 

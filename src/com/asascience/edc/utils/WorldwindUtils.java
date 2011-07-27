@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.utils;
 
 import gov.nasa.worldwind.Configuration;
@@ -15,8 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- * @author Kyle
+ * WorldwindUtils.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class WorldwindUtils {
   

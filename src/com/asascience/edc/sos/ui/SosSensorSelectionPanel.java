@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.sos.ui;
 
 import com.asascience.edc.sos.SensorContainer;
@@ -20,8 +16,9 @@ import javax.swing.border.EtchedBorder;
 import net.miginfocom.swing.MigLayout;
 
 /**
- *
- * @author Kyle
+ * SosSensorSelectionPanel.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public final class SosSensorSelectionPanel extends JPanel {
 

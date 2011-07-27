@@ -24,9 +24,10 @@ import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
 
-/**I
- *
- * @author Kyle
+/**
+ * SensorCheckBoxList.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class SensorCheckBoxList extends JPanel implements ActionListener {
 

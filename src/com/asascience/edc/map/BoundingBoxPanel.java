@@ -14,8 +14,9 @@ import ucar.unidata.geoloc.LatLonPointImpl;
 import ucar.unidata.geoloc.LatLonRect;
 
 /**
- *
- * @author Kyle
+ * BoundingBoxPanel.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class BoundingBoxPanel extends JPanel {
 

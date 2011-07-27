@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.erddap.gui;
 
 import cern.colt.Timer;
@@ -42,8 +38,9 @@ import net.miginfocom.swing.MigLayout;
 import ucar.nc2.units.DateUnit;
 
 /**
- *
- * @author Kyle
+ * ErddapTabledapGui.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class ErddapTabledapGui extends JPanel {
 

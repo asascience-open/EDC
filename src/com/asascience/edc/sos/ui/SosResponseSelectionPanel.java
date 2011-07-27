@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.sos.ui;
 
 import com.asascience.edc.gui.ResponseFormatRadioButton;
@@ -17,8 +13,9 @@ import javax.swing.JScrollPane;
 import net.miginfocom.swing.MigLayout;
 
 /**
- *
- * @author Kyle
+ * SosResponseSelectionPanel.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public final class SosResponseSelectionPanel extends JPanel {
 

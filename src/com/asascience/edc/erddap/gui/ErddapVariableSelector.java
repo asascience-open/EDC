@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.erddap.gui;
 
 import java.awt.event.ActionEvent;
@@ -18,8 +14,9 @@ import net.miginfocom.swing.MigLayout;
 import org.apache.commons.lang.ArrayUtils;
 
 /**
- *
- * @author Kyle
+ * ErddapVariableSelector.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class ErddapVariableSelector extends JComponent {
 

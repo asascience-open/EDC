@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.map;
 
 import gov.nasa.worldwind.WorldWindow;
@@ -23,8 +19,9 @@ import ucar.unidata.geoloc.LatLonPointImpl;
 import ucar.unidata.geoloc.LatLonRect;
 
 /**
- *
- * @author Kyle
+ * WorldwindBoundingBoxTool.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class WorldwindBoundingBoxTool extends JPanel {
 

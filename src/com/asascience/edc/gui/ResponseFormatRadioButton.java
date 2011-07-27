@@ -1,16 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.asascience.edc.gui;
 
 import com.asascience.edc.sos.requests.ResponseFormat;
 import javax.swing.JRadioButton;
 
 /**
- *
- * @author Kyle
+ * ResponseFormatRadioButton.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class ResponseFormatRadioButton extends JRadioButton {
 

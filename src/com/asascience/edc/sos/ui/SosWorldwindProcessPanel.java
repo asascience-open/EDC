@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.sos.ui;
 
 import com.asascience.edc.Configuration;
@@ -33,8 +29,9 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
- *
- * @author Kyle
+ * SosWorldwindProcessPanel.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class SosWorldwindProcessPanel extends JPanel {
 

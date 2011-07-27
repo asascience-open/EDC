@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.asascience.edc.erddap.gui;
 
 import com.asascience.edc.erddap.ErddapDataset;
@@ -19,12 +14,10 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import net.miginfocom.swing.MigLayout;
 
-
-
-// Open a browser when a user clicks a hyperlink inside of the Info Text area
 /**
- *
- * @author Kyle
+ * ErddapDatasetInfo.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class ErddapDatasetInfo extends JPanel {
 

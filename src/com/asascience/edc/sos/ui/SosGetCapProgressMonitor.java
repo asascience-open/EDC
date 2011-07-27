@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.sos.ui;
 
 import com.asascience.edc.gui.OpendapInterface;
@@ -21,8 +17,9 @@ import javax.swing.SwingWorker;
 import net.miginfocom.swing.MigLayout;
 
 /**
- *
- * @author Kyle
+ * SosGetCapProgressMonitor.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class SosGetCapProgressMonitor extends JPanel implements ActionListener, PropertyChangeListener {
 

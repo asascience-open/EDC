@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.asascience.edc.erddap.gui;
 
 import com.asascience.edc.gui.OpendapInterface;
@@ -21,8 +16,9 @@ import javax.swing.SwingWorker;
 import net.miginfocom.swing.MigLayout;
 
 /**
- *
- * @author Kyle
+ * ErddapGetDatasetsProgresMonitor.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class ErddapGetDatasetsProgressMonitor extends JPanel implements ActionListener, PropertyChangeListener {
   private JProgressBar progressBar;

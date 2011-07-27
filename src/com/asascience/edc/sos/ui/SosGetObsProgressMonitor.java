@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.asascience.edc.sos.ui;
 
 import com.asascience.edc.sos.SosServer;
@@ -22,9 +17,10 @@ import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
 import net.miginfocom.swing.MigLayout;
 
-/**
- *
- * @author Kyle
+/** 
+ * SosGetObsProgressMonitor.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class SosGetObsProgressMonitor extends JPanel implements ActionListener {
 

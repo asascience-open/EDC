@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.utils;
 
 import java.awt.FileDialog;
@@ -13,8 +9,9 @@ import java.util.Date;
 import javax.swing.JFrame;
 
 /**
- *
- * @author Kyle
+ * FileSaveUtils.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class FileSaveUtils {
   

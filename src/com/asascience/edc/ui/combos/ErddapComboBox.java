@@ -1,15 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.asascience.edc.ui.combos;
 
 import ucar.util.prefs.PersistenceManager;
 
 /**
- *
- * @author Kyle
+ * ErddapComboBox.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class ErddapComboBox extends HistoryComboBox {
 

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.map;
 
 import gov.nasa.worldwind.WorldWindow;
@@ -18,6 +14,11 @@ import gov.nasa.worldwind.render.SurfacePolygon;
 import java.awt.event.*;
 import java.util.*;
 
+/**
+ * WorldwindBoundingBoxBuilder.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
+ */
 public class WorldwindBoundingBoxBuilder extends AVListImpl {
 
   private final WorldWindow wwd;
@@ -58,7 +59,7 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
     this.layer.addRenderable(this.polygon);
     this.wwd.getModel().getLayers().add(this.layer);
     this.wwd.getInputHandler().addMouseListener(new MouseAdapter() {
-      
+
       @Override
       public void mousePressed(MouseEvent mouseEvent) {
         if (armed && mouseEvent.getButton() == MouseEvent.BUTTON1) {
@@ -155,13 +156,13 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
   public void setArmed(boolean armed) {
     this.armed = armed;
   }
-  
+
   private void drawBBOX() {
-    
+
     if (ul != null && lr != null) {
       // Set this.positions to the bounding box, computed from the corners.
       ArrayList<Position> positions = new ArrayList<Position>();
-      
+
       Position ur = new Position(ul.getLatitude(), lr.getLongitude(), 0);
       Position ll = new Position(lr.getLatitude(), ul.getLongitude(), 0);
 
@@ -175,19 +176,19 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
       this.firePropertyChange("WorldwindBoundingBoxBuilder.BBOXDrawn", null, true);
     }
   }
-  
+
   public void setUpperLeftPoint(Position ul) {
     this.ul = ul;
   }
-  
+
   public void setLowerRightPoint(Position lr) {
     this.lr = lr;
   }
-  
+
   public void redraw() {
     drawBBOX();
   }
-  
+
   private void addPosition() {
     Position curPos = this.wwd.getCurrentPosition();
     if (curPos == null) {
@@ -200,7 +201,7 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
     }
     drawBBOX();
   }
-  
+
   private void completeBBOX() {
     this.firePropertyChange("WorldwindBoundingBoxBuilder.BBOXComplete", null, true);
   }

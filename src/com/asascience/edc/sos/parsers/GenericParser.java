@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.sos.parsers;
 
 import com.asascience.edc.sos.SosServer;
@@ -31,8 +27,9 @@ import ucar.unidata.geoloc.LatLonRect;
 import org.apache.commons.lang.time.DateUtils;
 
 /**
- *
- * @author Kyle
+ * GenericParser.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class GenericParser implements PropertyChangeListener, SosParserInterface {
 

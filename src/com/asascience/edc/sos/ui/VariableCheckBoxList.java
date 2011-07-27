@@ -22,9 +22,10 @@ import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
 
-/**I
- *
- * @author Kyle
+/**
+ * VariableCheckBoxList.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class VariableCheckBoxList extends JPanel implements ActionListener {
 

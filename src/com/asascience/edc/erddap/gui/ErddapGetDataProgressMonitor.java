@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.asascience.edc.erddap.gui;
 
 import com.asascience.edc.erddap.gui.ErddapTabledapGui.ErddapDataRequest;
@@ -23,8 +18,9 @@ import javax.swing.SwingWorker;
 import net.miginfocom.swing.MigLayout;
 
 /**
- *
- * @author Kyle
+ * ErddapGetDataProgressMonitor.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class ErddapGetDataProgressMonitor extends JPanel implements ActionListener {
 

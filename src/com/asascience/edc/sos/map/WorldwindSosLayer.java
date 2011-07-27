@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.asascience.edc.sos.map;
 
 import com.asascience.edc.sos.SensorContainer;
@@ -23,8 +19,9 @@ import com.asascience.utilities.Utils;
 import gov.nasa.worldwind.geom.LatLon;
 
 /**
- *
- * @author Kyle
+ * WorldwindSosLayer.java
+ * 
+ * @author Kyle Wilcox <kwilcox@asascience.com>
  */
 public class WorldwindSosLayer extends RenderableLayer {
 
