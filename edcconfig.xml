@@ -6,12 +6,6 @@
 	-->
   <DISPLAY_TYPE>0</DISPLAY_TYPE>
 	
-	<!--OUTPUT_TO_FILE: MUST BE A BOOLEAN VALUE.
-	If true, system output (and errors) will be directed to a log file.
-	If false, they will be written to the console/terminal.
-	-->
-  <OUTPUT_TO_FILE>false</OUTPUT_TO_FILE>
-	
 	<!--CLOSE_AFTER_PROCESSING: MUST BE A BOOLEAN VALUE.
 	If true, the application will close after processing a dataset.
 	If false, the application will remain open until it is closed maually.

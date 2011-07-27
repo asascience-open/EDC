@@ -32,6 +32,7 @@ import ucar.unidata.geoloc.LatLonRect;
 
 import com.asascience.edc.ArcType;
 import com.asascience.edc.nc.NetcdfConstraints;
+import org.apache.log4j.Logger;
 import ucar.nc2.constants.AxisType;
 
 /**
@@ -45,6 +46,8 @@ public class NetcdfGridWriter {
   public final static int CANCELLED_PROCESS = 1;
   private List<GridDataset> gdsList;
   private PropertyChangeSupport pcs;
+  private static Logger logger = Logger.getLogger(NetcdfGridWriter.class);
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log." + NetcdfGridWriter.class.getName());
 
   /**
    * Creates a new instance of NetcdfGridWriter
@@ -66,9 +69,6 @@ public class NetcdfGridWriter {
     String trimByName = cons.getTrimByDim();
     int trimByIndex = cons.getTrimByIndex();
 
-    // System.err.println("S time="+cons.getStartTime());
-    // System.err.println("E time="+cons.getEndTime());
-
     DateRange range = null;
     if ((cons.getStartTime() != null) && (cons.getEndTime() != null)) {
       range = new DateRange(cons.getStartTime(), cons.getEndTime());
@@ -76,8 +76,6 @@ public class NetcdfGridWriter {
     int stride_h = 1, stride_z = 1, stride_time = 1;
 
     try {
-      // System.err.println("Start writeFile");
-
       FileWriter writer = new FileWriter(outLoc, false);
 
       // Set up array lists to hold the variables, variable names, and
@@ -140,13 +138,6 @@ public class NetcdfGridWriter {
             int startIndex = timeAxis.findTimeIndexFromDate(range.getStart().getDate());
             int endIndex = timeAxis.findTimeIndexFromDate(range.getEnd().getDate());
 
-            // System.err.println("timeUnit: " +
-            // timeAxis.getTimeResolution().toString());
-            // System.err.println("Time: startDate: " +
-            // range.getStart().getDate() +
-            // " endDate: " + range.getEnd().getDate() + " sIndex: "
-            // + startIndex + " eIndex: " + endIndex);
-
             if (startIndex > -1 & endIndex > -1) {
               timeRange = new Range(startIndex, endIndex);
             }
@@ -171,40 +162,10 @@ public class NetcdfGridWriter {
             levelRange = null; // use all levels
           }
 
-          // List<Dimension> ds = grid.getDimensions();
-          // System.err.println("Before subset: ");
-          // for(Dimension d : ds){
-          // System.err.println(d.getName() + " len:" +
-          // d.getLength());
-          //
-          // }
-
-          // System.err.println("in bbLatMin=" + llbb.getLatMin());
-          // System.err.println("in bbLatMax=" + llbb.getLatMax());
-          // System.err.println("in bbLonMin=" + llbb.getLonMin());
-          // System.err.println("in bbLonMax=" + llbb.getLonMax());
-
           if ((llbb != null) || (timeRange != null) || (stride_h >= 1)) {
             pcs.firePropertyChange("note", null, "Subsetting: " + gridName);
             grid = grid.makeSubset(timeRange, levelRange, llbb, 1, stride_h, stride_h);
           }
-
-          // LatLonRect outllbb =
-          // grid.getCoordinateSystem().getLatLonBoundingBox();
-          // System.err.println("out bbLatMin=" +
-          // outllbb.getLatMin());
-          // System.err.println("out bbLatMax=" +
-          // outllbb.getLatMax());
-          // System.err.println("out bbLonMin=" +
-          // outllbb.getLonMin());
-          // System.err.println("out bbLonMax=" +
-          // outllbb.getLonMax());
-
-          //List<Dimension> ds2 = grid.getDimensions();
-          //System.err.println("After subset: ");
-          //for(Dimension d : ds2){
-          //  System.err.println(d.getName() + " len:" + d.getLength());
-          //}
 
           // reduce the variable to 3D then add the variable
           Variable gridV = (Variable) grid.getVariable();
@@ -221,14 +182,6 @@ public class NetcdfGridWriter {
             int len = (trimDim == null) ? -1 : trimDim.getLength();
 
             if (trimDimIndex != -1 & len == 1) {
-              // //check the memory
-              // System.err.println("Pre-Read:");
-              // System.err.println("  Total Memory:" +
-              // Utils.Memory.totalMemoryAs(Utils.Memory.MEGABYTE)
-              // + " mb");
-              // System.err.println("  Free Memory:" +
-              // Utils.Memory.freeMemoryAs(Utils.Memory.MEGABYTE)
-              // + " mb");
 
               if (Thread.currentThread().isInterrupted()) {
                 return NetcdfGridWriter.CANCELLED_PROCESS;
@@ -236,15 +189,6 @@ public class NetcdfGridWriter {
               pcs.firePropertyChange("note", null, "Trimming: " + gridName + ": reading data");
               // get the data
               Array arrV = gridV.read();
-
-              // //check the memory
-              // System.err.println("Post-Read:");
-              // System.err.println("  Total Memory:" +
-              // Utils.Memory.totalMemoryAs(Utils.Memory.MEGABYTE)
-              // + " mb");
-              // System.err.println("  Free Memory:" +
-              // Utils.Memory.freeMemoryAs(Utils.Memory.MEGABYTE)
-              // + " mb");
 
               pcs.firePropertyChange("note", null, "Trimming: " + gridName + ": reducing data");
               // reduce the data by trimming the trimDim
@@ -310,8 +254,6 @@ public class NetcdfGridWriter {
                 if (dim == null) {
                   dim = axis.getDimension(0);
                 }
-                //System.err.println("Dim name: " + dim.getName());
-                //System.err.println("Axis name: " + axis.getName());
                 if (!dim.getName().equals(axis.getName())) {
                   axis.setName(dim.getName());
                   cons.setTVar(axis.getName());
@@ -349,144 +291,19 @@ public class NetcdfGridWriter {
 
       return NetcdfGridWriter.SUCCESSFUL_PROCESS;
     } catch (IOException ex) {
-      ex.printStackTrace();
+      logger.error("IOException", ex);
+      guiLogger.error("IOException", ex);
     } catch (InvalidRangeException ex) {
-      ex.printStackTrace();
+      logger.error("InvalidRangeException", ex);
+      guiLogger.error("InvalidRangeException", ex);
     } catch (InterruptedException ex) {
       // this catches the "cancel" button
-      // System.err.println("interrupted here");
       return NetcdfGridWriter.CANCELLED_PROCESS;
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
+      guiLogger.error("Exception", ex);
     }
 
     return NetcdfGridWriter.UNDEFINED_ERROR;
   }
-  // <editor-fold defaultstate="collapsed"
-  // desc=" Alternate writeFile - not used at this time ">
-  /**
-   * public boolean writeFile(String outloc, GridDataset gds, List<String>
-   * gridList, LatLonRect llbb, String trimByName, int trimByIndex, DateRange
-   * range, int stride_h, int stride_z, int stride_time) { try{ //
-   * System.err.println("Start writeFile"); FileWriter writer = new
-   * FileWriter(outloc, false); NetcdfDataset ncd =
-   * (NetcdfDataset)gds.getNetcdfFile(); //add the global attributes.
-   * for(Attribute att : gds.getGlobalAttributes()){
-   * writer.writeGlobalAttribute(att); } //add CF convention attribute //
-   * writer.writeGlobalAttribute(new Attribute("Conventions", "CF-1.0"));
-   * writer.writeGlobalAttribute(new Attribute("History",
-   * "Translated by Netcdf-Java CDM (NetcdfGridWriter)\n" +
-   * "Original Dataset = " + gds.getLocationURI() + "; Translation date = " +
-   * new Date())); //Set up array lists to hold the variables, variable names,
-   * and coordinate axis List<Variable> varList = new ArrayList<Variable>();
-   * List<String> varNames = new ArrayList<String>(); List<CoordinateAxis>
-   * axisList = new ArrayList<CoordinateAxis>(); // // for(String gridName :
-   * gridList){ // System.err.println(gridName); // } //add the desired grids
-   * for(String gridName : gridList){ if(varNames.contains(gridName)){
-   * continue; } //add the name to the list varNames.add(gridName); //get the
-   * grid and it's coordinate system GridDatatype grid =
-   * gds.findGridDatatype(gridName); GridCoordSystem gcsOrg =
-   * grid.getCoordinateSystem(); //create a subset if needed Range timeRange =
-   * null; if(range != null){ CoordinateAxis1DTime timeAxis =
-   * gcsOrg.getTimeAxis1D(); int startIndex =
-   * timeAxis.findTimeIndexFromDate(range.getStart().getDate()); int endIndex
-   * = timeAxis.findTimeIndexFromDate(range.getEnd().getDate()); timeRange =
-   * new Range(startIndex, endIndex); } Range levelRange; if(trimByIndex ==
-   * -1){ levelRange = null; }else{ levelRange = new Range(trimByIndex,
-   * trimByIndex); } // System.err.println(llbb.getLatMin()); //
-   * System.err.println(llbb.getLatMax()); //
-   * System.err.println(llbb.getLonMin()); //
-   * System.err.println(llbb.getLonMax()); if((llbb != null) || (timeRange !=
-   * null) || (stride_h >= 1)){ grid = grid.makeSubset(timeRange, levelRange,
-   * llbb, 1, stride_h, stride_h); } //reduce the variable to 3D then add the
-   * variable Variable gridV = (Variable)grid.getVariable(); // Variable
-   * sliceV = gridV.slice(gridV.findDimensionIndex(trimByName), trimByIndex);
-   * //get and reduce the data Array arrV =
-   * gridV.read().reduce(gridV.findDimensionIndex(trimByName)); //create the
-   * new variable Variable newGridV = new Variable(gds.getNetcdfFile(), null,
-   * null, gridV.getShortName()); newGridV.setDataType(gridV.getDataType());
-   * for(Attribute a : (List<Attribute>)gridV.getAttributes()){
-   * newGridV.addAttribute(a); } Dimension levelD =
-   * gridV.getDimension(gridV.findDimensionIndex(trimByName)); List<Dimension>
-   * dims = gridV.getDimensions(); //
-   * System.err.println("Before Dims: "+dims.size()); //
-   * System.err.println("Before gridDims: "+gridV.getDimensions().size());
-   * if(levelD != null){ dims.remove(levelD); } newGridV.setDimensions(dims);
-   * newGridV.setCachedData(arrV, false); // else{ //
-   * System.err.println("levelD = null"); // } //// for(int i = dims.size() -
-   * 1; i >= 0; i--){ //// System.err.println(dims.get(i).getName()); ////
-   * if(dims.get(i).getName().equals(trimByName)){ //// dims.remove(i); ////
-   * System.err.println("**REMOVE**"); //// } //// } //
-   * System.err.println("After Dims: "+dims.size()); //
-   * gridV.setDimensions(dims); //
-   * System.err.println("After gridDims: "+gridV.getDimensions().size()); //
-   * Group grp = new Group(ncd, null, "temp"); // grp.addVariable(gridV); //
-   * grp.removeDimension(trimByName); // Variable outV =
-   * grp.findVariable(gridV.getName()); //
-   * System.err.println("testVarSize:"+outV.getDimensions().size()); // int i
-   * = gridV.findDimensionIndex(trimByName); //
-   * System.err.println("levelDimIndex:"+i); // gridV.setDimension(i, null);
-   * // System.err.println("dim set = null"); // Group root =
-   * writer.getNetcdf().getRootGroup(); // root.removeDimension(trimByName);
-   * // Array vArr = gridV.read().reduce(); // List<Dimension> dims =
-   * gridV.getDimensions(); // varList.add(gridV); varList.add(newGridV); //
-   * varList.add(sliceV); THIS COULD BE WHERE THE FUNKYNESS IS COMING IN...
-   * IT'S NOT = WITHOUT THIS THERE ARE NO VALUES FOR X, Y, Z OR TIME //add the
-   * coordinate axes for each variable GridCoordSystem gcs =
-   * grid.getCoordinateSystem(); List<CoordinateAxis> axes =
-   * gcs.getCoordinateAxes(); for(int j = 0; j < axes.size(); j++){
-   * CoordinateAxis axis = axes.get(j);
-   * if(!varNames.contains(axis.getName())){ //
-   * if(!axis.getName().equals(trimByName)){ varNames.add(axis.getName());
-   * varList.add(axis); // } // axisList.add(axis); } } } // // THIS WOULD
-   * WORK EXCEPT THAT THE GROUP NAME IS AUTOMATICALLY APPENDED SOMEWHERE IN
-   * THE WRITE PROCESS... // // //replace any "." in the variable names with
-   * "_" // for(Variable v : varList){ // v.setName(v.getName().replace(".",
-   * "_")); // } // //add supplemental variables (i.e. Speed & Direction) //
-   * if(hasSupplemental) // for(Variable v : suppVars) // varList.add(v);
-   * writer.writeVariables(varList); // Group root =
-   * writer.getNetcdf().getRootGroup(); // if(root == null)
-   * System.err.println("root null"); // for(Dimension d :
-   * root.getDimensions()){ // System.err.println(d.getName()); // } //
-   * System.err.println("trimByName:"+trimByName); //
-   * root.removeDimension(trimByName);//this errors writer.finish(); //
-   * boolean fin = root.removeDimension(trimByName);//this runs but doesn't
-   * get rid of the dimension! // System.err.println(fin); //
-   * System.err.println("End writeFile - ok"); return true; }catch(IOException
-   * ex){ ex.printStackTrace(); }catch(InvalidRangeException ex){
-   * ex.printStackTrace(); }catch(Exception ex){ ex.printStackTrace(); } //
-   * System.err.println("End writeFile - error"); return false; //stop here...
-   * //<editor-fold defaultstate="collapsed" desc=" unused from orig "> // //
-   * now add CF annotations as needed - dont change original ncd or gds //
-   * NetcdfFileWriteable ncfile = writer.getNetcdf(); // Group root =
-   * ncfile.getRootGroup(); // for (String gridName : gridList) { //
-   * GridDatatype grid = gds.findGridDatatype(gridName); // Variable newV =
-   * root.findVariable(gridName); // // // annotate Variable for CF //
-   * StringBuffer sbuff = new StringBuffer(); // GridCoordSystem gcs =
-   * grid.getCoordinateSystem(); // List axes = gcs.getCoordinateAxes(); //
-   * for (int j = 0; j < axes.size(); j++) { // Variable axis = (Variable)
-   * axes.get(j); // sbuff.append(axis.getName() + " "); // } //// if
-   * (addLatLon) //// sbuff.append("lat lon"); // newV.addAttribute(new
-   * Attribute("coordinates", sbuff.toString())); // // // looking for
-   * coordinate transform variables // List ctList =
-   * gcs.getCoordinateTransforms(); // for (int j = 0; j < ctList.size(); j++)
-   * { // CoordinateTransform ct = (CoordinateTransform) ctList.get(j); //
-   * Variable v = ncd.findVariable(ct.getName()); // if (ct.getTransformType()
-   * == TransformType.Projection) // newV.addAttribute(new
-   * Attribute("grid_mapping", v.getName())); // } // } // // for
-   * (CoordinateAxis axis : axisList) { // Variable newV =
-   * root.findVariable(axis.getName()); // if ((axis.getAxisType() ==
-   * AxisType.Height) || (axis.getAxisType() == AxisType.Pressure) ||
-   * (axis.getAxisType() == AxisType.GeoZ)) { // if (null !=
-   * axis.getPositive()) // newV.addAttribute(new Attribute("positive",
-   * axis.getPositive())); // } // if (axis.getAxisType() == AxisType.Lat) {
-   * // newV.addAttribute(new Attribute("units", "degrees_north")); //
-   * newV.addAttribute(new Attribute("standard_name", "latitude")); // } // if
-   * (axis.getAxisType() == AxisType.Lon) { // newV.addAttribute(new
-   * Attribute("units", "degrees_east")); // newV.addAttribute(new
-   * Attribute("standard_name", "longitude")); // } // // //
-   * newV.addAttribute(new Attribute(_Coordinate.AxisType,
-   * axis.getAxisType().toString())); // cheating // } //</editor-fold> }
-   */
-  // </editor-fold>
 }

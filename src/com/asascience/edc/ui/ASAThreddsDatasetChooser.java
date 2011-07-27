@@ -97,7 +97,6 @@ import com.asascience.ui.JCloseableTabbedPane;
  */
 public class ASAThreddsDatasetChooser extends JPanel {
 
-  private EventListenerList listenerList = new EventListenerList();
   private ASACatalogChooser catalogChooser;
   private JCloseableTabbedPane tabbedPane;
   private boolean pipeOut = true; // send results to standard out
@@ -395,5 +394,4 @@ public class ASAThreddsDatasetChooser extends JPanel {
       pack();
     }
   }
-  
 }

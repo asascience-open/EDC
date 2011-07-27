@@ -34,11 +34,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -72,6 +69,7 @@ import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
 import com.asascience.edc.erddap.ErddapDataset;
 import com.asascience.edc.erddap.gui.ErddapDatasetViewer;
 import com.asascience.edc.erddap.gui.ErddapTabledapGui;
+import com.asascience.edc.log.TextAreaAppender;
 import com.asascience.edc.nc.NetcdfConstraints;
 import com.asascience.edc.nc.io.NcProperties;
 import com.asascience.edc.particle.ParticleOutputLayer;
@@ -93,7 +91,10 @@ import com.asascience.ui.JCloseableTabbedPane;
 import com.asascience.utilities.Utils;
 import com.asascience.utilities.exception.InitializationFailedException;
 import com.bbn.openmap.Layer;
+import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import ucar.nc2.ft.FeatureDatasetFactoryManager;
 
 /**
@@ -123,6 +124,9 @@ public class OpendapInterface {
   private OMLayerPanel omLayerPanel;
   private JSplitPane horizSplit;
   private Color defaultBackground;
+  private static Logger logger = Logger.getLogger("com.asascience.edc");
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log");
+  private static JTextArea logArea = new JTextArea();
 
   /**
    * Creates a new instance of OpendapInterface
@@ -130,12 +134,6 @@ public class OpendapInterface {
    * @param args
    */
   public OpendapInterface(String[] args) {
-    // System.err.println("At Startup:");
-    // System.err.println("  Total Memory:" +
-    // Utils.Memory.totalMemoryAs(Utils.Memory.MEGABYTE) + " mb");
-    // System.err.println("  Free Memory:" +
-    // Utils.Memory.freeMemoryAs(Utils.Memory.MEGABYTE) + " mb");
-
     store = null;
     try {
       sysDir = System.getProperty("user.dir");
@@ -152,7 +150,7 @@ public class OpendapInterface {
       } else {
         loc = Configuration.OUTPUT_LOCATION;
       }
-      if (!loc.equals("")) {
+      if (!loc.isEmpty()) {
         loc = Utils.appendSeparator(loc);
         File f = new File(loc);
 
@@ -164,7 +162,7 @@ public class OpendapInterface {
                   + "By selecting \"No\" data will be output to the default directory:\n\"" + sysFile.getParent()
                   + "\"", "Create Directory?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             if (!f.mkdirs()) {
-              System.err.println("Directory \"" + f.getAbsolutePath() + "\" could not be created.");
+              logger.warn("Directory \"" + f.getAbsolutePath() + "\" could not be created.");
               homeDir = sysFile.getParent();
             } else {
               homeDir = f.getAbsolutePath();
@@ -179,7 +177,7 @@ public class OpendapInterface {
       xmlStoreLoc = sysDir + "edcstore.xml";
       store = XMLStore.createFromFile(xmlStoreLoc, null);
       if (store == null) {
-        System.err.println("AtCreation: xmlstore is null");
+        logger.error("AtCreation: xmlstore is null");
       }
     } catch (IOException ex) {
       ex.printStackTrace();
@@ -193,7 +191,6 @@ public class OpendapInterface {
     fileChooser = new FileManager(mainFrame, null, filters, (PreferencesExt) prefs.node("FileManager"));
 
     constraints = new NetcdfConstraints();
-    // if(store == null)System.err.println("store null before C&SGui");
     createAndShowGUI();
   }
 
@@ -209,7 +206,7 @@ public class OpendapInterface {
 
   private void createAndShowGUI() {
     if (store == null) {
-      System.err.println("store null in C&SGui");
+      logger.error("store null in C&SGui");
     }
 
     mainFrame = new JFrame("Environmental Data Connector");
@@ -250,13 +247,15 @@ public class OpendapInterface {
 
       @Override
       public void mouseClicked(MouseEvent e) {
-        // System.err.println(e.getButton());
         addDatasetToExisting = false;// if the user clicks the tabs...
       }
     });
 
     // The "Browse" Tab
     datasetChooser = makeDatasetChooser(tabbedPane);
+    
+    // The "Log" Tab
+    tabbedPane.addTabNoClose("Log", makeLogPanel());
 
     // The "Data Viewer" Tab
     tabbedPane.addTabNoClose("Data Viewer", makeViewerPanel());
@@ -359,6 +358,12 @@ public class OpendapInterface {
     tabbedPane.setSelectedIndex(1);
   }
 
+  private JPanel makeLogPanel() {
+    JPanel pnl = new JPanel(new MigLayout("insets 5, gap 5, fill"));
+    pnl.add(logArea, "grow");
+    return pnl;
+  }
+  
   private JPanel makeViewerPanel() {
     try {
 
@@ -396,35 +401,26 @@ public class OpendapInterface {
             omLayerPanel.setBorder(BorderFactory.createLineBorder(Color.GREEN, 3));
             Utils.setComponetCursor(mainFrame.getRootPane(), Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
           } else {
-            System.err.println("Not fileListFlavor");
+            logger.error("Not fileListFlavor");
             for (DataFlavor d : e.getCurrentDataFlavors()) {
-              // System.out.println(d.toString());
-              System.err.println(d.toString());
+              logger.info(d.toString());
             }
           }
         }
 
         public void dragOver(DropTargetDragEvent e) {
-          // System.err.println("dragOver");
-          // System.out.println("dragOver");
         }
 
         public void dropActionChanged(DropTargetDragEvent e) {
-          // System.err.println("dropActionChanged");
-          // System.out.println("dropActionChanged");
         }
 
         public void dragExit(DropTargetEvent e) {
-          // System.err.println("dragExit");
-          // System.out.println("dragExit");
           omLayerPanel.setBorder(BorderFactory.createLineBorder(defaultBackground, 3));
           Utils.setComponetCursor(mainFrame.getRootPane(), Cursor.getDefaultCursor());
         }
 
         public void drop(DropTargetDropEvent e) {
           try {
-            // System.err.println("drop");
-            // System.out.println("drop");
             if (e.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
               e.acceptDrop(DnDConstants.ACTION_LINK);
             } else {
@@ -450,8 +446,7 @@ public class OpendapInterface {
             for (Iterator i = transData.iterator(); i.hasNext();) {
 
               File file = (File) i.next();
-              System.err.println("File Path = " + file.getAbsolutePath());
-              // System.out.println(files.getAbsolutePath());
+              logger.info("File Path = " + file.getAbsolutePath());
               if (file.isDirectory()) {
                 for (File f : file.listFiles()) {// new
                   // CurrentsFileFilter())){
@@ -499,7 +494,6 @@ public class OpendapInterface {
     datasetChooser.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
 
       public void propertyChange(java.beans.PropertyChangeEvent e) {
-        // System.err.println(e.getPropertyName());
         if (e.getPropertyName().equals("InvAccess")) {
           thredds.catalog.InvAccess access = (thredds.catalog.InvAccess) e.getNewValue();
           setThreddsDatatype(access);
@@ -565,7 +559,6 @@ public class OpendapInterface {
     try {
       if (ncd != null) {
         if (!addDatasetToExisting) {
-          // System.err.println("openDataset");
           // try {
           // ensures a new set of constraints each time a dataset is
           // loaded...
@@ -624,16 +617,13 @@ public class OpendapInterface {
     if (store != null) {
       try {
         store.save();
-        // System.err.println("prefs stored");
       } catch (IOException ex) {
-        System.err.println("OI:storePersistentData:");
-        ex.printStackTrace();
+        logger.error("OI:storePersistentData:", ex);
       }
     }
   }
 
   public void closeInterface(String exitMessage) {
-    // System.err.println("closeInterface");
     try {
       prefs.putBeanObject(FRAME_SIZE, mainFrame.getBounds());
       storePersistentData();
@@ -641,11 +631,10 @@ public class OpendapInterface {
       if (store != null) {
         store.save();
       } else {
-        System.err.println("AtWindowClose: xmlstore is null - preferences not saved");
+        logger.error("AtWindowClose: xmlstore is null - preferences not saved");
       }
     } catch (IOException ex) {
-      System.err.println("OI:closeIterface:");
-      ex.printStackTrace();
+      logger.error("OI:closeIterface:", ex);
     } finally {
       this.mainFrame.setVisible(false);
       this.mainFrame.dispose();
@@ -659,21 +648,10 @@ public class OpendapInterface {
     }
   }
 
-  // public boolean extractData(NetcdfConstraints cons, String outpath){
-  // // System.err.println("OI: " + cons.getBoundingBox().toString2());
-  // return gridReader.extractData2(cons, outpath);
-  // }
-  // public LatLonRect getNcExtent(){
-  // return gridReader.getBounds();
-  // }
-  // public Date getStartTime(){
-  // return gridReader.getStartTime();
-  // }
   public JFrame getMainFrame() {
     return this.mainFrame;
   }
 
-  // <editor-fold desc=" Datatype Sets ">
   // jump to the appropriate tab based on datatype of InvDataset
   private void setThreddsDatatype(thredds.catalog.InvDataset invDataset, boolean wantsViewer) {
     if (invDataset == null) {
@@ -683,21 +661,16 @@ public class OpendapInterface {
     try {
       // just open as a NetcdfDataset
       if (wantsViewer) {
-        System.err.println("Wants Viewer");
         showInViewer(threddsDataFactory.openDataset(invDataset, true, null, null));
         return;
       }
 
-      // TODO: takes forever for very large datasets....
-      // otherwise do the datatype thing -
-      //ThreddsDataFactory.Result threddsData = threddsDataFactory.openFeatureDataset(invDataset, null);
       NetcdfDataset ncdata = threddsDataFactory.openDataset(invDataset, true, null, null);
 
       if (ncdata == null) {
         JOptionPane.showMessageDialog(null, "Unknown datatype");
         return;
       }
-      //setThreddsDatatype(threddsData);
       setThreddsDatatype(ncdata);
 
     } catch (IOException ioe) {
@@ -714,7 +687,6 @@ public class OpendapInterface {
 
     thredds.catalog.InvService s = invAccess.getService();
     if (s.getServiceType() == thredds.catalog.ServiceType.HTTPServer) {
-      System.err.println("Is an HTTPServer");
       return;
     }
 
@@ -743,26 +715,26 @@ public class OpendapInterface {
   private void setThreddsDatatype(NetcdfDataset ncdataset) {
 
     if (ncdataset == null) {
-      System.err.println("Is a Fatal Error");
       JOptionPane.showMessageDialog(null, "Can't open dataset:" + ncdataset.getLocation());
       return;
     }
 
-    FeatureType featureType = FeatureDatasetFactoryManager.findFeatureType(ncdataset);
-
-    if (featureType == FeatureType.GRID) {
-      System.err.println("Is a Grid");
-      System.err.println("Dataset Name: " + ncdataset.getTitle());
-      System.err.println("Dataset Location: " + ncdataset.getLocation());
-      openDataset(ncdataset);
-    } else if (featureType == FeatureType.IMAGE) {
-      System.err.println("Is an Image");
-    } else if (featureType == FeatureType.RADIAL) {
-      System.err.println("Is a Radial");
-    } else if (featureType == FeatureType.POINT) {
-      System.err.println("Is a Point");
-    } else if (featureType == FeatureType.STATION) {
-      System.err.println("Is a Station");
+    FeatureType featureType = null;
+    try {
+      featureType = FeatureDatasetFactoryManager.wrap(FeatureType.GRID, ncdataset, null, null).getFeatureType();
+      if (featureType == FeatureType.GRID) {
+        logger.info("GridDataset Name: " + ncdataset.getTitle());
+        logger.info("GridDataset Location: " + ncdataset.getLocation());
+        guiLogger.info("GridDataset Name: " + ncdataset.getTitle());
+        guiLogger.info("GridDataset Location: " + ncdataset.getLocation());
+        openDataset(ncdataset);
+      } else {
+        logger.error("Dataset not recognized as a Feature Dataset: " + ncdataset.getLocation());
+        guiLogger.error("Dataset not recognized as a Feature Dataset: " + ncdataset.getLocation());
+      }
+    } catch (IOException ioe) {
+      logger.error("Dataset not recognized as a GRID Dataset: " + ncdataset.getLocation(), ioe);
+      guiLogger.error("Dataset not recognized as a GRID Dataset: " + ncdataset.getLocation(), ioe);
     }
   }
 
@@ -776,40 +748,10 @@ public class OpendapInterface {
 
       public void run() {
         // read and apply the parameters from the configuration file
+        PropertyConfigurator.configure("log4j.properties");
+        TextAreaAppender.setTextArea(logArea);
         Configuration.initialize(System.getProperty("user.dir") + File.separator + "edcconfig.xml");
         History.initialize(System.getProperty("user.dir") + File.separator + "history.txt");
-        if (Configuration.OUTPUT_TO_FILE) {
-          try {
-            // String outloc = "systemoutput.log";
-            // if(System.getProperty("os.name").toLowerCase().contains("windows"))
-            // outloc = "C:" + File.separator + "systemoutput.log";
-            // String sysOutLoc =
-            // XMLStore.makeStandardFilename("asascience" +
-            // File.separator +
-            // "ODC" + File.separator + "System", "odcsysout.log");
-            String sysOutLoc = System.getProperty("user.dir") + File.separator + "edcsysout.log";
-            // File f = new File(System.getProperty("user.dir") +
-            // File.separator + "odcsysout.log");
-            File f = new File(sysOutLoc);
-            if (f.exists()) {
-              if (f.length() >= 10485760l)// delete the log file
-              // if it exceeds 10mb
-              {
-                if (!f.delete()) {
-                  System.err.println("OpendapInterface.main: Could not delete file \""
-                          + f.getAbsolutePath() + "\"");
-                }
-              }
-            }
-            PrintStream ps = new PrintStream(new FileOutputStream(f, true), true);
-            // System.setOut(ps);//System.out now provides response
-            // to calling C# app
-            System.setErr(ps);
-            System.err.println("\n\n\n-----Start New Run: " + new Date().toString() + "-----");
-          } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-          }
-        }
         new OpendapInterface(pass);
       }
     });

@@ -165,6 +165,7 @@ public class HistoryComboBox extends JComboBox {
 
   private static abstract class PopupTriggerListener extends MouseAdapter {
 
+    @Override
     public void mouseReleased(MouseEvent e) {
       if (e.isPopupTrigger()) {
         showPopup(e);
@@ -174,6 +175,7 @@ public class HistoryComboBox extends JComboBox {
     public abstract void showPopup(MouseEvent e);
   }
 
+  @Override
   protected void fireActionEvent() {
     if (deleting) {
       return; // no events while deleting
@@ -188,6 +190,7 @@ public class HistoryComboBox extends JComboBox {
    * @param item
    *            to be added.
    */
+  @Override
   public void addItem(Object item) {
     if (item == null) {
       return;
@@ -209,7 +212,6 @@ public class HistoryComboBox extends JComboBox {
   /** Save the last n items to PreferencesExt. */
   public void save() {
     if (prefs != null) {
-      //System.err.println("Saving " + getList() + " list");
       prefs.putList(getList(), getItemList());
     }
   }
@@ -233,7 +235,7 @@ public class HistoryComboBox extends JComboBox {
    * @param list
    *            of items, may be any Object type.
    */
-  public void setItemList(Collection list) {
+  protected void setItemList(Collection list) {
     if (list == null) {
       return;
     }
@@ -276,6 +278,7 @@ public class HistoryComboBox extends JComboBox {
     JFrame frame = new JFrame("Test");
     frame.addWindowListener(new WindowAdapter() {
 
+      @Override
       public void windowClosing(WindowEvent e) {
         System.exit(0);
       }
@@ -294,18 +297,10 @@ public class HistoryComboBox extends JComboBox {
     });
     cb.getEditor().getEditorComponent().setForeground(Color.red);
 
-    /*
-     * JButton butt = new JButton("accept"); butt.addActionListener( new
-     * AbstractAction() { public void actionPerformed(ActionEvent e) {
-     * System.err.println("butt accept"); cb.accept(); } });
-     */
-
     JPanel main = new JPanel();
     main.add(cb);
-    // main.add(butt);
 
     frame.getContentPane().add(main);
-    // cb.setPreferredSize(new java.awt.Dimension(500, 200));
 
     frame.pack();
     frame.setLocation(300, 300);

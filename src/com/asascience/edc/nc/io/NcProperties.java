@@ -22,7 +22,7 @@ import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
 
 import com.asascience.edc.ArcType;
-import com.asascience.edc.Configuration;
+import org.apache.log4j.Logger;
 
 /**
  * 
@@ -55,6 +55,8 @@ public class NcProperties {
   private List<String> vars;
   private boolean vectorType = false;
   private boolean cancelTask;
+  private static Logger logger = Logger.getLogger(NcProperties.class);
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log." + NcProperties.class.getName());
 
   /**
    * Creates a new instance of NcProperties
@@ -88,9 +90,11 @@ public class NcProperties {
     try {
       out.output(d, new FileOutputStream(outFile));
     } catch (FileNotFoundException ex) {
-      ex.printStackTrace();
+      logger.error("FileNotFoundException", ex);
+      guiLogger.error("FileNotFoundException", ex);
     } catch (IOException ex) {
-      ex.printStackTrace();
+      logger.error("IOException", ex);
+      guiLogger.error("IOException", ex);
     }
   }
 
@@ -103,11 +107,9 @@ public class NcProperties {
 
     String lastFile = xmlFile.getAbsolutePath();
     if (xmlFile.getName().equals("edcstore.xml")) {
-      // System.err.println(xmlFile.getName());
       lastFile = "null";
     }
 
-    // System.err.println("lastFile="+lastFile);
     root.getChild("nc_info").setAttribute("last", lastFile);
     // root.getChild("nc_info").setAttribute("last",
     // xmlFile.getAbsolutePath());
@@ -118,22 +120,14 @@ public class NcProperties {
     // if(lastFile.equals("null")) outTo = xmlFile.getParent();
 
     File outFile = new File(outTo + File.separator + "NcPointer.xml");
-    // File outFile = new File("ncpointer.xml");
-
-    // File outFile = new File(xmlFile.getParentFile().getParent() +
-    // File.separator + "NcPointer.xml");
-    // System.err.println(outFile.getAbsolutePath());
-    // String outpath = ncPath.substring(0,
-    // ncPath.lastIndexOf(File.separator));
-    // outpath = outpath.substring(0, outpath.lastIndexOf(File.separator));
-    // File outFile = new File(outpath + File.separator + "NcPointer.xml");
-    // System.err.println("xml pointer: " + outpath);
     try {
       out.output(d, new FileOutputStream(outFile));
     } catch (FileNotFoundException ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
+      guiLogger.error("Exception", ex);
     } catch (IOException ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
+      guiLogger.error("Exception", ex);
     }
   }
 
@@ -154,12 +148,11 @@ public class NcProperties {
 
       XMLOutputter out = new XMLOutputter();
       String xmlPath = ncPath.replace(".nc", ".xml");
-      // System.err.println(xmlPath + "\n"+ ncPath);
       File xmlFile = new File(xmlPath);
       if (xmlFile.exists()) {
         if (!xmlFile.delete()) {
-          System.err.println("NcProperties.writeFile: Could not delete file \"" + xmlFile.getAbsolutePath()
-                  + "\"");
+          logger.warn("NcProperties.writeFile: Could not delete file \"" + xmlFile.getAbsolutePath() + "\"");
+          guiLogger.warn("NcProperties.writeFile: Could not delete file \"" + xmlFile.getAbsolutePath() + "\"");
         }
       }
       createXml();
@@ -199,11 +192,12 @@ public class NcProperties {
       try {
         out.output(outDoc, new FileOutputStream(xmlFile));
       } catch (IOException ex) {
-        ex.printStackTrace();
+        logger.error("IOException", ex);
+        guiLogger.error("IOException", ex);
       }
     } catch (Exception ex) {
-      System.err.println("NP:writeFile:");
-      ex.printStackTrace();
+      logger.error("NP:writeFile:", ex);
+      guiLogger.error("NP:writeFile:", ex);
     }
 
   }

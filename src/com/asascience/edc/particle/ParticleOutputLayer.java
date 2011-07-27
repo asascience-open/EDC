@@ -118,22 +118,13 @@ public class ParticleOutputLayer extends OutputLayerBase implements MapMouseList
       name = "Particles - " + name.substring(name.lastIndexOf("_") + 1);
       this.setName(name);
     }
-    // File f = new File(incident.getIncidentDir() + File.separator +
-    // ParticleOutputReader.OUTPUT_NAME);
+
     if (f.exists()) {
       this.dataFile = f;
       this.setSourceFilePath(f.getAbsolutePath());
 
-      // try{
       por = new ParticleOutputReader(this.dataFile);
-      // }catch(InitializationFailedException ex){
-      // System.out.println(ex.getMessage());
-      // // ex.printStackTrace();
-      // throw new FileNotFoundException("File \"" + dataFile +
-      // "\" is malformed");
-      // }
 
-      // System.out.println(por.getStartTime()+" "+por.getEndTime()+" "+por.getTimeIncrement());
       this.setStartTime(por.getStartTime());
       this.setEndTime(por.getEndTime());
       this.setTimeIncrement(por.getTimeIncrement());
@@ -146,185 +137,7 @@ public class ParticleOutputLayer extends OutputLayerBase implements MapMouseList
       throw new FileNotFoundException("File \"" + dataFile + "\" not found");
     }
   }
-
-  // public ParticleOutputLayer(Incident incident, JFrame pf) throws
-  // FileNotFoundException, InitializationFailedException{
-  // this(new File(incident.getIncidentDir() + File.separator +
-  // ParticleOutputReader.OUTPUT_NAME), pf);
-  // }
-  // <editor-fold defaultstate="collapsed"
-  // desc=" Unused - For Reading Text File">
-  //
-  // private void parseString(String string){
-  // //time,pId,x,y,z,temp,sal,rad,ph,alk,moles,centconc,edgeconc
-  // Scanner scan = new Scanner(string);
-  // long time = scan.nextLong();
-  // Hashtable timeTable = null;
-  //
-  // boolean contains = false;
-  // //if the dataTable already contains a hashtable for that time - get it
-  // if(dataTable.containsKey(time)){
-  // timeTable = (Hashtable)dataTable.get(time);
-  // contains = true;
-  // }else{//otherwise, create it
-  // timeTable = new Hashtable();
-  // }
-  //
-  // //update the start/end time if appropriate
-  // if(this.getStartTime() > time) this.setStartTime(time);
-  // if(this.getEndTime() < time) this.setEndTime(time);
-  // // System.out.println(time);
-  // int pId = scan.nextInt();
-  // double x = scan.nextDouble();
-  // double y = scan.nextDouble();
-  // double z = scan.nextDouble();
-  // double temp = scan.nextDouble();
-  // double sal = scan.nextDouble();
-  // double rad = scan.nextDouble();
-  // double ph = scan.nextDouble();
-  // double alk = scan.nextDouble();
-  // double moles = scan.nextDouble();
-  // double cConc = scan.nextDouble();
-  // double eConc = scan.nextDouble();
-  //
-  // // List data = new ArrayList();
-  // Hashtable data = new Hashtable();
-  // data.put(this.TIME, time);
-  // data.put(this.PID, pId);
-  // data.put(this.X, x);
-  // data.put(this.Y, y);
-  // data.put(this.Z, z);
-  // data.put(this.TEMP, temp);
-  // data.put(this.SAL, sal);
-  // data.put(this.RAD, rad);
-  // data.put(this.PH, ph);
-  // data.put(this.ALK, alk);
-  // data.put(this.MOL, moles);
-  // data.put(this.CCONC, cConc);
-  // data.put(this.ECONC, eConc);
-  //
-  // timeTable.put(pId, data);
-  //
-  // if(!contains){
-  // dataTable.put(time, timeTable);
-  // }
-  // }
-  //
-  // /**
-  // * Reads the modelOut.txt file line by line and passes appropriate lines
-  // * to the parser
-  // */
-  // public void readData(){
-  // BufferedReader input = null;
-  // try {
-  // input = new BufferedReader(new FileReader(this.dataFile));
-  // String line = null;
-  // while((line = input.readLine()) != null){
-  //
-  // if(line.startsWith("#")){//these are comment lines
-  // //do nothing
-  // }else if(line.startsWith("^")){//this is the time increment in ms
-  // String s = line.replace("^","");
-  // long l = Long.valueOf(s);
-  // this.setTimeIncrement(l);
-  // }else{//parse it into the dataTable
-  // parseString(line);
-  // }
-  // // System.out.println(line);
-  // }
-  //
-  // // for(Object o : dataTable.values()){
-  // // Hashtable t = (Hashtable)o;
-  // // long time = (Long) t.get(TIME);
-  // // int pid = (Integer) t.get(PID);
-  // //
-  // // System.out.println("time="+time+" pid="+pid);
-  // // //order is unpredictable
-  // //// for(Object ob : t.values()){
-  // //// String s = "";
-  // //// if (ob instanceof Long){
-  // //// long l = (Long)ob;
-  // //// s = String.valueOf(l);
-  // //// }else if (ob instanceof Integer){
-  // //// int i = (Integer)ob;
-  // //// s = String.valueOf(i);
-  // //// }else if (ob instanceof Double){
-  // //// double d = (Double)ob;
-  // //// s = String.valueOf(d);
-  // //// }
-  // ////
-  // //// if(!s.equals(""))
-  // //// System.out.println(s);
-  // //// }
-  // // }
-  //
-  // } catch (FileNotFoundException ex) {
-  // System.err.println("MOL:readData - File Not Found");
-  // ex.printStackTrace();
-  // } catch (IOException ex){
-  // System.err.println("MOL:readData - Error Opening File");
-  // ex.printStackTrace();
-  // } finally{
-  // try{
-  // if(input != null){
-  // input.close();
-  // }
-  // } catch (IOException ex){
-  // System.err.println("MOL:readData - Error Closing File");
-  // ex.printStackTrace();
-  // }
-  // }
-  // }
-  //
-  // /**
-  // * Draws the appropriate data for the passed timestep t <CODE>long</CODE>.
-  // * @param t The time <CODE>long</CODE> for which the data should be drawn
-  // */
-  // public void drawDataForTime(long t) {
-  // try {
-  // OMGraphicList omgl = this.getList();
-  // omgl.clear();
-  //
-  // long pid;
-  // long time;
-  // double x, y, z, r, cconc, econc;
-  // int rad = 4;//default
-  // Hashtable timeTable;
-  // Hashtable dt;
-  //
-  // for(Object o : dataTable.values()){
-  // timeTable = (Hashtable)o;
-  // // if(timeTable.containsKey(t)){
-  // for(Object ob : timeTable.values()){
-  // dt = (Hashtable)ob;
-  // time = (Long)dt.get(this.TIME);
-  // // pid = (Integer)dt.get(this.PID);
-  // // System.out.println("time="+time+" pid="+pid);
-  // if(t == time){//if the time matches
-  // // System.out.println("true - time matches");
-  // pid = (Integer)dt.get(this.PID);
-  // x = (Double)dt.get(this.X);
-  // y = (Double)dt.get(this.Y);
-  // // z = (Double)dt.get(this.Z);
-  // r = (Double)dt.get(this.RAD);
-  // rad = (int)(r * 10);
-  //
-  // // cconc = (Double)dt.get(this.CCONC);
-  // // econc = (Double)dt.get(this.ECONC);
-  // // System.out.println("pid="+pid+" x="+x+" y="+y);
-  // omgl.addOMGraphic(createPoint((float)y, (float)x, rad));
-  // }
-  // }
-  // }
-  // this.doPrepare();
-  // } catch(Exception ex){
-  // System.err.println("MOL:drawDataForTime");
-  // ex.printStackTrace();
-  // }finally {
-  // }
-  // }
-  //
-  // </editor-fold>
+  
   /**
    *
    * @return
@@ -336,25 +149,6 @@ public class ParticleOutputLayer extends OutputLayerBase implements MapMouseList
     double ld50conc = por.getLd50();
     for (int i = 0; i < list.size(); i++) {
       g = (OMParticle) list.getOMGraphicAt(i);
-      // set g radius here so navigation resizes properly
-
-      // g.setLinePaint(Color.BLACK);
-      // g.setFillPaint(Color.BLACK);
-      // if(g instanceof OMParticle){
-      // if(g.getCenterConc() >= ld50conc){
-      // // System.out.println("Red");
-      // g.setLinePaint(Color.red);
-      // g.setFillPaint(Color.red);
-      // }else if(g.getCenterConc() >= (ld50conc * 0.5)){
-      // // System.out.println("Yellow");
-      // g.setLinePaint(Color.orange);
-      // g.setFillPaint(Color.orange);
-      // }else{
-      // // System.out.println("Green");
-      // g.setLinePaint(Color.green);
-      // g.setFillPaint(Color.green);
-      // }
-      // }
 
       if (true) {
         /**
@@ -436,7 +230,6 @@ public class ParticleOutputLayer extends OutputLayerBase implements MapMouseList
     // projection will be null on initial call - !null after that
     if (proj != null) {
       List<OMParticle> particles = por.getOMParticlesAtTime(t, proj);
-      // System.out.println("# Parts"+particles.size());
       if (particles != null) {
         currentTime = t;
 

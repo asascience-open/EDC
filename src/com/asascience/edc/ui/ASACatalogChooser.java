@@ -53,7 +53,6 @@ import javax.swing.KeyStroke;
 import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.event.EventListenerList;
 
 import net.miginfocom.swing.MigLayout;
 import thredds.catalog.DatasetFilter;
@@ -83,6 +82,7 @@ import java.awt.Rectangle;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
+import org.apache.log4j.Logger;
 
 /**
  * A Swing widget for THREDDS clients to access and choose from Dataset
@@ -127,7 +127,6 @@ public class ASACatalogChooser extends JPanel {
 
   private static final String HDIVIDER = "HSplit_Divider";
   private ucar.util.prefs.PreferencesExt prefs;
-  private EventListenerList listenerList = new EventListenerList();
   private String eventType = null;
   // ui
   private ComboBox catListBox;
@@ -156,6 +155,8 @@ public class ASACatalogChooser extends JPanel {
   private JButton btnERDDAP;
   private JTabbedPane layers;
   private JPanel topPanel;
+  private static Logger logger = Logger.getLogger(ASACatalogChooser.class);
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log." + ASACatalogChooser.class.getName());
 
   /**
    * Constructor, with control over whether a comboBox of previous catalogs is
@@ -204,7 +205,7 @@ public class ASACatalogChooser extends JPanel {
         ErddapDataset erd;
         // GRIDDAP
         if (evt.getPropertyName().equals("griddap")) {
-          erd = (ErddapDataset)evt.getNewValue();
+          erd = (ErddapDataset) evt.getNewValue();
           try {
             daDataset = NetcdfDataset.openDataset(erd.getGriddap());
             daDataset.setTitle(erd.getTitle());
@@ -215,14 +216,14 @@ public class ASACatalogChooser extends JPanel {
           } catch (IOException ex) {
             JOptionPane.showMessageDialog(odapInterface.getMainFrame(), "Cannot find the file\n\""
                     + erd.getGriddap() + "\"" + "\n\nPlease check the name and try again.");
-            System.err.println("OI:directAccess: Invalid filename");
-            ex.printStackTrace();
+            logger.error("OI:directAccess: Invalid filename", ex);
+            guiLogger.error("OI:directAccess: Invalid filename", ex);
           }
         } else if (evt.getPropertyName().equals("tabledap")) {
-          erd = (ErddapDataset)evt.getNewValue();
+          erd = (ErddapDataset) evt.getNewValue();
           odapInterface.openTabledap(erd);
         }
-        
+
         setCursor(Cursor.getDefaultCursor());
       }
     });
@@ -230,6 +231,7 @@ public class ASACatalogChooser extends JPanel {
     layers = new JTabbedPane();
     layers.setUI(new BasicTabbedPaneUI() {
       // Hides the tabs
+
       @Override
       protected void paintTab(Graphics g, int tabPlacement, Rectangle[] rects, int tabIndex, Rectangle iconRect, Rectangle textRect) {
         //super.paintTab(g, tabPlacement, rects, tabIndex, iconRect, textRect);
@@ -262,12 +264,14 @@ public class ASACatalogChooser extends JPanel {
         try {
           dataUrl = daListBox.getSelectedItem().toString();
 
-          if (dataUrl == null | dataUrl.equals("")) {
+          if (dataUrl == null | dataUrl.isEmpty()) {
             return;
           }// cancel clicked
 
-          System.err.println("Dataset Url: " + dataUrl);
-          System.err.println("Retrieving data...");
+          logger.info("Dataset Url: " + dataUrl);
+          logger.info("Retrieving data...");
+          guiLogger.info("Dataset Url: " + dataUrl);
+          guiLogger.info("Retrieving data...");
 
           daDataset = NetcdfDataset.openDataset(dataUrl);
           daDataset.setTitle(dataUrl.substring(dataUrl.lastIndexOf(File.separator) + 1));
@@ -279,8 +283,8 @@ public class ASACatalogChooser extends JPanel {
         } catch (IOException ex) {
           JOptionPane.showMessageDialog(odapInterface.getMainFrame(), "Cannot find the file\n\""
                   + dataUrl + "\"" + "\n\nPlease check the name and try again.");
-          System.err.println("OI:directAccess: Invalid filename");
-          ex.printStackTrace();
+          logger.error("OI:directAccess: Invalid filename", ex);
+          guiLogger.error("OI:directAccess: Invalid filename", ex);
         }
       }
     };
@@ -299,6 +303,7 @@ public class ASACatalogChooser extends JPanel {
 
         try {
           javax.swing.SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
               final JFrame frame = new JFrame("Get Capabilities");
               frame.setLayout(new MigLayout("fill"));
@@ -321,7 +326,7 @@ public class ASACatalogChooser extends JPanel {
                     frame.setVisible(false);
                     frame.dispose();
                     myData.getRequest().setHomeDir(odapInterface.getHomeDir());
-                    odapInterface.openSOSDataset(myData,(SwingWorker)e.getOldValue());
+                    odapInterface.openSOSDataset(myData, (SwingWorker) e.getOldValue());
                   }
                 }
               });
@@ -332,8 +337,7 @@ public class ASACatalogChooser extends JPanel {
               frame.setVisible(true);
             }
           });
-        } catch(Exception e) {
-
+        } catch (Exception e) {
         }
       }
     });
@@ -349,6 +353,7 @@ public class ASACatalogChooser extends JPanel {
 
         try {
           javax.swing.SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
               final JFrame frame = new JFrame("Get Datasets from ERDDAP");
               frame.setLayout(new MigLayout("fill"));
@@ -377,8 +382,7 @@ public class ASACatalogChooser extends JPanel {
               frame.setVisible(true);
             }
           });
-        } catch(Exception e) {
-
+        } catch (Exception e) {
         }
       }
     });
@@ -598,7 +602,7 @@ public class ASACatalogChooser extends JPanel {
 
       public void propertyChange(java.beans.PropertyChangeEvent e) {
         if (debugEvents) {
-          System.err.println("CatalogChooser propertyChange name=" + e.getPropertyName() + "=");
+          logger.info("CatalogChooser propertyChange name=" + e.getPropertyName() + "=");
         }
 
         if (e.getPropertyName().equals("Catalog")) {
@@ -644,7 +648,8 @@ public class ASACatalogChooser extends JPanel {
         if (e.getPropertyName().equals("datasetURL")) {
           String datasetURL = (String) e.getNewValue();
           if (debugEvents) {
-            System.err.println("***datasetURL= " + datasetURL);
+            logger.info("***datasetURL= " + datasetURL);
+            guiLogger.info("***datasetURL= " + datasetURL);
           }
           InvDataset dataset = catalogTree.getSelectedDataset();
 
@@ -654,7 +659,8 @@ public class ASACatalogChooser extends JPanel {
         } else if (e.getPropertyName().equals("catrefURL")) {
           String urlString = (String) e.getNewValue();
           if (debugEvents) {
-            System.err.println("***catrefURL= " + urlString);
+            logger.info("***catrefURL= " + urlString);
+            guiLogger.info("***catrefURL= " + urlString);
           }
           catalogTree.setCatalog(urlString.trim());
         }
@@ -673,21 +679,16 @@ public class ASACatalogChooser extends JPanel {
       public void actionPerformed(ActionEvent evt) {
         eventType = "Dataset";
         try {
-          // System.err.println("ASACatChoose: Before acceptSelected(): "
-          // + System.currentTimeMillis());
           catalogTree.acceptSelected();
-          // System.err.println("ASACatChoose: After acceptSelected(): "
-          // + System.currentTimeMillis());
         } catch (Throwable t) {
-          t.printStackTrace();
-          // JOptionPane.showMessageDialog(ASACatalogChooser.this,
-          // "ERROR "+t.getMessage());
+          logger.error("Exception", t);
+          guiLogger.error("Exception", t);
         } finally {
           eventType = null;
         }
       }
     };
-    
+
     ActionListener cursorAl = BusyCursorActions.createListener(odapInterface.getMainFrame(), al2);
     acceptButton.addActionListener(cursorAl);
 
@@ -747,6 +748,7 @@ public class ASACatalogChooser extends JPanel {
    * <li>propertyName = "catrefURL", getNewValue() = catref URL was chosen.
    * </ul>
    */
+  @Override
   public void addPropertyChangeListener(PropertyChangeListener l) {
     listenerList.add(PropertyChangeListener.class, l);
   }
@@ -754,6 +756,7 @@ public class ASACatalogChooser extends JPanel {
   /**
    * Remove a PropertyChangeEvent Listener.
    */
+  @Override
   public void removePropertyChangeListener(PropertyChangeListener l) {
     listenerList.remove(PropertyChangeListener.class, l);
   }
@@ -765,7 +768,6 @@ public class ASACatalogChooser extends JPanel {
   }
 
   private void firePropertyChangeEvent(PropertyChangeEvent event) {
-    // System.err.println("catchoose firePropertyChangeEvent "+event);
 
     // Process the listeners last to first
     Object[] listeners = listenerList.getListenerList();
@@ -904,7 +906,8 @@ public class ASACatalogChooser extends JPanel {
     sbuff.setLength(20000);
     InvDatasetImpl.writeHtmlDescription(sbuff, ds, true, false, datasetEvents, catrefEvents);
     if (showHTML) {
-      System.err.println("HTML=\n" + sbuff);
+      logger.info("HTML=\n" + sbuff);
+      guiLogger.info("HTML=\n" + sbuff);
     }
     catalogHtmlViewer.setContent(ds.getName(), sbuff.toString());
   }
@@ -1024,5 +1027,4 @@ public class ASACatalogChooser extends JPanel {
       pack();
     }
   }
-
 }

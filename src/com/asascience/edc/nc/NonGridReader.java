@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.apache.log4j.Logger;
 
 import ucar.ma2.Array;
 import ucar.ma2.IndexIterator;
@@ -38,6 +39,8 @@ public class NonGridReader extends NcReaderBase {
   private Variable xVar = null;
   private Variable yVar = null;
   private Variable zVar = null;
+  private static Logger logger = Logger.getLogger(NonGridReader.class);
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log." + NonGridReader.class.getName());
 
   /**
    * Creates a new instance of NonGridReader
@@ -56,25 +59,10 @@ public class NonGridReader extends NcReaderBase {
       setUnlimDim(ncFile.getUnlimitedDimension());
       setDims(ncFile.getDimensions());
       setVars(ncFile.getVariables());
-
-      // System.err.println("Unlimited Dimension:");
-      // if(unlimDim != null){
-      // System.err.println("  " + unlimDim.getName() + ": " +
-      // unlimDim.getLength());
-      // }else{
-      // System.err.println("  null");
-      // }
-      // System.err.println("Dimensions:");
-      // for(Dimension d : getDims()){
-      // System.err.println("  " + d.getName() + ": " + d.getLength());
-      // }
-      // System.err.println("Variables:");
-      // for(Variable v : getVars()){
-      // System.err.println("  " + v.getName() + ": " + v.getSize());
-      // }
       return NcReaderBase.INIT_OK;
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
+      guiLogger.error("Exception", ex);
     }
     return NcReaderBase.UNDEFINED_ERROR;
   }
@@ -92,9 +80,11 @@ public class NonGridReader extends NcReaderBase {
 
       return ret;
     } catch (IOException ex) {
-      ex.printStackTrace();
+      logger.error("IOException", ex);
+      guiLogger.error("IOException", ex);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
+      guiLogger.error("Exception", ex);
     }
 
     return Double.NaN;
@@ -113,11 +103,14 @@ public class NonGridReader extends NcReaderBase {
 
       return ret;
     } catch (IOException ex) {
-      ex.printStackTrace();
+      logger.error("IOException", ex);
+      guiLogger.error("IOException", ex);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
+      guiLogger.error("Exception", ex);
     }
-    System.err.println("findMaximum: didn't hit \"ret\"");
+    logger.warn("findMaximum: didn't hit \"ret\"");
+    guiLogger.warn("findMaximum: didn't hit \"ret\"");
     return Double.NaN;
   }
 
@@ -128,16 +121,13 @@ public class NonGridReader extends NcReaderBase {
       xMax = findMaximum(xVar);
       yMin = findMinimum(yVar);
       yMax = findMaximum(yVar);
-      // System.err.println("xMin="+xMin);
-      // System.err.println("xMax="+xMax);
-      // System.err.println("yMin="+yMin);
-      // System.err.println("yMax="+yMax);
 
       bounds = new LatLonRect(new LatLonPointImpl(yMin, xMin), new LatLonPointImpl(yMax, xMax));
 
       return true;
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
+      guiLogger.error("Exception", ex);
     }
     return false;
   }
@@ -160,7 +150,8 @@ public class NonGridReader extends NcReaderBase {
 
       return true;
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
+      guiLogger.error("Exception", ex);
     }
     return false;
   }
@@ -188,10 +179,12 @@ public class NonGridReader extends NcReaderBase {
       } else {
         setHasTime(false);
         ncCons.setTimeDim("null");
-        System.err.println("Time variable is null");
+        logger.warn("Time variable is null");
+        guiLogger.warn("Time variable is null");
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
+      guiLogger.error("Exception", ex);
     }
   }
 

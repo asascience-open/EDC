@@ -13,18 +13,18 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import org.apache.log4j.Logger;
 
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
-
 
 /**
  * 
  * @author Kyle
  */
 public class CsvProperties {
-  
+
   private ArrayList<String> timesteps;
   private ArrayList<String> variableHeaders;
   private String latHeader;
@@ -34,6 +34,7 @@ public class CsvProperties {
   private String path;
   private String suffix;
   private Document outDoc;
+  private static Logger logger = Logger.getLogger(Configuration.class);
 
   public CsvProperties() {
     timesteps = new ArrayList<String>();
@@ -61,13 +62,12 @@ public class CsvProperties {
       File xmlFile = new File(FileSaveUtils.getFilePathNoSuffix(path) + ".xml");
       if (xmlFile.exists()) {
         if (!xmlFile.delete()) {
-          System.err.println("CsvProperties.writeFile: Could not delete file \"" + xmlFile.getAbsolutePath()
-                  + "\"");
+          logger.warn("CsvProperties.writeFile: Could not delete file \"" + xmlFile.getAbsolutePath() + "\"");
         }
       }
       createXml();
       Element root = outDoc.getRootElement();
-      
+
       // Populate template
       for (String s : timesteps) {
         root.getChild("timesteps").addContent(new Element("timestep").setText(s));
@@ -76,7 +76,7 @@ public class CsvProperties {
         root.getChild("time_start").addContent(new Element("value").setText(timesteps.get(0)));
         root.getChild("time_end").addContent(new Element("value").setText(timesteps.get(timesteps.size() - 1)));
       }
-      
+
       for (String s : variableHeaders) {
         root.getChild("variables").addContent(new Element("variable").setText(s));
       }
@@ -91,10 +91,10 @@ public class CsvProperties {
       try {
         out.output(outDoc, new FileOutputStream(xmlFile));
       } catch (IOException ex) {
-        ex.printStackTrace();
+        logger.error("IOException", ex);
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
     }
   }
 
@@ -105,7 +105,7 @@ public class CsvProperties {
   public void setSuffix(String suffix) {
     this.suffix = suffix;
   }
-  
+
   public void setIdHeader(String id) {
     this.idHeader = id;
   }
@@ -121,7 +121,7 @@ public class CsvProperties {
   public void setTimeHeader(String time) {
     this.timeHeader = time;
   }
-  
+
   public void setTimesteps(ArrayList<String> timesteps) {
     this.timesteps = timesteps;
   }

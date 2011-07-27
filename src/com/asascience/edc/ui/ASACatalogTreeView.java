@@ -20,7 +20,6 @@
  */
 package com.asascience.edc.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -58,6 +57,7 @@ import thredds.catalog.InvDatasetImpl;
 import thredds.catalog.InvDatasetScan;
 import thredds.catalog.InvDocumentation;
 import thredds.catalog.ServiceType;
+import thredds.ui.catalog.ThreddsDatasetChooser;
 import ucar.nc2.constants.FeatureType;
 import ucar.nc2.ui.widget.BAMutil;
 
@@ -132,6 +132,7 @@ public class ASACatalogTreeView extends JPanel implements CatalogSetCallback {
 
     tree.addMouseListener(new MouseAdapter() {
 
+      @Override
       public void mousePressed(MouseEvent e) {
         if (!SwingUtilities.isLeftMouseButton(e)) {
           return; // left button only
@@ -224,6 +225,7 @@ public class ASACatalogTreeView extends JPanel implements CatalogSetCallback {
    * InvDataset added.
    * </ul>
    */
+  @Override
   public void addPropertyChangeListener(PropertyChangeListener l) {
     listenerList.add(PropertyChangeListener.class, l);
   }
@@ -231,6 +233,7 @@ public class ASACatalogTreeView extends JPanel implements CatalogSetCallback {
   /**
    * Remove a PropertyChangeEvent Listener.
    */
+  @Override
   public void removePropertyChangeListener(PropertyChangeListener l) {
     listenerList.remove(PropertyChangeListener.class, l);
   }
@@ -487,7 +490,6 @@ public class ASACatalogTreeView extends JPanel implements CatalogSetCallback {
     StringBuilder buff = new StringBuilder();
     if (!catalog.check(buff)) {
       javax.swing.JOptionPane.showMessageDialog(this, "Invalid catalog <" + catalogName + ">\n" + buff.toString());
-      System.err.println("Invalid catalog <" + catalogName + ">\n" + buff.toString());
       tree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(null, false)));
       return;
     }
@@ -506,7 +508,6 @@ public class ASACatalogTreeView extends JPanel implements CatalogSetCallback {
       model = new InvCatalogTreeModel((InvDatasetImpl) catalog.getDataset());
       tree.setModel(model);
     } catch (Exception e) {
-      e.printStackTrace();
       javax.swing.JOptionPane.showMessageDialog(this, e.getMessage());
       tree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(null, false)));
       return;
@@ -667,6 +668,7 @@ public class ASACatalogTreeView extends JPanel implements CatalogSetCallback {
       return !ds.hasNestedDatasets();
     }
 
+    @Override
     public String toString() {
       return ds.getName();
     }
@@ -711,6 +713,7 @@ public class ASACatalogTreeView extends JPanel implements CatalogSetCallback {
       dsScanIcon = BAMutil.getIcon("DatasetScan", true);
     }
 
+    @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded,
             boolean leaf, int row, boolean hasFocus) {
 
@@ -757,7 +760,7 @@ public class ASACatalogTreeView extends JPanel implements CatalogSetCallback {
       if (docs == null) {
         return null;
       }
-      StringBuffer sbuff = new StringBuffer(1000);
+      StringBuilder sbuff = new StringBuilder(1000);
       Iterator iter = docs.iterator();
       while (iter.hasNext()) {
         InvDocumentation doc = (InvDocumentation) iter.next();

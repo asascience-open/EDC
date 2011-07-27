@@ -18,7 +18,6 @@ import java.util.Formatter;
 import ucar.ma2.InvalidRangeException;
 import ucar.ma2.Range;
 import ucar.nc2.NetcdfFile;
-import ucar.nc2.Variable;
 import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.dataset.CoordinateAxis1DTime;
@@ -30,6 +29,7 @@ import ucar.nc2.dt.grid.GridDataset;
 import ucar.unidata.util.Parameter;
 
 import com.asascience.edc.nc.io.NetcdfGridWriter;
+import org.apache.log4j.Logger;
 import ucar.nc2.constants.FeatureType;
 import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.util.CancelTask;
@@ -43,7 +43,8 @@ public class GridReader extends NcReaderBase {
   private GridDataset gds;
   private boolean regularSpatial;
   private List<GridDatatype> geoGrids = null;
-  private List<Variable> supplementalVars = new ArrayList();
+  private static Logger logger = Logger.getLogger(GridReader.class);
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log." + GridReader.class.getName());
 
   /**
    * Creates a new instance of GridReader
@@ -58,12 +59,9 @@ public class GridReader extends NcReaderBase {
     Formatter errlog = new Formatter();
     CancelTask cancelTask = null;
     gds = (GridDataset) FeatureDatasetFactoryManager.open(FeatureType.GRID, ncFile.getLocation(), cancelTask, errlog);
-    // RandomAccessFile raf = new RandomAccessFile(filename, "r");
-    // long len = raf.length();
-    // initialize();
 
     if (errlog.toString().length() > 0) {
-      System.err.println(errlog.toString());
+      logger.error(errlog.toString());
     }
   }
 
@@ -92,7 +90,7 @@ public class GridReader extends NcReaderBase {
     // initialize();
 
     if (errlog.toString().length() > 0) {
-      System.err.println(errlog.toString());
+      logger.error(errlog.toString());
     }
   }
 
@@ -109,7 +107,7 @@ public class GridReader extends NcReaderBase {
               || bounds.getLonMax() == bounds.getLonMin()) {
         String errString = "Invalid Dataset Bounds: ";
         errString += (bounds != null) ? bounds.toString2() : "Null Bounds";
-        System.err.println(errString);
+        logger.error(errString);
 
         return NcReaderBase.INVALID_BOUNDS;
       }
@@ -154,10 +152,8 @@ public class GridReader extends NcReaderBase {
         sbuff.append(p.toString());
         sbuff.append(" ; ");
       }
-      // System.err.println(sbuff.toString());
       // String proj = geoGrid.getProjection().getClassName();
       String proj = sbuff.toString();
-      // System.err.println("Dataset Projection: "+proj);
 
       ncCons.setProjection(proj);
       ncCons.setIsZPositive(coordSys.isZPositive());// increasing z values
@@ -168,9 +164,6 @@ public class GridReader extends NcReaderBase {
         hasTime = true;
         timeAxis = coordSys.getTimeAxis1D();
         times = timeAxis.getTimeDates();
-        // System.err.println("timeRes: " +
-        // timeAxis.getTimeResolution().getValueInSeconds());
-        // System.err.println("increment: " + timeAxis.getIncrement());
         ncCons.setStartTime(times[0]);
         ncCons.setTimeUnits(timeAxis.getUnitsString());
         // //calculate the time interval in seconds
@@ -178,51 +171,46 @@ public class GridReader extends NcReaderBase {
         // if(times.length > 1){
         // dt = (times[1].getTime() - times[0].getTime()) / 1000;
         // }
-        // System.err.println(String.valueOf(timeAxis.getTimeResolution().getValueInSeconds()));
-        // System.err.println(String.valueOf(dt));
         // ncCons.setTimeInterval(String.valueOf(dt));
         ncCons.setTimeInterval(String.valueOf(timeAxis.getTimeResolution().getValueInSeconds()));
         ncCons.setTimeDim(timeAxis.getDimensionsString());
-        // System.err.println("TimeName="+timeAxis.getName());
         ncCons.setTVar(timeAxis.getName());
       } else {
         hasTime = false;
         ncCons.setTimeDim("null");
-        System.err.println("Time Axis is null");
+        logger.error("Time Axis is null");
+        guiLogger.error("Time axis is null");
       }
       CoordinateAxis1D vert = coordSys.getVerticalAxis();
       if (vert != null) {
         ncCons.setZDim(vert.getDimensionsString());
       } else {
         ncCons.setZDim("null");
-        System.err.println("Vertical Axis is null");
+        logger.error("Vertical Axis is null");
+        guiLogger.error("Vertical Axis is null");
       }
       CoordinateAxis xAxis = coordSys.getXHorizAxis();
       if (xAxis != null) {
         ncCons.setXDim(xAxis.getDimensionsString());
       } else {
         ncCons.setXDim("null");
-        System.err.println("X Axis is null");
+        logger.error("X Axis is null");
+        guiLogger.error("X Axis is null");
       }
       CoordinateAxis yAxis = coordSys.getYHorizAxis();
       if (yAxis != null) {
         ncCons.setYDim(yAxis.getDimensionsString());
       } else {
         ncCons.setYDim("null");
-        System.err.println("Y Axis is null");
+        logger.error("Y Axis is null");
+        guiLogger.error("Y Axis is null");
       }
       return NcReaderBase.INIT_OK;
     } catch (Exception ex) {
-      System.err.println("GR:initialize:");
-      ex.printStackTrace();
+      logger.error("GR:initialize:", ex);
+      guiLogger.error("GR:initialize:", ex);
     }
     return NcReaderBase.UNDEFINED_ERROR;
-    // System.err.println(bounds.getCenterLon());
-    // System.err.println(bounds.getLatMax() + "\n" + bounds.getLonMax() +
-    // "\n" + bounds.getLatMin() + "\n" + bounds.getLonMin());
-    // System.err.println("Start Time: " + startTime.toString());
-    // System.err.println("End Time: " + endTime.toString());
-
   }
 
   //
@@ -246,7 +234,8 @@ public class GridReader extends NcReaderBase {
       return write.writeFile(outnc, gdsList, cons, null);
 
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("IO", ex);
+      guiLogger.error("IO", ex);
     }
     return -1;
   }
@@ -277,25 +266,32 @@ public class GridReader extends NcReaderBase {
         // get y & x ranges from the drawn box
         yxRanges = coordSys.getRangesFromLatLonRect(cons.getBoundingBox());
         yRange = yxRanges.get(0);
-        System.err.println("y = " + yRange.toString());
+        logger.info("y = " + yRange.toString());
+        guiLogger.info("y = " + yRange.toString());
         xRange = yxRanges.get(1);
-        System.err.println("x = " + xRange.toString());
+        logger.info("x = " + xRange.toString());
+        guiLogger.info("x = " + xRange.toString());
 
         // see what the values for those ranges are
         xaxis = (CoordinateAxis1D) coordSys.getXHorizAxis();
         yaxis = (CoordinateAxis1D) coordSys.getYHorizAxis();
 
-        System.err.println("First y: " + yaxis.getCoordValue(yRange.first()));
-        System.err.println("Last y: " + yaxis.getCoordValue(yRange.last()));
-        System.err.println("First x: " + xaxis.getCoordValue(xRange.first()));
-        System.err.println("Last y: " + xaxis.getCoordValue(xRange.last()));
+        logger.info("First y: " + yaxis.getCoordValue(yRange.first()));
+        logger.info("Last y: " + yaxis.getCoordValue(yRange.last()));
+        logger.info("First x: " + xaxis.getCoordValue(xRange.first()));
+        logger.info("Last y: " + xaxis.getCoordValue(xRange.last()));
+        guiLogger.info("First y: " + yaxis.getCoordValue(yRange.first()));
+        guiLogger.info("Last y: " + yaxis.getCoordValue(yRange.last()));
+        guiLogger.info("First x: " + xaxis.getCoordValue(xRange.first()));
+        guiLogger.info("Last y: " + xaxis.getCoordValue(xRange.last()));
 
         // get the timeRange axis and determine the range selected
         if (coordSys.hasTimeAxis1D()) {
           timeAxis = coordSys.getTimeAxis1D();
           int s = timeAxis.findTimeIndexFromDate(cons.getStartTime());
           int e = timeAxis.findTimeIndexFromDate(cons.getEndTime());
-          System.err.println("t = " + s + ":" + e + ":1");
+          logger.info("t = " + s + ":" + e + ":1");
+          guiLogger.info("t = " + s + ":" + e + ":1");
           timeRange = new Range(s, e);
         }
 
@@ -304,7 +300,6 @@ public class GridReader extends NcReaderBase {
           continue;
         }
         gridsOut.add(subgrid);
-        // System.err.println(grd.getName());
       }
 
       // write the grids to ncfiles
@@ -313,11 +308,13 @@ public class GridReader extends NcReaderBase {
           outgrid = (GeoGrid) i.next();
           outgrid.writeFile(ncFile.getTitle() + "_" + outgrid.getName() + ".nc");
         } catch (IOException ex) {
-          ex.printStackTrace();
+          logger.error("IO", ex);
+          guiLogger.error("IO", ex);
         }
       }
     } catch (InvalidRangeException ex) {
-      ex.printStackTrace();
+      logger.error("IO", ex);
+      guiLogger.error("IO", ex);
     }
   }
 

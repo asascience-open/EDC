@@ -40,6 +40,7 @@ import ucar.nc2.dt.grid.GeoGrid;
 import com.asascience.edc.nc.NetcdfConstraints;
 import com.asascience.ui.CheckBoxList;
 import com.asascience.utilities.Utils;
+import org.apache.log4j.Logger;
 
 /**
  * 
@@ -67,6 +68,7 @@ public class OilmapVariableSelectionPanel extends VariableSelectionPanel {
   private boolean rbEnableState;
   private boolean ckEnableState;
   private boolean cbEnableState;
+  private static Logger logger = Logger.getLogger(OilmapVariableSelectionPanel.class);
 
   public OilmapVariableSelectionPanel(NetcdfConstraints cons, DapWorldwindProcessPanel parent) {
     this("", cons, parent);
@@ -283,7 +285,7 @@ public class OilmapVariableSelectionPanel extends VariableSelectionPanel {
     btnCheckVals.addActionListener(new ActionListener() {
 
       public void actionPerformed(ActionEvent e) {
-        System.err.println("Surf=" + getSurfaceLevel() + "\nU=" + getUVar() + "\nV=" + getVVar());
+        logger.info("Surf=" + getSurfaceLevel() + "\nU=" + getUVar() + "\nV=" + getVVar());
       }
     });
     // optPanel.add(btnCheckVals);
@@ -394,11 +396,11 @@ public class OilmapVariableSelectionPanel extends VariableSelectionPanel {
       gridsCompatible = true;
       return true;
     } else if (!vertOK) {
-      System.err.println("Vertical axes not equal: " + vertComp.toString());
+      logger.warn("Vertical axes not equal: " + vertComp.toString());
     } else if (!timeOK) {
-      System.err.println("Temporal axes not equal: " + timeComp.toString());
+      logger.warn("Temporal axes not equal: " + timeComp.toString());
     } else {
-      System.err.println("Both axes not equal: " + vertComp.toString() + " : " + timeComp.toString());
+      logger.warn("Both axes not equal: " + vertComp.toString() + " : " + timeComp.toString());
     }
 
     constraints.setZDim("null");
@@ -468,8 +470,6 @@ public class OilmapVariableSelectionPanel extends VariableSelectionPanel {
   class CheckBoxPropertyListener implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent e) {
-
-      // System.err.println("PropChange " + e.getPropertyName());
 
       String propName = e.getPropertyName();
       String vName = (String) e.getOldValue();

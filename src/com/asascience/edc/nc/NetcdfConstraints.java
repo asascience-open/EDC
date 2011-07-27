@@ -19,6 +19,7 @@ import ucar.unidata.geoloc.LatLonPointImpl;
 import ucar.unidata.geoloc.LatLonRect;
 
 import com.asascience.openmap.utilities.GeoConstraints;
+import org.apache.log4j.Logger;
 
 /**
  * 
@@ -30,10 +31,6 @@ public class NetcdfConstraints extends GeoConstraints implements PropertyChangeL
    * Utility field used by bound properties.
    */
   private PropertyChangeSupport propertyChangeSupport;
-  // private float northernExtent = 0f;
-  // private float southernExtent = 0f;
-  // private float westernExtent = 0f;
-  // private float easternExtent = 0f;
   private String yDim = "";
   private String xDim = "";
   private String zDim = "";
@@ -58,6 +55,8 @@ public class NetcdfConstraints extends GeoConstraints implements PropertyChangeL
   private int stride_t = 1;
   private List<String> selVars = new ArrayList<String>();
   private String tVar = "";
+  private static Logger logger = Logger.getLogger(NetcdfConstraints.class);
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log." + NetcdfConstraints.class.getName());
 
   /** Creates a new instance of NetcdfConstraints */
   public NetcdfConstraints() {
@@ -76,7 +75,8 @@ public class NetcdfConstraints extends GeoConstraints implements PropertyChangeL
     try {
       selVars.add(var);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
+      guiLogger.error("Exception", ex);
     }
   }
 
@@ -89,7 +89,8 @@ public class NetcdfConstraints extends GeoConstraints implements PropertyChangeL
     try {
       selVars.remove(var);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
+      guiLogger.error("Exception", ex);
     }
   }
 
@@ -98,7 +99,6 @@ public class NetcdfConstraints extends GeoConstraints implements PropertyChangeL
    */
   public void resetVariables() {
     selVars = new ArrayList<String>();
-    // tVar = "";
   }
 
   /**
@@ -180,58 +180,6 @@ public class NetcdfConstraints extends GeoConstraints implements PropertyChangeL
     return llr;
   }
 
-  // public float getNorthernExtent() {
-  // return this.northernExtent;
-  // }
-  // public void setNorthernExtent(float northernExtent) {
-  // // System.err.println("NetcdfConstraints:setNorthernExtent: " +
-  // northernExtent);
-  // float oldNorthernExtent = this.northernExtent;
-  // this.northernExtent = northernExtent;
-  // // propertyChangeSupport.firePropertyChange ("northernExtent", new Float
-  // (oldNorthernExtent), new Float (northernExtent));
-  // }
-  //
-  //
-  // public float getSouthernExtent() {
-  // return this.southernExtent;
-  // }
-  // public void setSouthernExtent(float southernExtent) {
-  // float oldSouthernExtent = this.southernExtent;
-  // this.southernExtent = southernExtent;
-  // // propertyChangeSupport.firePropertyChange ("southernExtent", new Float
-  // (oldSouthernExtent), new Float (southernExtent));
-  // }
-  //
-  //
-  // public float getWesternExtent() {
-  // return this.westernExtent;
-  // }
-  // public void setWesternExtent(float westernExtent) {
-  // float oldWesternExtent = this.westernExtent;
-  // this.westernExtent = westernExtent;
-  // // propertyChangeSupport.firePropertyChange ("westernExtent", new Float
-  // (oldWesternExtent), new Float (westernExtent));
-  // }
-  //
-  //
-  // public float getEasthernExtent() {
-  // return this.easternExtent;
-  // }
-  // public void setEasthernExtent(float easternExtent) {
-  // float oldEasthernExtent = this.easternExtent;
-  // this.easternExtent = easternExtent;
-  // // propertyChangeSupport.firePropertyChange ("easternExtent", new Float
-  // (oldEasthernExtent), new Float (easternExtent));
-  // }
-  // public void addPropertyChangeListener(java.beans.PropertyChangeListener
-  // l) {
-  // propertyChangeSupport.addPropertyChangeListener(l);
-  // }
-  // public void
-  // removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-  // propertyChangeSupport.removePropertyChangeListener(l);
-  // }
   public String getTimeDim() {
     return timeDim;
   }
@@ -297,13 +245,11 @@ public class NetcdfConstraints extends GeoConstraints implements PropertyChangeL
   }
 
   public String getTVar() {
-    // System.err.println("get:"+this.tVar);
     return tVar;
   }
 
   public void setTVar(String tVar) {
     this.tVar = tVar;
-    // System.err.println("set:"+this.tVar);
   }
 
   public String getTimeInterval() {

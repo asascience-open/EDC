@@ -321,8 +321,6 @@ public class EsriVariableSelectionPanel extends VariableSelectionPanel {
 
     public void propertyChange(PropertyChangeEvent e) {
 
-      // System.err.println("PropChange " + e.getPropertyName());
-
       String propName = e.getPropertyName();
       String vName = (String) e.getOldValue();
 
@@ -335,7 +333,6 @@ public class EsriVariableSelectionPanel extends VariableSelectionPanel {
 
       if (propName.equals(CheckBoxList.ADDED)) {
         // if the raster tab is selected
-        // System.err.println("adding a var");
 
         if (isMakeRaster()) {
           // //take care of the feature cbboxes - now taken care of
@@ -351,10 +348,7 @@ public class EsriVariableSelectionPanel extends VariableSelectionPanel {
           ActionListener[] als = cbBandDim.getActionListeners();
           for (int i = als.length - 1; i >= 0; i--) {
             cbBandDim.removeActionListener(als[i]);
-            // System.err.println("AL removed");
           }
-
-          // System.err.println("cbALs="+cbBandDim.getActionListeners().length);
 
           cbTrimBy.removeAllItems();
           cbTrimBy.setEnabled(false);
@@ -364,8 +358,6 @@ public class EsriVariableSelectionPanel extends VariableSelectionPanel {
           getCblVars().deselectAllButOne(((JCheckBox) e.getNewValue()));
 
           sz = getCblVars().getSelItemsSize();
-          // System.err.println("cblVars size:" +
-          // cblVars.getSelectedItems().size());
 
           // get the grid for the selected variable
           // GeoGrid grid = parentSpp.getGridByName(vName);
@@ -444,12 +436,8 @@ public class EsriVariableSelectionPanel extends VariableSelectionPanel {
                   lblTrimSel.setToolTipText(inTDesc);
                   lblBandDim.setToolTipText(inZDesc);
                 }
-                // System.err.println("banddimset");
                 constraints.setBandDim(bDim);
                 constraints.setTrimByDim(trimByDim);
-
-                // System.err.println(trimByDim);
-                // System.err.println(bandDim);
               }
               // }else{
               // cbTrimBy.setEnabled(false);
@@ -547,7 +535,6 @@ public class EsriVariableSelectionPanel extends VariableSelectionPanel {
           }
         }
       } else if (propName.equals(CheckBoxList.REMOVED)) {
-        // System.err.println("removing a var");
         cbUComp.removeItem(vName);
         cbVComp.removeItem(vName);
         if (isMakeRaster()) {
@@ -612,7 +599,6 @@ public class EsriVariableSelectionPanel extends VariableSelectionPanel {
       // sufficient variables
       // selected for the output type
       boolean isEnabled = true;
-      // System.err.println("enabling");
       if (isMakeRaster()) {
         if (getCblVars().getSelItemsSize() != 1) {
           isEnabled = false;

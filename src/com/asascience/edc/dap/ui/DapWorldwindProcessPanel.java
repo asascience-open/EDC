@@ -67,6 +67,7 @@ import com.asascience.utilities.Utils;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.Random;
+import org.apache.log4j.Logger;
 
 /**
  * 
@@ -95,6 +96,8 @@ public class DapWorldwindProcessPanel extends JPanel {
   private JLabel lblDateIncrement;
   private JLabel lblNumDatesSelected;
   private JLabel lblNcName;
+  private static Logger logger = Logger.getLogger(Configuration.class);
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log." + DapWorldwindProcessPanel.class.getName());
 
   /**
    * Creates a new instance of SubsetProcessPanel
@@ -188,11 +191,9 @@ public class DapWorldwindProcessPanel extends JPanel {
           break;
       }
     } catch (IOException ex) {
-      System.err.println("SPP:initData:");
-      ex.printStackTrace();
+      logger.error("SPP:initData:", ex);
     } catch (Exception ex) {
-      System.err.println("SPP:initData:");
-      ex.printStackTrace();
+      logger.error("SPP:initData:", ex);
     }
     return false;
   }
@@ -332,7 +333,7 @@ public class DapWorldwindProcessPanel extends JPanel {
       add(processPanel, "spanx 3, growx");
 
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
     }
   }
 
@@ -454,7 +455,7 @@ public class DapWorldwindProcessPanel extends JPanel {
       }
 
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
     }
 
     return false;
@@ -509,7 +510,7 @@ public class DapWorldwindProcessPanel extends JPanel {
       ret.delete(0, ret.length() - 1);
       ret.append("Error: There was an error checking the dataset for compatibility.\n\n"
               + "See \"edcsysout.log\" for more details.");
-      ex.printStackTrace();
+      logger.warn("Datasets not compatible", ex);
     }
     return ret.toString();
   }
@@ -526,22 +527,30 @@ public class DapWorldwindProcessPanel extends JPanel {
           c1 = (CoordinateAxis) coords1.get(i);
           c2 = (CoordinateAxis) coords2.get(i);
           if (c1.getAxisType() != c2.getAxisType()) {
-            System.err.println("Unequal coordinate axis type: name=" + c1.getName() + ": c1="
+            logger.warn("Unequal coordinate axis type: name=" + c1.getName() + ": c1="
+                    + c1.getAxisType() + " c2=" + c2.getAxisType());
+            guiLogger.warn("Unequal coordinate axis type: name=" + c1.getName() + ": c1="
                     + c1.getAxisType() + " c2=" + c2.getAxisType());
             return false;
           }
           if (c1.getMinValue() != c2.getMinValue()) {
-            System.err.println("Unequal coordinate axis minimum value: name=" + c1.getName() + ": c1="
+            logger.warn("Unequal coordinate axis minimum value: name=" + c1.getName() + ": c1="
+                    + c1.getMinValue() + " c2=" + c2.getMinValue());
+            guiLogger.warn("Unequal coordinate axis minimum value: name=" + c1.getName() + ": c1="
                     + c1.getMinValue() + " c2=" + c2.getMinValue());
             return false;
           }
           if (c1.getMaxValue() != c2.getMaxValue()) {
-            System.err.println("Unequal coordinate axis maximum value: name=" + c1.getName() + ": c1="
+            logger.warn("Unequal coordinate axis maximum value: name=" + c1.getName() + ": c1="
+                    + c1.getMaxValue() + " c2=" + c2.getMaxValue());
+            guiLogger.warn("Unequal coordinate axis maximum value: name=" + c1.getName() + ": c1="
                     + c1.getMaxValue() + " c2=" + c2.getMaxValue());
             return false;
           }
           if (c1.getDataType() != c2.getDataType()) {
-            System.err.println("Unequal coordinate axis dataType: name=" + c1.getName() + ": c1="
+            logger.warn("Unequal coordinate axis dataType: name=" + c1.getName() + ": c1="
+                    + c1.getDataType() + " c2=" + c2.getDataType());
+            guiLogger.warn("Unequal coordinate axis dataType: name=" + c1.getName() + ": c1="
                     + c1.getDataType() + " c2=" + c2.getDataType());
             return false;
           }
@@ -550,10 +559,11 @@ public class DapWorldwindProcessPanel extends JPanel {
         return true;// only triggered if all of the above are equal for
         // all axes
       } else {
-        System.err.println("Unequal number of coordinate axes: c1=" + coords1.size() + " c2=" + coords2.size());
+        logger.warn("Unequal number of coordinate axes: c1=" + coords1.size() + " c2=" + coords2.size());
+        guiLogger.warn("Unequal number of coordinate axes: c1=" + coords1.size() + " c2=" + coords2.size());
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Exception", ex);
     }
 
     return false;
@@ -649,7 +659,8 @@ public class DapWorldwindProcessPanel extends JPanel {
     public void propertyChange(PropertyChangeEvent evt) {
       if (evt.getPropertyName().equals("close")) {
         if (runOK == NetcdfGridWriter.SUCCESSFUL_PROCESS) {
-          System.err.println("Processing completed successfully: \"" + ncPath + "\"");
+          logger.info("Processing completed successfully: \"" + ncPath + "\"");
+          guiLogger.info("Processing completed successfully: \"" + ncPath + "\"");
           if (Configuration.CLOSE_AFTER_PROCESSING) {
             parent.formWindowClose(ncPath.replace(".nc", ".xml"));
           } else {
@@ -657,13 +668,15 @@ public class DapWorldwindProcessPanel extends JPanel {
           }
 
         } else if (runOK == NetcdfGridWriter.UNDEFINED_ERROR) {
-          System.err.println("Undefined error when processing.");
+          logger.warn("Undefined error when processing.");
+          guiLogger.warn("Undefined error when processing.");
           JOptionPane.showMessageDialog(mainFrame, "There was a problem extracting the data.\n"
                   + "Please try again or refer to the \"edcsysout.log\" for more details.", "Processing Error",
                   JOptionPane.ERROR_MESSAGE);
         } else if (runOK == NetcdfGridWriter.CANCELLED_PROCESS) {
           // TODO: processing cancelled - perform actions to "reset"
-          System.err.println("Processing cancelled by user.");
+          logger.warn("Processing cancelled by user.");
+          guiLogger.warn("Processing cancelled by user.");
           File f = new File(ncOutPath);
           if (f.exists()) {
             f.delete();
@@ -721,7 +734,6 @@ public class DapWorldwindProcessPanel extends JPanel {
         // int rng = endSlider.getValue() - startSlider.getValue();
         if (ncReader.isHasTime()) {
           double rng = calcNumTimesteps();
-          // System.err.println("timesteps="+rng);
           if (rng >= 100) {
             if (JOptionPane.showConfirmDialog(mainFrame, "The temporal subset has not been indicated"
                     + " or is larger than 100 timesteps.\n"
@@ -852,7 +864,6 @@ public class DapWorldwindProcessPanel extends JPanel {
         // to display
         firePropertyChange("note", null, "Initializing...");
         Thread.sleep(500);
-        // System.err.println("StartRun: " +
         // constraints.getBoundingBox().toString2());
         constraints.resetVariables();
         for (String s : selPanel.getCblVars().getSelectedItems()) {
@@ -974,20 +985,13 @@ public class DapWorldwindProcessPanel extends JPanel {
         });
         fm.startMonitor();
 
-        // firePropertyChange("note", null, "Writing...");
-        // Thread.sleep(250);
-        System.err.println("Processing data...");
-        // is it necessary to go through the reader??
-        // runOK = ncReader.extractData2(constraints, ncPath, gdsList,
-        // this.getPropertyChangeSupport());
+        guiLogger.info("Processing data...");
         NetcdfGridWriter writer = new NetcdfGridWriter(this.getPropertyChangeSupport());
         runOK = writer.writeFile(ncPath, gdsList, constraints, type);
 
         fm.stopMonitor();
 
-        // System.err.println("runOK = " + runOK);
-        // only write the props file if the nc file was generated
-        // properly
+        // only write the props file if the nc file was generated properly
         if (runOK == NetcdfGridWriter.SUCCESSFUL_PROCESS) {
           firePropertyChange("note", null, "Writing properties file...");
           Thread.sleep(250);
@@ -1022,8 +1026,7 @@ public class DapWorldwindProcessPanel extends JPanel {
         }
 
       } catch (Exception ex) {
-        System.err.println("PD:run:");
-        ex.printStackTrace();
+        logger.error("PD:run:", ex);
       }
 
       firePropertyChange("close", false, true);

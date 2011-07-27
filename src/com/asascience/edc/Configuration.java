@@ -12,6 +12,7 @@
 package com.asascience.edc;
 
 import java.io.File;
+import org.apache.log4j.Logger;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -24,12 +25,12 @@ import org.jdom.input.SAXBuilder;
 public class Configuration {
 
   public static int DISPLAY_TYPE = DisplayType.GENERAL;
-  public static boolean OUTPUT_TO_FILE = true;
   public static boolean CLOSE_AFTER_PROCESSING = true;
   public static boolean MAKE_POINTER = true;
   public static String OUTPUT_LOCATION = "";
   public static boolean ALLOW_FILE_REPLACEMENT = false;
   public static boolean USE_VARIABLE_NAME_FOR_OUTPUT = true;
+  private static Logger logger = Logger.getLogger(Configuration.class);
 
   public static boolean initialize(String xmlfile) {
     try {
@@ -44,9 +45,6 @@ public class Configuration {
 
       if (root.getChild("DISPLAY_TYPE") != null) {
         DISPLAY_TYPE = Integer.parseInt(root.getChildText("DISPLAY_TYPE"));
-      }
-      if (root.getChild("OUTPUT_TO_FILE") != null) {
-        OUTPUT_TO_FILE = Boolean.parseBoolean(root.getChildText("OUTPUT_TO_FILE"));
       }
       if (root.getChild("CLOSE_AFTER_PROCESSING") != null) {
         CLOSE_AFTER_PROCESSING = Boolean.parseBoolean(root.getChildText("CLOSE_AFTER_PROCESSING"));
@@ -68,14 +66,13 @@ public class Configuration {
       // it is
       Configuration.checkDisplayType();
 
-      System.err.println("Configuration initialization:");
-      System.err.println("  DISPLAY_TYPE: " + DISPLAY_TYPE);
-      System.err.println("  OUTPUT_TO_FILE: " + OUTPUT_TO_FILE);
-      System.err.println("  CLOSE_AFTER_PROCESSING: " + CLOSE_AFTER_PROCESSING);
-      System.err.println("  MAKE_POINTER: " + MAKE_POINTER);
-      System.err.println("  OUTPUT_LOCATION: " + OUTPUT_LOCATION);
-      System.err.println("  ALLOW_FILE_REPLACEMENT: " + ALLOW_FILE_REPLACEMENT);
-      System.err.println();
+      logger.info("Configuration initialization:");
+      logger.info("  DISPLAY_TYPE: " + DISPLAY_TYPE);
+      logger.info("  CLOSE_AFTER_PROCESSING: " + CLOSE_AFTER_PROCESSING);
+      logger.info("  MAKE_POINTER: " + MAKE_POINTER);
+      logger.info("  OUTPUT_LOCATION: " + OUTPUT_LOCATION);
+      logger.info("  ALLOW_FILE_REPLACEMENT: " + ALLOW_FILE_REPLACEMENT);
+      logger.info("");
 
       return true;
     } catch (Exception ex) {

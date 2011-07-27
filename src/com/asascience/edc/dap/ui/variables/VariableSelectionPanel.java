@@ -223,12 +223,10 @@ public class VariableSelectionPanel extends JPanel {
   }
 
   public boolean isMakeRaster() {
-    // System.err.println("getting makeRaster: " + this.makeRaster);
     return this.makeRaster;
   }
 
   public void setMakeRaster(boolean makeRaster) {
-    // System.err.println("setting makeRaster: " + this.makeRaster);
     this.makeRaster = makeRaster;
   }
   // <editor-fold defaultstate="collapsed" desc=" Bound Properties ">

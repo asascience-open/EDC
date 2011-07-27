@@ -54,16 +54,6 @@ public class GeneralVariableSelectionPanel extends VariableSelectionPanel {
     createPanel();
 
     getCblVars().addPropertyChangeListener(new CheckBoxPropertyListener());
-    // getCblVars().addPropertyChangeListener(new PropertyChangeListener(){
-    // public void propertyChange(PropertyChangeEvent e){
-    // System.err.println("propName="+e.getPropertyName());
-    // if(getCblVars().getSelItemsSize() > 0){
-    // setProcessEnabled(true);
-    // }else{
-    // setProcessEnabled(false);
-    // }
-    // }
-    // });
 
     constraints.setTrimByIndex(-1);
     constraints.setTrimByDim("null");
