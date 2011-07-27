@@ -10,10 +10,9 @@ import com.asascience.edc.erddap.ErddapDataset;
 import com.asascience.edc.erddap.ErddapVariable;
 import com.asascience.edc.map.BoundingBoxPanel;
 import com.asascience.edc.gui.OpendapInterface;
+import com.asascience.edc.gui.jslider.JSlider2Date;
 import com.asascience.edc.map.WorldwindSelectionMap;
 import com.asascience.edc.utils.FileSaveUtils;
-import gov.noaa.pmel.swing.JSlider2Date;
-import gov.noaa.pmel.util.GeoDate;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,6 +28,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import javax.swing.JButton;
@@ -72,7 +72,7 @@ public class ErddapTabledapGui extends JPanel {
     // Panel for map, bbox, and timeslider
     JPanel mapStuff = new JPanel(new MigLayout("gap 0, fill"));
     // Panel for bbox and timeslider
-    JPanel mapControls = new JPanel(new MigLayout("gap 0, fill"));
+    JPanel mapControls = new JPanel(new MigLayout("gap 0, fillx"));
     
     if (erd.hasX() && erd.hasY()) {
       // Map
@@ -103,7 +103,7 @@ public class ErddapTabledapGui extends JPanel {
           }
         }
       });
-      mapControls.add(bboxGui, "gap 0, growy");
+      mapControls.add(bboxGui, "gap 0, growx, bottom");
       
       // Add either the sensor layer, or the data extent layer
       if (erd.hasLocations()) {
@@ -130,8 +130,7 @@ public class ErddapTabledapGui extends JPanel {
         et = new Date();
       }
       dateSlider.setRange(st,et);
-      dateSlider.setStartValue(new GeoDate(st));
-      dateSlider.setFormat("yyyy-MM-dd");
+      dateSlider.setStartDate(st);
       dateSlider.addPropertyChangeListener(new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -139,9 +138,9 @@ public class ErddapTabledapGui extends JPanel {
         }
       });
       timePanel.add(dateSlider, "gap 0, grow, center");
-      mapControls.add(timePanel, "gap 0, grow");
+      mapControls.add(timePanel, "gap 0, growx, bottom");
     }
-    mapStuff.add(mapControls, "gap 0, growx, height 180");
+    mapStuff.add(mapControls, "gap 0, growx, bottom");
     add(mapStuff, "gap 0, grow");
     
     // Panel with subsetting sliders and such
@@ -199,8 +198,9 @@ public class ErddapTabledapGui extends JPanel {
     
     // Add the Time values
     if (erd.hasTime()) {
-      constraints.add(erd.getTime().getName() + ">=" + dateSlider.getMinValue().toString("yyyy-MM-dd"));
-      constraints.add(erd.getTime().getName() + "<=" + dateSlider.getMaxValue().toString("yyyy-MM-dd"));
+      SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+      constraints.add(erd.getTime().getName() + ">=" + fmt.format(dateSlider.getStartDate()));
+      constraints.add(erd.getTime().getName() + "<=" + fmt.format(dateSlider.getEndDate()));
     }
     
     // Add the X values

@@ -8,8 +8,8 @@ import com.asascience.edc.Configuration;
 import com.asascience.edc.sos.SosServer;
 import com.asascience.edc.map.BoundingBoxPanel;
 import com.asascience.edc.gui.OpendapInterface;
+import com.asascience.edc.gui.jslider.JSlider2Date;
 import com.asascience.edc.map.WorldwindSelectionMap;
-import gov.noaa.pmel.swing.JSlider2Date;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -20,7 +20,6 @@ import net.miginfocom.swing.MigLayout;
 import com.asascience.edc.sos.requests.ResponseFormat;
 import com.asascience.utilities.Utils;
 import gov.nasa.worldwind.render.PointPlacemark;
-import gov.noaa.pmel.util.GeoDate;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -63,9 +62,9 @@ public class SosWorldwindProcessPanel extends JPanel {
     // Set the timeslider values
     // Set start time to 10 days ago
     dateSlider.setRange(sosServer.getParser().getStartTime(), sosServer.getParser().getEndTime());
-    GeoDate tempDate = new GeoDate();
+    Date tempDate = new Date();
     tempDate.setTime(System.currentTimeMillis() - 1000*60*60*24*10);
-    dateSlider.setStartValue(tempDate);
+    dateSlider.setStartDate(tempDate);
 
     // Load variables into the variable pane
     selPanel.addVariables(sosServer.getParser().getVariables());
@@ -267,8 +266,8 @@ public class SosWorldwindProcessPanel extends JPanel {
     Date startDate = null;
     Date endDate = null;
     try {
-      startDate = dateSlider.getMinValue().getCalendar().getTime();
-      endDate = dateSlider.getMaxValue().getCalendar().getTime();
+      startDate = dateSlider.getStartDate();
+      endDate = dateSlider.getEndDate();
 
       SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm Z");
       TimeZone tz = TimeZone.getTimeZone("GMT");

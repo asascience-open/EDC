@@ -12,7 +12,6 @@ import com.asascience.edc.dap.ui.variables.GeneralVariableSelectionPanel;
 import com.asascience.edc.dap.ui.variables.EsriVariableSelectionPanel;
 import com.asascience.edc.dap.ui.variables.OilmapVariableSelectionPanel;
 import com.asascience.edc.dap.ui.variables.VariableSelectionPanel;
-import gov.noaa.pmel.swing.JSlider2Date;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,6 +53,7 @@ import com.asascience.edc.Configuration;
 import com.asascience.edc.History;
 import com.asascience.edc.map.BoundingBoxPanel;
 import com.asascience.edc.gui.OpendapInterface;
+import com.asascience.edc.gui.jslider.JSlider2Date;
 import com.asascience.edc.map.WorldwindSelectionMap;
 import com.asascience.edc.nc.GridReader;
 import com.asascience.edc.nc.NcReaderBase;
@@ -200,14 +200,15 @@ public class DapWorldwindProcessPanel extends JPanel {
   // These were all long....
   private double calcNumTimesteps() {
     // selected Range in seconds
-    double rng = (dateSlider.getMaxValue().getCalendar().getTime().getTime() - dateSlider.getMinValue().getCalendar().getTime().getTime()) / 1000;
+    if (dateSlider.getEndDate() != null && dateSlider.getStartDate() != null) {
+      double rng = (dateSlider.getEndDate().getTime() - dateSlider.getStartDate().getTime()) / 1000;
 
-    // long inter = Long.parseLong(constraints.getTimeInterval());
-    double inter = Double.parseDouble(constraints.getTimeInterval());
-    if (inter > 0) {
-      return (rng / inter) + 1;// add 1 to account for the start/end time
+      // long inter = Long.parseLong(constraints.getTimeInterval());
+      double inter = Double.parseDouble(constraints.getTimeInterval());
+      if (inter > 0) {
+        return (rng / inter) + 1;// add 1 to account for the start/end time
+      }
     }
-
     return 0;
   }
 
@@ -698,8 +699,8 @@ public class DapWorldwindProcessPanel extends JPanel {
         constraints.setStartTime(null);
         constraints.setEndTime(null);
         if (ncReader.isHasTime()) {
-          constraints.setStartTime(dateSlider.getMinValue().getCalendar().getTime());
-          constraints.setEndTime(dateSlider.getMaxValue().getCalendar().getTime());
+          constraints.setStartTime(dateSlider.getStartDate());
+          constraints.setEndTime(dateSlider.getEndDate());
         }
 
         // set the panel type

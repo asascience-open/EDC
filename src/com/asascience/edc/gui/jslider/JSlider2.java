@@ -201,6 +201,7 @@ public class JSlider2 extends JComponent
    *
    * @param l property change listener
    */
+  @Override
   public void addPropertyChangeListener(PropertyChangeListener l) {
     changes.addPropertyChangeListener(l);
   }
@@ -209,6 +210,7 @@ public class JSlider2 extends JComponent
    *
    * @param l property change listener
    */
+  @Override
   public void removePropertyChangeListener(PropertyChangeListener l) {
     changes.removePropertyChangeListener(l);
   }
@@ -352,7 +354,19 @@ public class JSlider2 extends JComponent
     invalidate();
     doCompute();
   }
-
+  
+  public Dimension getMinimumSize() {
+    return new Dimension(100,50);
+  }
+    
+  public Dimension getPreferredSize() {
+    return new Dimension(175,58);
+  }
+    
+  public Dimension getMaximumSize() {
+    return new Dimension(Short.MAX_VALUE,Short.MIN_VALUE);
+  }
+  
   public void setIndexed(boolean ind) {
     indexed_ = ind;
   }
@@ -395,18 +409,6 @@ public class JSlider2 extends JComponent
     //
     minHandle_.draw(g, min_, yval_);
     if(twoHandles_) maxHandle_.draw(g, max_, yval_);
-  }
-        
-  public Dimension getMinimumSize() {
-    return new Dimension(96,57);
-  }
-    
-  public Dimension getPreferredSize() {
-    return new Dimension(200,57);
-  }
-    
-  public Dimension getMaximumSize() {
-    return new Dimension(Short.MAX_VALUE,Short.MIN_VALUE);
   }
   
   public void setIndexValues(double[] array) {
