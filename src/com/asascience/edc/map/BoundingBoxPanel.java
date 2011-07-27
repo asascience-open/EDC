@@ -35,13 +35,13 @@ public class BoundingBoxPanel extends JPanel {
 
     this.setLayout(new MigLayout("gap 0, fill"));
     this.setBorder(new EtchedBorder());
-    this.add(new JLabel("North"), "cell 3 1, align center");
+    this.add(new JLabel("N"), "cell 3 1, align center");
     this.add(north, "cell 3 2, width 55, align center");
-    this.add(new JLabel("West"), "cell 1 3, align center");
+    this.add(new JLabel("W"), "cell 1 3, align center");
     this.add(west, "cell 2 3, width 55, align center");
-    this.add(new JLabel("East"), "cell 5 3, align center");
+    this.add(new JLabel("E"), "cell 5 3, align center");
     this.add(east, "cell 4 3, width 55, align center");
-    this.add(new JLabel("South"), "cell 3 5, align center");
+    this.add(new JLabel("S"), "cell 3 5, align center");
     this.add(south, "cell 3 4, width 55, align center");
   }
 
