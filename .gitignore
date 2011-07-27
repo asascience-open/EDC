@@ -2,6 +2,7 @@
 build/*
 dist/*
 output/*
+log/*
 data/highResCoast*
 edcsysout.log
 edcstore.xml
