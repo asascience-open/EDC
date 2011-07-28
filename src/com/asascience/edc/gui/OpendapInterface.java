@@ -91,6 +91,7 @@ import com.asascience.ui.JCloseableTabbedPane;
 import com.asascience.utilities.Utils;
 import com.asascience.utilities.exception.InitializationFailedException;
 import com.bbn.openmap.Layer;
+import java.awt.ScrollPane;
 import java.util.Arrays;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
@@ -361,7 +362,7 @@ public class OpendapInterface {
 
   private JPanel makeLogPanel() {
     JPanel pnl = new JPanel(new MigLayout("insets 5, gap 5, fill"));
-    pnl.add(logArea, "grow");
+    pnl.add(new JScrollPane(logArea), "grow");
     return pnl;
   }
   
