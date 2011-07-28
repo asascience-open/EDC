@@ -71,7 +71,7 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
     double numSens = getSelectedSensorCount();
     double countSens = 0;
     String requestURL;
-    List filenames = new ArrayList<String>();
+    ArrayList<String> filenames = new ArrayList<String>();
 
     File savePath = FileSaveUtils.chooseSavePath(parentFrame, homeDir, sosURL);
 
@@ -122,6 +122,12 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
       pcs.firePropertyChange("progress", null, prog);
     } // End Sensor List
     pcs.firePropertyChange("progress", null, 100);
+    if (!filenames.isEmpty()) {
+      pcs.firePropertyChange("message", null, "Saved Files:");
+      for (String s : filenames) {
+        pcs.firePropertyChange("message", null, "- " + s);
+      }
+    }
     pcs.firePropertyChange("done", null, filenames.toString());
   }
 
