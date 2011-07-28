@@ -16,21 +16,27 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
 import net.miginfocom.swing.MigLayout;
+import org.apache.log4j.Logger;
 
 /** 
  * SosGetObsProgressMonitor.java
  * 
  * @author Kyle Wilcox <kwilcox@asascience.com>
  */
-public class SosGetObsProgressMonitor extends JPanel implements ActionListener {
+public class SosGetObsProgressMonitor extends JPanel implements ActionListener, PropertyChangeListener {
 
   private JButton startButton;
   private JProgressBar progressBar;
   private JTextArea taskOutput;
   private Task task;
   private SosServer sosServer;
-  private ListenForProgress listener;
+  private ListenForObsProgress listener;
   private PropertyChangeSupport pcs;
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log." + SosGetObsProgressMonitor.class.getName());
+
+  public void propertyChange(PropertyChangeEvent evt) {
+    listener.propertyChange(evt);
+  }
 
   class Task extends SwingWorker<Void, Void> {
     @Override
@@ -42,6 +48,7 @@ public class SosGetObsProgressMonitor extends JPanel implements ActionListener {
       } catch (Exception e) {
         taskOutput.append(String.format("%1$s\n", e.toString()));
       }
+      sosServer.removePropertyChangeListener(listener);
       return null;
     }
 
@@ -52,9 +59,9 @@ public class SosGetObsProgressMonitor extends JPanel implements ActionListener {
     @Override
     public void done() {
       startButton.setEnabled(true);
-      sosServer.removePropertyChangeListener(listener);
       setCursor(null);
       taskOutput.append("Done!\n");
+      sosServer.removePropertyChangeListener(listener);
     }
   }
 
@@ -62,7 +69,7 @@ public class SosGetObsProgressMonitor extends JPanel implements ActionListener {
     super(new MigLayout("fill"));
 
     pcs = new PropertyChangeSupport(this);
-    listener = new ListenForProgress();
+    listener = new ListenForObsProgress();
 
     sosServer = data;
    
@@ -104,7 +111,7 @@ public class SosGetObsProgressMonitor extends JPanel implements ActionListener {
     pcs.removePropertyChangeListener(l);
   }
 
-  class ListenForProgress implements PropertyChangeListener {
+  class ListenForObsProgress implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
       if ("progress".equals(evt.getPropertyName())) {
         int progress = (Integer)evt.getNewValue();
@@ -112,7 +119,9 @@ public class SosGetObsProgressMonitor extends JPanel implements ActionListener {
         task.setTaskProgress(progress);
       } else if ("message".equals(evt.getPropertyName())) {
         taskOutput.append(String.format("%1$s\n", evt.getNewValue()));
+        guiLogger.info((String)evt.getNewValue());
       } else if ("done".equals(evt.getPropertyName())) {
+        guiLogger.info("Processing of SOS Data complete");
         pcs.firePropertyChange(evt);
       }
     }

@@ -186,12 +186,12 @@ public class SosWorldwindProcessPanel extends JPanel {
           if (validateAndSetInput()) {
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
               public void run() {
-                JFrame frame = new JFrame("Get Observations");
-                frame.setLayout(new MigLayout("fill"));
-                frame.setPreferredSize(new Dimension(980, 400));
-                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                final JFrame popup = new JFrame("Get Observations");
+                popup.setLayout(new MigLayout("fill"));
+                popup.setPreferredSize(new Dimension(980, 400));
+                popup.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 JComponent newContentPane = new SosGetObsProgressMonitor(sosServer);
-                sosServer.getRequest().setParentFrame(frame);
+                sosServer.getRequest().setParentFrame(popup);
                 newContentPane.addPropertyChangeListener(new PropertyChangeListener() {
 
                   public void propertyChange(PropertyChangeEvent evt) {
@@ -217,10 +217,10 @@ public class SosWorldwindProcessPanel extends JPanel {
                 sosServer.getParser().setPanelType(Configuration.DISPLAY_TYPE);
                 sosServer.getParser().parseWorldwindResponseFormats(mapPanel.getSensorLayer().getPickedSensors());
                 responsePanel.setResponseFormats(sosServer.getParser().getResponseFormats());
-                frame.add(responsePanel);
-                frame.add(newContentPane, "grow");
-                frame.pack();
-                frame.setVisible(true);
+                popup.add(responsePanel);
+                popup.add(newContentPane, "grow");
+                popup.pack();
+                popup.setVisible(true);
               }
             });
           }

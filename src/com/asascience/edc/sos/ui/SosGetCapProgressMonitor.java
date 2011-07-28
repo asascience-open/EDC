@@ -14,6 +14,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
 import net.miginfocom.swing.MigLayout;
+import org.apache.log4j.Logger;
 
 /**
  * SosGetCapProgressMonitor.java
@@ -26,8 +27,9 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
   private JTextArea taskOutput;
   private Task task;
   private SosServer sosData;
-  private ListenForProgress listener;
+  private ListenForCapProgress listener;
   private JButton closeButton;
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log." + SosGetCapProgressMonitor.class.getName());
 
   class Task extends SwingWorker<Void, Void> {
 
@@ -50,6 +52,7 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
       } catch (Exception e) {
         taskOutput.append(String.format("%1$s\n", e.toString()));
       }
+      sosData.removePropertyChangeListener(listener);
       return null;
     }
 
@@ -61,13 +64,14 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
     public void done() {
       taskOutput.append("Done!\n");
       closeButton.setText("Close");
+      sosData.removePropertyChangeListener(listener);
     }
   }
 
   public SosGetCapProgressMonitor(SosServer data) {
     super(new MigLayout("fill"));
 
-    listener = new ListenForProgress();
+    listener = new ListenForCapProgress();
 
     sosData = data;
 
@@ -102,10 +106,11 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
 
   public void actionPerformed(ActionEvent e) {
     task.cancel(true);
+    guiLogger.info("Processing of SOS Server CANCELLED");
     firePropertyChange("closed", false, true);
   }
 
-  class ListenForProgress implements PropertyChangeListener {
+  class ListenForCapProgress implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
       if ("progress".equals(evt.getPropertyName())) {
@@ -114,7 +119,9 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
         task.setTaskProgress(progress);
       } else if ("message".equals(evt.getPropertyName())) {
         taskOutput.append(String.format("%1$s\n", evt.getNewValue()));
+        guiLogger.info((String)evt.getNewValue());
       } else if ("taskcomplete".equals(evt.getPropertyName())) {
+        guiLogger.info("Processing of SOS Server complete");
         firePropertyChange("taskcomplete", evt.getOldValue(), evt.getNewValue());
       }
     }
