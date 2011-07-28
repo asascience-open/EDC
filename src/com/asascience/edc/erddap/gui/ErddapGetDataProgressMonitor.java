@@ -16,6 +16,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
 import net.miginfocom.swing.MigLayout;
+import org.apache.log4j.Logger;
 
 /**
  * ErddapGetDataProgressMonitor.java
@@ -31,6 +32,7 @@ public class ErddapGetDataProgressMonitor extends JPanel implements ActionListen
   private ListenForProgress listener;
   private PropertyChangeSupport pcs;
   private ErddapDataRequest request;
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log." + ErddapGetDataProgressMonitor.class.getName());
 
   class Task extends SwingWorker<Void, Void> {
     @Override
@@ -42,6 +44,7 @@ public class ErddapGetDataProgressMonitor extends JPanel implements ActionListen
       } catch (Exception e) {
         taskOutput.append(String.format("%1$s\n", e.toString()));
       }
+      request.removePropertyChangeListener(listener);
       return null;
     }
 
@@ -112,7 +115,9 @@ public class ErddapGetDataProgressMonitor extends JPanel implements ActionListen
         task.setTaskProgress(progress);
       } else if ("message".equals(evt.getPropertyName())) {
         taskOutput.append(String.format("%1$s\n", evt.getNewValue()));
+        guiLogger.info((String)evt.getNewValue());
       } else if ("done".equals(evt.getPropertyName())) {
+        guiLogger.info("Processing of ERDDAP Data complete");
         pcs.firePropertyChange(evt);
       }
     }

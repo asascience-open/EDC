@@ -9,6 +9,7 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -36,6 +37,7 @@ public class ErddapDataset {
   private ErddapVariable sVariable;
   private ArrayList<ErddapVariable> variables;
   private ArrayList<SensorContainer> locations = null;
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log." + ErddapDataset.class.getName());
 
   public ErddapDataset(String id) {
     this.id = id;
@@ -231,10 +233,12 @@ public class ErddapDataset {
   }
   
   public void buildVariables() {
+    guiLogger.info("Building Variables from ERDDAP Dataset: " + this.getTitle());
     try {
       ClientConfig clientConfig = new DefaultClientConfig();
       clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
       Client c = Client.create(clientConfig);
+      guiLogger.info("Request: " + this.getInfo());
       WebResource wr = c.resource(this.getInfo());
       JSONObject result = wr.get(JSONObject.class);
       JSONArray ar = result.getJSONObject("table").getJSONArray("rows");
@@ -288,15 +292,17 @@ public class ErddapDataset {
       }
       
     } catch (Exception e) {
-      //
+      guiLogger.error("Exception", e);
     }
   }
   
   private void buildLocations() {
+    guiLogger.info("Building Locations from ERDDAP Dataset: " + this.getTitle());
     try {
       ClientConfig clientConfig = new DefaultClientConfig();
       clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
       Client c = Client.create(clientConfig);
+      guiLogger.info("Request: " + this.getTabledap() + ".json?" + this.getX().getName() + "," + this.getY().getName() + "&distinct()");
       WebResource wr = c.resource(this.getTabledap() + ".json?" + this.getX().getName() + "," + this.getY().getName() + "&distinct()");
       JSONObject result = wr.get(JSONObject.class);
       JSONArray ar = result.getJSONObject("table").getJSONArray("rows");
@@ -314,7 +320,7 @@ public class ErddapDataset {
         locations.add(senc);
       }
     } catch (Exception e) {
-      //
+      guiLogger.error("Exception", e);
     }
   }
   

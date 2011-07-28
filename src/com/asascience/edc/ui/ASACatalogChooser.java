@@ -207,6 +207,7 @@ public class ASACatalogChooser extends JPanel {
         if (evt.getPropertyName().equals("griddap")) {
           erd = (ErddapDataset) evt.getNewValue();
           try {
+            guiLogger.error("Opening GRIDDAP dataset: " + erd.getGriddap());
             daDataset = NetcdfDataset.openDataset(erd.getGriddap());
             daDataset.setTitle(erd.getTitle());
 
@@ -219,6 +220,7 @@ public class ASACatalogChooser extends JPanel {
             logger.error("OI:directAccess: Invalid filename", ex);
             guiLogger.error("OI:directAccess: Invalid filename", ex);
           }
+        // GRIDDAP
         } else if (evt.getPropertyName().equals("tabledap")) {
           erd = (ErddapDataset) evt.getNewValue();
           odapInterface.openTabledap(erd);
@@ -321,8 +323,7 @@ public class ASACatalogChooser extends JPanel {
                   if (name.equals("closed")) {
                     frame.setVisible(false);
                     frame.dispose();
-                  }
-                  if (name.equals("taskcomplete")) {
+                  } else if (name.equals("taskcomplete")) {
                     frame.setVisible(false);
                     frame.dispose();
                     myData.getRequest().setHomeDir(odapInterface.getHomeDir());
@@ -363,7 +364,7 @@ public class ASACatalogChooser extends JPanel {
               String erddapServerURL = erddapListBox.getSelectedItem().toString();
               ErddapServer erddapServer = new ErddapServer(erddapServerURL);
               erddapViewer.setServer(erddapServer);
-              JComponent newContentPanel = new ErddapGetDatasetsProgressMonitor(erddapViewer, odapInterface);
+              JComponent newContentPanel = new ErddapGetDatasetsProgressMonitor(erddapViewer);
               erddapListBox.addItem(erddapServerURL);
               newContentPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -372,6 +373,10 @@ public class ASACatalogChooser extends JPanel {
                   if (name.equals("closed")) {
                     frame.setVisible(false);
                     frame.dispose();
+                  } else if (name.equals("taskcomplete")) {
+                    frame.setVisible(false);
+                    frame.dispose();
+                    odapInterface.openErddapDataset(erddapViewer, (SwingWorker) e.getOldValue());
                   }
                 }
               });

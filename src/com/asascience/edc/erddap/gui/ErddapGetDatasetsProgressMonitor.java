@@ -1,6 +1,5 @@
 package com.asascience.edc.erddap.gui;
 
-import com.asascience.edc.gui.OpendapInterface;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,6 +13,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
 import net.miginfocom.swing.MigLayout;
+import org.apache.log4j.Logger;
 
 /**
  * ErddapGetDatasetsProgresMonitor.java
@@ -25,9 +25,9 @@ public class ErddapGetDatasetsProgressMonitor extends JPanel implements ActionLi
   private JTextArea taskOutput;
   private Task task;
   private ListenForProgress listener;
-  private OpendapInterface odapInterface;
   private ErddapDatasetViewer erddapViewer;
   private JButton closeButton;
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log." + ErddapGetDatasetsProgressMonitor.class.getName());
 
   class Task extends SwingWorker<Void, Void> {
 
@@ -43,15 +43,15 @@ public class ErddapGetDatasetsProgressMonitor extends JPanel implements ActionLi
           return null;
         }
         if (!isCancelled()) {
-          //sosData.getData().addPropertyChangeListener(listener);
-          firePropertyChange("message", null, "Displaying Datasetes");
-          odapInterface.openErddapDataset(erddapViewer, this);
-          //erddapServer.getRequest().setHomeDir(odapInterface.getHomeDir());
+          firePropertyChange("message", null, "Displaying Datasets");
+          firePropertyChange("taskcomplete", this, true);
           firePropertyChange("progress", null, 100);
         }
       } catch (Exception e) {
         taskOutput.append(String.format("%1$s\n", e.toString()));
+        guiLogger.error("Exception", e);
       }
+      erddapViewer.getServer().removePropertyChangeListener(listener);
       return null;
     }
 
@@ -61,17 +61,17 @@ public class ErddapGetDatasetsProgressMonitor extends JPanel implements ActionLi
 
     @Override
     public void done() {
+      erddapViewer.getServer().removePropertyChangeListener(listener);
       taskOutput.append("Done!\n");
       closeButton.setText("Close");
     }
   }
 
-  public ErddapGetDatasetsProgressMonitor(ErddapDatasetViewer viewer, OpendapInterface odap) {
+  public ErddapGetDatasetsProgressMonitor(ErddapDatasetViewer viewer) {
     super(new MigLayout("fill"));
 
     listener = new ListenForProgress();
 
-    odapInterface = odap;
     erddapViewer = viewer;
 
     progressBar = new JProgressBar(0, 100);
@@ -105,6 +105,7 @@ public class ErddapGetDatasetsProgressMonitor extends JPanel implements ActionLi
 
   public void actionPerformed(ActionEvent e) {
     task.cancel(true);
+    guiLogger.info("Processing of ERDDAP Server CANCELLED");
     firePropertyChange("closed", false, true);
   }
 
@@ -117,6 +118,10 @@ public class ErddapGetDatasetsProgressMonitor extends JPanel implements ActionLi
         task.setTaskProgress(progress);
       } else if ("message".equals(evt.getPropertyName())) {
         taskOutput.append(String.format("%1$s\n", evt.getNewValue()));
+        guiLogger.info((String)evt.getNewValue());
+      } else if ("taskcomplete".equals(evt.getPropertyName())) {
+        guiLogger.info("Processing of ERDDAP Server complete");
+        firePropertyChange("taskcomplete", evt.getOldValue(), evt.getNewValue());
       }
     }
   }

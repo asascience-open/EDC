@@ -16,6 +16,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import net.miginfocom.swing.MigLayout;
+import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -28,6 +29,7 @@ public class ErddapDatasetSearch extends JTextField {
 
   private ErddapServer erddapServer;
   private List<ErddapDataset> datasets;
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log." + ErddapDatasetSearch.class.getName());
 
   public ErddapDatasetSearch() {
     initComponents();
@@ -48,15 +50,18 @@ public class ErddapDatasetSearch extends JTextField {
           if (getText().isEmpty()) {
             datasets = erddapServer.getDatasets();
           } else {
+            guiLogger.info("Searching ERDDAP for: " + getText()); 
             ClientConfig clientConfig = new DefaultClientConfig();
             clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
             Client c = Client.create(clientConfig);
+            guiLogger.info("Request: " + erddapServer.getSearchURL().concat(getText()));
             WebResource wr = c.resource(erddapServer.getSearchURL().concat(getText()));
             JSONObject listResult = wr.get(JSONObject.class);
             JSONArray ls = listResult.getJSONObject("table").getJSONArray("rows");
             datasets = new ArrayList<ErddapDataset>(ls.length());
             JSONArray ds;
             ErddapDataset erds;
+            guiLogger.info("Found " + ls.length() + " Datasets"); 
             for (int j = 0 ; j < ls.length() ; j++) {
               ds = ls.getJSONArray(j);
               erds = new ErddapDataset(ds.getString(12));

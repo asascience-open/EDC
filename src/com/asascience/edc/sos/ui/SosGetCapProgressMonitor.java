@@ -51,6 +51,7 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
         }
       } catch (Exception e) {
         taskOutput.append(String.format("%1$s\n", e.toString()));
+        guiLogger.error("Exception", e);
       }
       sosData.removePropertyChangeListener(listener);
       return null;

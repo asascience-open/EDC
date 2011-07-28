@@ -35,6 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import net.miginfocom.swing.MigLayout;
+import org.apache.log4j.Logger;
 import ucar.nc2.units.DateUnit;
 
 /**
@@ -54,6 +55,7 @@ public class ErddapTabledapGui extends JPanel {
   private BoundingBoxPanel bboxGui;
   private JSlider2Date dateSlider;
   private String homeDir;
+  private static Logger guiLogger = Logger.getLogger("com.asascience.log." + ErddapTabledapGui.class.getName());
   
   public ErddapTabledapGui(ErddapDataset erd, OpendapInterface parent, String homeDir) {
     this.erd = erd;
