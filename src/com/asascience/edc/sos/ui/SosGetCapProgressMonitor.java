@@ -1,6 +1,5 @@
 package com.asascience.edc.sos.ui;
 
-import com.asascience.edc.gui.OpendapInterface;
 import com.asascience.edc.sos.SosServer;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -28,7 +27,6 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
   private Task task;
   private SosServer sosData;
   private ListenForProgress listener;
-  private OpendapInterface odapInterface;
   private JButton closeButton;
 
   class Task extends SwingWorker<Void, Void> {
@@ -66,13 +64,12 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
     }
   }
 
-  public SosGetCapProgressMonitor(SosServer data, OpendapInterface odap) {
+  public SosGetCapProgressMonitor(SosServer data) {
     super(new MigLayout("fill"));
 
     listener = new ListenForProgress();
 
     sosData = data;
-    odapInterface = odap;
 
     progressBar = new JProgressBar(0, 100);
     progressBar.setValue(0);

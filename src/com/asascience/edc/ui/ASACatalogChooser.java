@@ -312,7 +312,7 @@ public class ASACatalogChooser extends JPanel {
 
               String sosServerURL = sosListBox.getSelectedItem().toString();
               final SosServer myData = new SosServer(sosServerURL);
-              JComponent newContentPanel = new SosGetCapProgressMonitor(myData, odapInterface);
+              JComponent newContentPanel = new SosGetCapProgressMonitor(myData);
               sosListBox.addItem(sosServerURL);
               newContentPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
