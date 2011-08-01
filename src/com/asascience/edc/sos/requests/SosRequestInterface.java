@@ -1,5 +1,7 @@
 package com.asascience.edc.sos.requests;
 
+import java.io.File;
+
 /**
  * SosRequestInterface.java
  * 
@@ -9,6 +11,6 @@ public interface SosRequestInterface {
 
   public String getResponseFormatValue();
   public void setResponseFormatValue(String s);
-  public void getObservations();
+  public void getObservations(File savePath);
   
 }

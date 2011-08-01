@@ -28,7 +28,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -240,17 +239,7 @@ public class ErddapTabledapGui extends JPanel {
         frame.setPreferredSize(new Dimension(980, 400));
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         
-        ErddapResponseSelectionPanel responsePanel = new ErddapResponseSelectionPanel("Available Response Formats");
-        responsePanel.addPropertyChangeListener(new PropertyChangeListener() {
-
-          public void propertyChange(PropertyChangeEvent evt) {
-            request.setResponseFormat((String)evt.getNewValue());
-          }
-        });
-        responsePanel.initComponents();
-        
-        
-        JComponent newContentPane = new ErddapGetDataProgressMonitor(request);
+        final ErddapGetDataProgressMonitor newContentPane = new ErddapGetDataProgressMonitor(request);
         newContentPane.addPropertyChangeListener(new PropertyChangeListener() {
 
           public void propertyChange(PropertyChangeEvent evt) {
@@ -261,6 +250,17 @@ public class ErddapTabledapGui extends JPanel {
             }
           }
         });
+
+        final ErddapResponseSelectionPanel responsePanel = new ErddapResponseSelectionPanel("Available Response Formats");
+        responsePanel.addPropertyChangeListener(new PropertyChangeListener() {
+
+          public void propertyChange(PropertyChangeEvent evt) {
+            request.setResponseFormat((String)evt.getNewValue());
+            newContentPane.update();
+          }
+        });
+        responsePanel.initComponents();
+        
         newContentPane.setOpaque(true);
         request.setParent(frame);
         frame.add(responsePanel, "grow");
@@ -279,6 +279,7 @@ public class ErddapTabledapGui extends JPanel {
     private PropertyChangeSupport pcs;
     private String homeDir;
     private JFrame parent;
+    private File saveFile;
     
     public ErddapDataRequest(String homeDir) {
       this.homeDir = homeDir;
@@ -287,6 +288,18 @@ public class ErddapTabledapGui extends JPanel {
 
     public void setParent(JFrame parent) {
       this.parent = parent;
+    }
+
+    public JFrame getParent() {
+      return parent;
+    }
+
+    public String getHomeDir() {
+      return homeDir;
+    }
+
+    public String getBaseUrl() {
+      return baseUrl;
     }
     
     public void setResponseFormat(String responseFormat) {
@@ -297,10 +310,35 @@ public class ErddapTabledapGui extends JPanel {
       this.parameters = parameters;
     }
 
+    public File getComputedSaveFile() {
+      saveFile = new File(FileSaveUtils.chooseFilename(new File(homeDir + File.separator + FileSaveUtils.getNameFromURL(baseUrl) + File.separator), erd.getId() + responseFormat));
+      return saveFile;
+    }
+    
+    public File getUpdatedSaveFile() {
+      return new File (FileSaveUtils.getFilePathNoSuffix(saveFile.getAbsolutePath()) + responseFormat);
+    }
+    
+    public File getSaveFile() {
+      return saveFile;
+    }
+
+    public void setSaveFile(File saveFile) {
+      this.saveFile = saveFile;
+    }
+    
+    public String getFilename() {
+      return saveFile.getName();
+    }
+    
     public void setBaseUrl(String baseUrl) {
       this.baseUrl = baseUrl;
     }
 
+    public String getResponseFormat() {
+      return responseFormat;
+    }
+    
     public String getRequestUrl() {
       return baseUrl + responseFormat + "?" + parameters;
     }
@@ -318,11 +356,9 @@ public class ErddapTabledapGui extends JPanel {
     }
     
     public void getData() {
-      File savePath = FileSaveUtils.chooseSavePath(parent, homeDir, baseUrl);
       if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI && responseFormat.equals(".esriCSV")) {
         responseFormat = ".csv";
       }
-      String filename = FileSaveUtils.chooseFilename(savePath, "erddap_response" + responseFormat);
 
       Timer stopwatch = new Timer();
       File f = null;
@@ -337,8 +373,8 @@ public class ErddapTabledapGui extends JPanel {
         ht.setDoInput(true);
         ht.setRequestMethod("GET");
         InputStream is = ht.getInputStream();
-        pcs.firePropertyChange("message", null, "- Streaming Results to File: " + filename);
-        f = new File(filename);
+        pcs.firePropertyChange("message", null, "- Streaming Results to File: " + getSaveFile().getAbsolutePath());
+        f = getSaveFile();
         OutputStream output = new BufferedOutputStream(new FileOutputStream(f));
         byte[] buffer = new byte[2048];
         int len = 0;

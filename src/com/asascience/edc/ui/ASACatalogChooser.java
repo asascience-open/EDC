@@ -314,6 +314,7 @@ public class ASACatalogChooser extends JPanel {
 
               String sosServerURL = sosListBox.getSelectedItem().toString();
               final SosServer myData = new SosServer(sosServerURL);
+              myData.setHomeDir(odapInterface.getHomeDir());
               JComponent newContentPanel = new SosGetCapProgressMonitor(myData);
               sosListBox.addItem(sosServerURL);
               newContentPanel.addPropertyChangeListener(new PropertyChangeListener() {
@@ -326,7 +327,6 @@ public class ASACatalogChooser extends JPanel {
                   } else if (name.equals("taskcomplete")) {
                     frame.setVisible(false);
                     frame.dispose();
-                    myData.getRequest().setHomeDir(odapInterface.getHomeDir());
                     odapInterface.openSOSDataset(myData, (SwingWorker) e.getOldValue());
                   }
                 }

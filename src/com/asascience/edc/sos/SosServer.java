@@ -30,6 +30,7 @@ import com.asascience.edc.sos.requests.custom.SweToCSV;
 import com.asascience.edc.sos.requests.custom.SweToNetCDF;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.util.Date;
 
 //import com.sun.xml.internal.fastinfoset.util.StringArray;
@@ -157,6 +158,14 @@ public class SosServer implements PropertyChangeListener {
     return parseTime;
   }
   
+  public String getBaseUrl() {
+    return myUrl;
+  }
+  
+  public String getHomeDir() {
+    return homeDir;
+  }
+  
   public void setResponseFormat(ResponseFormat format) {
     responseFormat = format;
   }
@@ -173,7 +182,7 @@ public class SosServer implements PropertyChangeListener {
     pcs.removePropertyChangeListener(l);
   }
 
-  public void getObservations() {
+  public void getObservations(File savePath) {
     if (responseFormat.isPostProcess()) {
       String name = responseFormat.getClassName();
       if (name.equalsIgnoreCase("DifToCSV")) {
@@ -195,7 +204,7 @@ public class SosServer implements PropertyChangeListener {
     sosRequest.setFileSuffix(responseFormat.getFileSuffix());
     sosRequest.setResponseFormatValue(responseFormat.getValue());
     sosRequest.addPropertyChangeListener(this);
-    sosRequest.getObservations();
+    sosRequest.getObservations(savePath);
   }
 
   public void propertyChange(PropertyChangeEvent evt) {

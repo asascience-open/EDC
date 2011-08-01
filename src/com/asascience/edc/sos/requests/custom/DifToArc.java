@@ -92,14 +92,12 @@ public class DifToArc extends GenericRequest {
   }
   
   @Override
-  public void getObservations() {
+  public void getObservations(File savePath) {
 
     double numSens = getSelectedSensorCount();
     double countSens = 0;
     String requestURL;
-    List filenames = new ArrayList<String>();
-
-    File savePath = FileSaveUtils.chooseSavePath(parentFrame, homeDir, sosURL);
+    ArrayList<String> filenames = new ArrayList<String>();
 
     // Are we loading an XSL?
     String schemaLoc = "/resources/schemas/ioos_gmlv061_to_arc.xsl";
@@ -198,6 +196,12 @@ public class DifToArc extends GenericRequest {
       pcs.firePropertyChange("progress", null, prog);
     } // End Sensor List
     pcs.firePropertyChange("progress", null, 100);
+    if (!filenames.isEmpty()) {
+      pcs.firePropertyChange("message", null, "Saved Files:");
+      for (String s : filenames) {
+        pcs.firePropertyChange("message", null, "- " + s);
+      }
+    }
     pcs.firePropertyChange("done", null, filenames.toString());
   }
 }

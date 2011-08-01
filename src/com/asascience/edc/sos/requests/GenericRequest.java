@@ -41,7 +41,6 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
   protected PropertyChangeSupport pcs;
   protected SimpleDateFormat dateFormatter;
   protected String sosURL;
-  protected String homeDir;
   protected String fileSuffix;
   protected JFrame parentFrame;
 
@@ -59,21 +58,18 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
     selectedStartTime = gr.selectedStartTime;
     selectedEndTime = gr.selectedEndTime;
     parentFrame = gr.parentFrame;
-    homeDir = gr.homeDir;
   }
 
   public void setParentFrame(JFrame frame) {
     parentFrame = frame;
   }
 
-  public void getObservations() {
+  public void getObservations(File savePath) {
 
     double numSens = getSelectedSensorCount();
     double countSens = 0;
     String requestURL;
     ArrayList<String> filenames = new ArrayList<String>();
-
-    File savePath = FileSaveUtils.chooseSavePath(parentFrame, homeDir, sosURL);
 
     Timer stopwatch = new Timer();
 
@@ -232,9 +228,6 @@ public class GenericRequest implements PropertyChangeListener, SosRequestInterfa
   }
   public void setEndTime(Date endTime) {
     selectedEndTime = endTime;
-  }
-  public void setHomeDir(String homeDir) {
-    this.homeDir = homeDir;
   }
 
   public void setFileSuffix(String s) {

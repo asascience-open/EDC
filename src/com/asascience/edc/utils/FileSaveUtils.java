@@ -29,7 +29,7 @@ public class FileSaveUtils {
     SimpleDateFormat formatted = new SimpleDateFormat("yyyy-MM-dd_HHmma");
     return new StringBuilder( formatted.format( dateNow ) ).toString();
   }
-
+  
   public static File chooseDirectSavePath(JFrame parentFrame, String homeDir, String folder_name) {
     FileDialog outputPath = new FileDialog(parentFrame, "Create directory and save output files here...", FileDialog.SAVE);
     

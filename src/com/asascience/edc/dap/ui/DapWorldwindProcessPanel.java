@@ -747,8 +747,6 @@ public class DapWorldwindProcessPanel extends JPanel {
         return;
       }
 
-      // String homeDir = Utils.retrieveHomeDirectory("ODC");
-
       boolean cont = false;
       boolean skip = false;
       boolean rept = false;

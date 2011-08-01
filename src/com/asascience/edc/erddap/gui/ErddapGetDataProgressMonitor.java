@@ -1,6 +1,8 @@
 package com.asascience.edc.erddap.gui;
 
 import com.asascience.edc.erddap.gui.ErddapTabledapGui.ErddapDataRequest;
+import com.asascience.edc.gui.FileBrowser;
+import com.asascience.edc.utils.FileSaveUtils;
 import java.awt.Cursor;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -8,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -32,6 +35,7 @@ public class ErddapGetDataProgressMonitor extends JPanel implements ActionListen
   private ListenForProgress listener;
   private PropertyChangeSupport pcs;
   private ErddapDataRequest request;
+  private FileBrowser fileBrowser;
   private static Logger guiLogger = Logger.getLogger("com.asascience.log." + ErddapGetDataProgressMonitor.class.getName());
 
   class Task extends SwingWorker<Void, Void> {
@@ -61,6 +65,10 @@ public class ErddapGetDataProgressMonitor extends JPanel implements ActionListen
     }
   }
 
+  public void update() {
+    fileBrowser.setFile(request.getUpdatedSaveFile());
+  }
+  
   public ErddapGetDataProgressMonitor(ErddapDataRequest data) {
     super(new MigLayout("fill"));
 
@@ -76,18 +84,35 @@ public class ErddapGetDataProgressMonitor extends JPanel implements ActionListen
     progressBar = new JProgressBar(0, 100);
     progressBar.setValue(0);
     progressBar.setStringPainted(true);
+    
+    // NEED TO HAVE THE SAVE PATH SET AT THIS POINT
+    File saveFile;
+    if (request.getSaveFile() == null) {
+      saveFile = request.getComputedSaveFile();
+    } else {
+      saveFile = request.getSaveFile();
+    }
+    String filename = FileSaveUtils.chooseFilename(saveFile, request.getFilename() + request.getResponseFormat());
+    fileBrowser = new FileBrowser(filename);
+    fileBrowser.addPropertyChangeListener("fileChanged", new PropertyChangeListener() {
+
+      public void propertyChange(PropertyChangeEvent evt) {
+        request.setSaveFile(((File)evt.getNewValue()));
+      }
+    });
 
     taskOutput = new JTextArea(5, 20);
     taskOutput.setMargin(new Insets(5,5,5,5));
     taskOutput.setEditable(false);
 
-    JPanel panel = new JPanel();
-    panel.add(startButton);
-    panel.add(progressBar);
+    JPanel panel = new JPanel(new MigLayout("gapx 10, fillx"));
+    panel.add(progressBar, "growx");
+    panel.add(startButton, "wrap");
+    panel.add(fileBrowser, "growx, spanx");
 
     add(panel, "wrap, align center");
     add(new JScrollPane(taskOutput), "grow");
-    setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
   }
 
   public void actionPerformed(ActionEvent e) {
