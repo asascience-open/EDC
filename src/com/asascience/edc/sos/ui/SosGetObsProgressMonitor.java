@@ -86,7 +86,7 @@ public class SosGetObsProgressMonitor extends JPanel implements ActionListener, 
     progressBar.setStringPainted(true);
     
     // NEED TO HAVE THE SAVE PATH SET AT THIS POINT
-    File tempPath = new File(FileSaveUtils.chooseFilename(new File(sosServer.getHomeDir() + File.separator + FileSaveUtils.getNameFromURL(sosServer.getBaseUrl()) + File.separator), "Output Directory (many files may be saved here)"));
+    File tempPath = new File(FileSaveUtils.chooseFilename(new File(sosServer.getHomeDir() + File.separator + FileSaveUtils.getNameAndDateFromUrl(sosServer.getBaseUrl()) + File.separator), "Output Directory (many files may be saved here)"));
     FileBrowser fileBrowser = new FileBrowser(tempPath);
     fileBrowser.addPropertyChangeListener("fileChanged", new PropertyChangeListener() {
 

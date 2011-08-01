@@ -311,7 +311,7 @@ public class ErddapTabledapGui extends JPanel {
     }
 
     public File getComputedSaveFile() {
-      saveFile = new File(FileSaveUtils.chooseFilename(new File(homeDir + File.separator + FileSaveUtils.getNameFromURL(baseUrl) + File.separator), erd.getId() + responseFormat));
+      saveFile = new File(FileSaveUtils.chooseFilename(new File(homeDir + File.separator + FileSaveUtils.getNameAndDateFromUrl(baseUrl) + File.separator), erd.getId() + responseFormat));
       return saveFile;
     }
     

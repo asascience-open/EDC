@@ -15,19 +15,23 @@ import javax.swing.JFrame;
  */
 public class FileSaveUtils {
   
-  public static String getNameFromURL(String url) {
-    try {
-      URL target = new URL(url);
-      return target.getHost().replace('.','_') + File.separator + getNameFromDate();
-    } catch (MalformedURLException e) {
-      return "";
-    }
+  public static String getNameAndDateFromUrl(String url) {
+    return getNameFromUrl(url) + File.separator + getNameFromDate();
   }
   
-  public static String getNameFromDate() {
+  private static String getNameFromDate() {
     Date dateNow = new Date ();
     SimpleDateFormat formatted = new SimpleDateFormat("yyyy-MM-dd_HHmma");
     return new StringBuilder( formatted.format( dateNow ) ).toString();
+  }
+  
+  private static String getNameFromUrl(String url) {
+    try {
+      URL target = new URL(url);
+      return target.getHost().replace('.','_');
+    } catch (MalformedURLException e) {
+      return "";
+    }
   }
   
   public static File chooseDirectSavePath(JFrame parentFrame, String homeDir, String folder_name) {
@@ -51,33 +55,6 @@ public class FileSaveUtils {
       }
     }
     return new File(outputPath.getDirectory());
-  }
-  
-  public static File chooseSavePath(JFrame parentFrame, String homeDir, String folder_name) {
-    return chooseSavePath(parentFrame, homeDir, folder_name, "Choose Output Directory (ignore this filename)");
-  }
-  
-  public static File chooseSavePath(JFrame parentFrame, String homeDir, String folder_name, String file_name) {
-    FileDialog outputPath = new FileDialog(parentFrame, "Create directory and save output files here...", FileDialog.SAVE);
-    File containingFolder = new File(homeDir + File.separator + getNameFromURL(folder_name) + File.separator);
-    if (!containingFolder.exists()) {
-      containingFolder.mkdirs();
-    }
-    outputPath.setDirectory(containingFolder.getAbsolutePath());
-    outputPath.setFile(file_name);
-    outputPath.setVisible(true);
-    
-    File newHomeDir = new File(outputPath.getDirectory());
-    // Did the user use the new directory we created for them?
-    if (!newHomeDir.getAbsolutePath().contains(containingFolder.getAbsolutePath())) {
-      if (containingFolder.length() == 0) {
-        containingFolder.delete();
-        // Create a timestamped directory where the user has chosen
-        newHomeDir = new File(outputPath.getDirectory() + File.separator + getNameFromDate());
-        newHomeDir.mkdirs();
-      }
-    }
-    return newHomeDir;
   }
   
   public static String chooseDirectory(File path, String dirname, int count) {
