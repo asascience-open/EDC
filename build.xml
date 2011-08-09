@@ -84,5 +84,6 @@
     <copy file="EDC_LINUX.sh" todir="dist"/>
     <copy file="edcconfig.xml" todir="dist"/>
     <copy file="edcstore.xml" todir="dist"/>
+    <copy file="log4j.properties" todir="dist"/>
   </target>
 </project>

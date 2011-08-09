@@ -213,7 +213,7 @@ public class OpendapInterface {
 
     mainFrame = new JFrame("Environmental Data Connector");
     mainFrame.setLayout(new MigLayout("fill"));
-    mainFrame.setIconImage(Utils.getImageResource("ASA.png", OpendapInterface.class));
+    mainFrame.setIconImage(new ImageIcon(this.getClass().getResource("/resources/images/ASA.png")).getImage());
     Rectangle bounds = (Rectangle) prefs.getBean(FRAME_SIZE, new Rectangle(100, 50, 800, 600));
     mainFrame.setBounds(bounds);
     // mainFrame.setSize(800, 600);
@@ -266,9 +266,8 @@ public class OpendapInterface {
     tabbedPane.setSelectedIndex(0);
 
     // The Bottom-Right images
-    ImagePanel noaaPanel = new ImagePanel(new ImageIcon(Utils.getImageResource("NOAA.png", OpendapInterface.class)).getImage());
-    ImagePanel asaPanel = new ImagePanel(
-            new ImageIcon(Utils.getImageResource("ASAIMG.png", OpendapInterface.class)).getImage());
+    ImagePanel noaaPanel = new ImagePanel(new ImageIcon(this.getClass().getResource("/resources/images/NOAA.png")).getImage());
+    ImagePanel asaPanel = new ImagePanel(new ImageIcon(this.getClass().getResource("/resources/images/ASAIMG.png")).getImage());
     noaaPanel.setLayout(new MigLayout("insets 0"));
     asaPanel.setLayout(new MigLayout("insets 0"));
 

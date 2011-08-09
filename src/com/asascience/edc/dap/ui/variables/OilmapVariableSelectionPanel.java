@@ -204,7 +204,7 @@ public class OilmapVariableSelectionPanel extends VariableSelectionPanel {
     cbUVar.setEnabled(false);
     cbVVar.setEnabled(false);
 
-    ImageIcon warn = new ImageIcon(Utils.getImageResource("warn.png", OilmapVariableSelectionPanel.class));
+    ImageIcon warn = new ImageIcon(new ImageIcon(this.getClass().getResource("/resources/images/warn.png")).getImage());
     btnWarn = new JLabel(warn);
     btnWarn.addMouseListener(new MouseAdapter() {
 

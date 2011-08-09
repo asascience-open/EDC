@@ -832,7 +832,7 @@ public class DapWorldwindProcessPanel extends JPanel {
 
       ncOutPath = f.getAbsolutePath();
 
-      IndeterminateProgressDialog pd = new IndeterminateProgressDialog(mainFrame, "Progress", new ImageIcon(Utils.getImageResource("ASA.png", OpendapInterface.class)));
+      IndeterminateProgressDialog pd = new IndeterminateProgressDialog(mainFrame, "Progress", new ImageIcon(new ImageIcon(this.getClass().getResource("/resources/images/ASA.png")).getImage()));
       ProcessDataTask pdt = new ProcessDataTask("Processing Data...", ncOutPath, outname);
       pdt.addPropertyChangeListener(new ProcessPropertyListener());
       pd.setRunTask(pdt);
