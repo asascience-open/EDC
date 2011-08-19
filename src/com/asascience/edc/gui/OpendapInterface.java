@@ -255,12 +255,12 @@ public class OpendapInterface {
 
     // The "Browse" Tab
     datasetChooser = makeDatasetChooser(tabbedPane);
-    
-    // The "Log" Tab
-    tabbedPane.addTabNoClose("Log", makeLogPanel());
 
     // The "Data Viewer" Tab
     tabbedPane.addTabNoClose("Data Viewer", makeViewerPanel());
+
+    // The "Log" Tab
+    tabbedPane.addTabNoClose("Log", makeLogPanel());
 
     mainFrame.add(tabbedPane, "span, grow, wrap");
     tabbedPane.setSelectedIndex(0);
@@ -364,7 +364,7 @@ public class OpendapInterface {
     pnl.add(new JScrollPane(logArea), "grow");
     return pnl;
   }
-  
+
   private JPanel makeViewerPanel() {
     try {
 
@@ -544,13 +544,13 @@ public class OpendapInterface {
     }
   }
 
-   public void openTabledap(ErddapDataset erd) {
-     erd.buildVariables();
-     ErddapTabledapGui tdg = new ErddapTabledapGui(erd, this, homeDir);
-     tabbedPane.addTabClose("ERDDAP - Tabledap", tdg);
-     tabbedPane.setSelectedComponent(tdg);
-   }
-  
+  public void openTabledap(ErddapDataset erd) {
+    erd.buildVariables();
+    ErddapTabledapGui tdg = new ErddapTabledapGui(erd, this, homeDir);
+    tabbedPane.addTabClose("ERDDAP - Tabledap", tdg);
+    tabbedPane.setSelectedComponent(tdg);
+  }
+
   public boolean openDataset(NetcdfDataset ncd) {
     try {
       if (ncd != null) {
