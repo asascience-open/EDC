@@ -47,7 +47,7 @@ public class ResponseFormat {
     } else if (value.contains("om/1.0.0")) {
       name = "OM (1.0.0)";
     } else {
-      name = "Generic Response Format";
+      name = value;
     }
   }
 

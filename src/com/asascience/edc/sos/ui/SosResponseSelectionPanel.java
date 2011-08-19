@@ -8,8 +8,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -33,6 +35,9 @@ public final class SosResponseSelectionPanel extends JPanel {
 
   public void setResponseFormats(List<ResponseFormat> formats) {
     localVariables = formats;
+    if (formats.isEmpty()) {
+      formats.add(new ResponseFormat("No Response formats available"));
+    }
     setResponses();
   }
 
