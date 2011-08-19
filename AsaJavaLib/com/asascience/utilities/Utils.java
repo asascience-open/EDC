@@ -63,7 +63,7 @@ public class Utils {
     "HP UX"), IRIX(4, "Irix"), LINUX(5, "Linux"), MAC_OS(6, "Mac OS"), MAC_OSX(7, "Mac OS X"), MPE_IX(8,
     "MPE/iX"), NETWARE_4_11(9, "Netware 4.11"), OS_2(10, "OS/2"), SOLARIS(11, "Solaris"), WIN_2000(12,
     "Windows 2000"), WIN_95(13, "Windows 95"), WIN_98(14, "Windows 98"), WIN_NT(15, "Windows NT"), WIN_XP(16,
-    "Windows XP"),;
+    "Windows XP"),WIN_VISTA(16,"Windows VISTA"),WIN_7(16,"Windows 7"),;
     private final int hostId;
     private final String hostName;
 
@@ -92,6 +92,10 @@ public class Utils {
       return HostOS.MAC_OSX;
     } else if (osName.startsWith("mac os")) {
       return HostOS.MAC_OS;
+    } else if (osName.startsWith("windows 7")) {
+      return HostOS.WIN_7;
+    } else if (osName.startsWith("windows vista")) {
+      return HostOS.WIN_VISTA;
     } else if (osName.startsWith("windows xp")) {
       return HostOS.WIN_XP;
     } else if (osName.startsWith("windows 2000")) {

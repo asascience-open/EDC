@@ -130,6 +130,18 @@ public class OpendapInterface {
   private static Logger guiLogger = Logger.getLogger("com.asascience.log");
   private static JTextArea logArea = new JTextArea();
 
+  static {
+    System.setProperty("java.net.useSystemProxies", "true");
+    if (Utils.determineHostOS().getName().contains("Mac")) {
+      System.setProperty("apple.laf.useScreenMenuBar", "true");
+      System.setProperty("com.apple.mrj.application.apple.menu.about.name", "World Wind Application");
+      System.setProperty("com.apple.mrj.application.growbox.intrudes", "false");
+      System.setProperty("apple.awt.brushMetalLook", "true");
+    } else if (Utils.determineHostOS().getName().contains("Windows")) {
+      System.setProperty("sun.awt.noerasebackground", "true"); // prevents flashing during window resizing
+    }
+  }
+
   /**
    * Creates a new instance of OpendapInterface
    *
