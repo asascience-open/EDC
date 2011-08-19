@@ -60,7 +60,7 @@ public class SosWorldwindProcessPanel extends JPanel {
     // Set start time to 10 days ago
     dateSlider.setRange(sosServer.getParser().getStartTime(), sosServer.getParser().getEndTime());
     Date tempDate = new Date();
-    tempDate.setTime(System.currentTimeMillis() - 1000*60*60*24*10);
+    tempDate.setTime(sosServer.getParser().getEndTime().getTime() - 1000*60*60*24*10);
     dateSlider.setStartDate(tempDate);
 
     // Load variables into the variable pane

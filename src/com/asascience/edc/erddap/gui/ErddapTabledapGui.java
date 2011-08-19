@@ -128,7 +128,9 @@ public class ErddapTabledapGui extends JPanel {
         et = new Date();
       }
       dateSlider.setRange(st,et);
-      dateSlider.setStartDate(st);
+      Date tempDate = new Date();
+      tempDate.setTime(et.getTime() - 1000*60*60*24*10);
+      dateSlider.setStartDate(tempDate);
       dateSlider.addPropertyChangeListener(new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent evt) {

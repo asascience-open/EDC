@@ -148,6 +148,9 @@ public class DapWorldwindProcessPanel extends JPanel {
           if (ncReader.isHasTime()) {
             // timeDates = ncReader.getTimes();
             dateSlider.setRange(ncReader.getStartTime(), ncReader.getEndTime());
+            Date tempDate = new Date();
+            tempDate.setTime(ncReader.getEndTime().getTime() - 1000*60*60*24*10);
+            dateSlider.setStartDate(tempDate);
             lblDateIncrement.setText(lblDateIncrement.getText() + constraints.getTimeInterval());
             lblNumDatesSelected.setText("# Timesteps Selected: " + Math.round(calcNumTimesteps()));
           } else {

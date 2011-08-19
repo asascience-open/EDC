@@ -163,7 +163,7 @@ public class JSlider2Date extends JComponent implements Serializable {
   
   public void setStartDate(Date d) {
     Date oldDate = s_cal.getDate();
-    if (oldDate == null || !oldDate.equals(d)) {
+    if (oldDate == null || !s_cal.getDate().equals(d)) {
       s_cal.setDate(d);
       s_time.setValue(d);
     }
@@ -347,7 +347,7 @@ public class JSlider2Date extends JComponent implements Serializable {
     JSlider2Date js2dt = new JSlider2Date();
     try {
       DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-      start = df.parse("2000-01-01 00:00");
+      start = df.parse("0000-00-00 00:00");
       end = df.parse("2010-01-01 00:00");
       js2dt.setRange(start, end);
       
