@@ -66,7 +66,8 @@ public class ErddapGetDataProgressMonitor extends JPanel implements ActionListen
   }
 
   public void update() {
-    fileBrowser.setFile(request.getUpdatedSaveFile());
+    // Don't fire the events
+    fileBrowser.setFile(request.getUpdatedSaveFile(), false);
   }
   
   public ErddapGetDataProgressMonitor(ErddapDataRequest data) {
@@ -98,6 +99,8 @@ public class ErddapGetDataProgressMonitor extends JPanel implements ActionListen
 
       public void propertyChange(PropertyChangeEvent evt) {
         request.setSaveFile(((File)evt.getNewValue()));
+        // Immediatly kick off the processing
+        startButton.doClick();
       }
     });
 

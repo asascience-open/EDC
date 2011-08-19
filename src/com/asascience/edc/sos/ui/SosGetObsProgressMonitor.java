@@ -92,9 +92,11 @@ public class SosGetObsProgressMonitor extends JPanel implements ActionListener, 
 
       public void propertyChange(PropertyChangeEvent evt) {
         savePath = ((File)evt.getNewValue());
+        // Immediatly kick off the processing
+        startButton.doClick();
       }
     });
-    fileBrowser.setSelectDirectory(true);
+    fileBrowser.setSelectDirectory(true, false);
 
     taskOutput = new JTextArea(5, 20);
     taskOutput.setMargin(new Insets(5,5,5,5));

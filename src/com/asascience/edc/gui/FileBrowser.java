@@ -80,13 +80,19 @@ public class FileBrowser extends JPanel {
   }
   
   public void setFile(File nf) {
+    setFile(nf, true);
+  }
+  
+  public void setFile(File nf, boolean fireEvents) {
     removeOldDirectory(nf);
     this.file = nf;
     if (isDirectory) {
       nf = nf.getParentFile();
     }
     this.fileText.setText(nf.getAbsolutePath());
-    firePropertyChange("fileChanged", null, nf);
+    if (fireEvents) {
+      firePropertyChange("fileChanged", null, nf);
+    }
   }
 
   private void removeOldDirectory(File newfile) {
@@ -100,7 +106,12 @@ public class FileBrowser extends JPanel {
   
   public void setSelectDirectory(boolean directory) {
     isDirectory = directory;
-    setFile(file);
+    setFile(file, true);
+  }
+  
+  public void setSelectDirectory(boolean directory, boolean fireEvents) {
+    isDirectory = directory;
+    setFile(file, fireEvents);
   }
   
 }
