@@ -24,21 +24,28 @@ import com.bbn.openmap.gui.OMToolSet;
 import com.bbn.openmap.gui.ToolPanel;
 import gov.nasa.worldwind.BasicModel;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
+import gov.nasa.worldwind.event.RenderingExceptionListener;
 import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.event.SelectListener;
+import gov.nasa.worldwind.exception.WWAbsentRequirementException;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Earth;
 import gov.nasa.worldwind.globes.EarthFlat;
+import gov.nasa.worldwind.layers.CompassLayer;
+import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
 import gov.nasa.worldwind.layers.SkyColorLayer;
 import gov.nasa.worldwind.layers.SkyGradientLayer;
+import gov.nasa.worldwind.layers.ViewControlsLayer;
+import gov.nasa.worldwind.layers.ViewControlsSelectListener;
 import gov.nasa.worldwind.render.PointPlacemark;
 import gov.nasa.worldwind.view.orbit.BasicOrbitView;
 import gov.nasa.worldwind.view.orbit.BasicOrbitViewLimits;
 import gov.nasa.worldwind.view.orbit.FlatOrbitView;
 import gov.nasa.worldwind.view.orbit.OrbitViewLimits;
 import java.util.List;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 import ucar.unidata.geoloc.LatLonRect;
@@ -80,9 +87,8 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
   private WorldwindBoundingBoxTool polygonTool;
 
   /**
-   * Creates a new instance of OMSelectionMapPanel
+   * Creates a new instance of WorldwindSelectionMap
    *
-   * @param cons
    * @param dataDir
    * @param showAOIButton
    */
@@ -106,17 +112,47 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
     mapCanvas = new WorldWindowGLCanvas();
     mapCanvas.setModel(new BasicModel());
     // Select the stations by clicking
-    mapCanvas.addSelectListener(new SelectListener(){
-      public void selected(SelectEvent event){
+    mapCanvas.addSelectListener(new SelectListener() {
+
+      public void selected(SelectEvent event) {
         if (event.getEventAction().equals(SelectEvent.LEFT_CLICK)) {
           if (event.getTopObject() instanceof PointPlacemark) {
-            pcs.firePropertyChange("clicked",null,event.getTopObject());
+            pcs.firePropertyChange("clicked", null, event.getTopObject());
             event.consume();
           }
         }
-      }}
-    );
-    
+      }
+    });
+
+    // Create and install the view controls layer and register a controller for it with the World Window.
+    ViewControlsLayer viewControlsLayer = new ViewControlsLayer();
+    LayerList layers = mapCanvas.getModel().getLayers();
+    int compassPosition = 0;
+    for (Layer l : layers) {
+      if (l instanceof CompassLayer) {
+        compassPosition = layers.indexOf(l);
+      }
+    }
+    layers.add(compassPosition, viewControlsLayer);
+    mapCanvas.addSelectListener(new ViewControlsSelectListener(mapCanvas, viewControlsLayer));
+
+    // Register a rendering exception listener that's notified when exceptions occur during rendering.
+    mapCanvas.addRenderingExceptionListener(new RenderingExceptionListener() {
+
+      public void exceptionThrown(Throwable t) {
+        if (t instanceof WWAbsentRequirementException) {
+          String message = "Computer does not meet minimum graphics requirements.\n";
+          message += "Please install up-to-date graphics driver and try again.\n";
+          message += "Reason: " + t.getMessage() + "\n";
+          message += "This program will end when you press OK.";
+
+          JOptionPane.showMessageDialog(WorldwindSelectionMap.this, message, "Unable to Start Program",
+                  JOptionPane.ERROR_MESSAGE);
+          System.exit(-1);
+        }
+      }
+    });
+
     // Default view is Globe
     makeGlobe();
     //makeFlat();
@@ -138,7 +174,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
     toolbar.add(toggleViewButton);
 
     polygonTool = new WorldwindBoundingBoxTool(mapCanvas);
-    polygonTool.addPropertyChangeListener("boundsStored",new PropertyChangeListener() {
+    polygonTool.addPropertyChangeListener("boundsStored", new PropertyChangeListener() {
 
       public void propertyChange(PropertyChangeEvent evt) {
         if (sensorLayer != null) {
@@ -183,7 +219,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
         pcs.firePropertyChange("sensorsloaded", false, true);
       }
     });
-    mapCanvas.getModel().getLayers().add(1,sensorLayer);
+    mapCanvas.getModel().getLayers().add(1, sensorLayer);
     sensorLayer.setSensors(sensorList);
     mapCanvas.getView().setEyePosition(sensorLayer.getEyePosition());
   }
@@ -204,7 +240,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
 
     mapCanvas.getModel().setGlobe(new EarthFlat());
     mapCanvas.setView(fov);
-    
+
     LayerList layers = mapCanvas.getModel().getLayers();
     for (int i = 0; i < layers.size(); i++) {
       if (layers.get(i) instanceof SkyGradientLayer) {
@@ -219,7 +255,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
 
     mapCanvas.getModel().setGlobe(new Earth());
     mapCanvas.setView(bov);
-    
+
     LayerList layers = mapCanvas.getModel().getLayers();
     for (int i = 0; i < layers.size(); i++) {
       if (layers.get(i) instanceof SkyColorLayer) {
@@ -227,24 +263,24 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
       }
     }
   }
-  
+
   public LatLonRect getSelectedExtent() {
     if (polygonTool.getBBOX() != null) {
       return polygonTool.getBBOX();
     }
     return null;
   }
-  
+
   public void makeDataExtentLayer(LatLonRect llr) {
     if (dataExtentLayer == null) {
       dataExtentLayer = new DataExtentLayer(mapCanvas.getModel().getGlobe());
-      mapCanvas.getModel().getLayers().add(1,dataExtentLayer);
+      mapCanvas.getModel().getLayers().add(1, dataExtentLayer);
     }
     dataExtentLayer.setDataExtent(llr);
     mapCanvas.getView().setEyePosition(dataExtentLayer.getEyePosition());
     mapCanvas.redraw();
   }
-  
+
   public void makeSelectedExtentLayer(LatLonRect llr) {
     polygonTool.setBBOX(llr);
   }
