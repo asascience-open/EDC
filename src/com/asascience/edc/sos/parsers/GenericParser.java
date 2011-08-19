@@ -286,7 +286,7 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
       XPATH_IndeterminatePosition = XPath.newInstance(XPATH_GETEACH_INDETERMINATEPOSITION);
 
       XPATH_ResponseFormat = XPath.newInstance(XPATH_GETEACH_RESPONSEFORMAT);
-
+      
     } catch (JDOMException e1) {
       e1.printStackTrace();
     }
@@ -349,6 +349,15 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
     dateFormats[10] = "yyyy-MM-dd'T'HH:mm";         // No seconds, no zone
     dateFormats[11] = "yyyyMMddHHmmssZ";            // ISO8601 short
 
+    // Min date for SOS obs.  This avoids bad SOS servers that serve dates
+    // like 0000-00-00 00:00:00
+    Date minDate = null;
+    try {
+      minDate = DateUtils.parseDate("1900-01-01T00:00:00Z", dateFormats);
+    } catch (ParseException pe) {
+      pe.printStackTrace();
+    }
+    
     for (Object o : obsList) {
 
       if (!(o instanceof Element)) {
@@ -445,7 +454,11 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
       Element begin = null;
       try {
         begin = (Element) XPATH_BeginPosition.selectSingleNode(obsOffering);
-        sensor.setStartTime(DateUtils.parseDate(begin.getValue().trim(), dateFormats));
+        Date tempDate = DateUtils.parseDate(begin.getValue().trim(), dateFormats);
+        if (tempDate.before(minDate)) {
+          tempDate = minDate;
+        }
+        sensor.setStartTime(tempDate);
       } catch (JDOMException e) {
         System.out.println("Can not find BeginPosition: JDOM exception");
         sensor = null;
