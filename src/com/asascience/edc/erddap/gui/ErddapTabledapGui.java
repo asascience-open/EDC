@@ -128,9 +128,13 @@ public class ErddapTabledapGui extends JPanel {
         et = new Date();
       }
       dateSlider.setRange(st,et);
-      Date tempDate = new Date();
-      tempDate.setTime(et.getTime() - 1000*60*60*24*10);
-      dateSlider.setStartDate(tempDate);
+      // 10 days before end date
+      //Date tempDate = new Date();
+      //tempDate.setTime(et.getTime() - 1000*60*60*24*10);
+      //dateSlider.setStartDate(tempDate);
+      // Beginning of dataset
+      dateSlider.setStartDate(st);
+      
       dateSlider.addPropertyChangeListener(new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -167,6 +171,9 @@ public class ErddapTabledapGui extends JPanel {
     bottom.add(sub);
     
     add(bottom,"gap 0, growx, spanx");
+    
+    // Update URL from the start
+    updateURL();
   }
   
   private void createSliders() {
@@ -259,6 +266,7 @@ public class ErddapTabledapGui extends JPanel {
           public void propertyChange(PropertyChangeEvent evt) {
             request.setResponseFormat((String)evt.getNewValue());
             newContentPane.update();
+            updateURL();
           }
         });
         responsePanel.initComponents();
@@ -322,7 +330,11 @@ public class ErddapTabledapGui extends JPanel {
     }
     
     public File getSaveFile() {
-      return saveFile;
+      try {
+        return getUpdatedSaveFile();
+      } catch(NullPointerException npe) {
+        return null;
+      }
     }
 
     public void setSaveFile(File saveFile) {
@@ -391,7 +403,7 @@ public class ErddapTabledapGui extends JPanel {
       } catch (MalformedURLException e) {
         pcs.firePropertyChange("message", null, "- BAD URL, skipping sensor");
       } catch (IOException io) {
-        pcs.firePropertyChange("message", null, "- BAD CONNECTION, skipping sensor");
+        pcs.firePropertyChange("message", null, "- NO DATA available for selected range");
       }
 
       pcs.firePropertyChange("message", null, "- Completed " + written + " bytes in " + stopwatch.elapsedTime() + " seconds.");
