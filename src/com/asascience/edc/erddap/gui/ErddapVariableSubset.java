@@ -49,11 +49,20 @@ public class ErddapVariableSubset extends JPanel {
     add(check, "gap 0, grow");
              
     if (variable.isTime()) {
-      // Just show the checkbox and Label
+      check.setSelected(true);
+      check.setEnabled(false);
+      JLabel singleLabel = new JLabel("Time variable selected by default.");
+      add(singleLabel, "gap 0, align right");
     } else if (variable.isX()) {
-      // Just show the checkbox and Label
+      check.setSelected(true);
+      check.setEnabled(false);
+      JLabel singleLabel = new JLabel("Geographic variable selected by default.");
+      add(singleLabel, "gap 0, align right");
     } else if (variable.isY()) {
-      // Just show the checkbox and Label
+      check.setSelected(true);
+      check.setEnabled(false);
+      JLabel singleLabel = new JLabel("Geographic variable selected by default.");
+      add(singleLabel, "gap 0, align right");
     } else if (variable.isSingleValue()) {
       JLabel singleLabel = new JLabel("Only one value present in dataset: " + variable.getMin());
       add(singleLabel, "gap 0, align right");
@@ -72,6 +81,10 @@ public class ErddapVariableSubset extends JPanel {
           slider.setRange(Double.parseDouble(variable.getMin()), Double.parseDouble(variable.getMax()));
           add(slider, "gap 0, wmax 400, align right");
         } else {
+          if (variable.isStation()) {
+            check.setSelected(true);
+            check.setEnabled(false);
+          }
           ErddapVariableSelector evs = new ErddapVariableSelector(variable.getValues());
           evs.addPropertyChangeListener(new JSelectorListener());
           add(evs, "gap 0, align right");
