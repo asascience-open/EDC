@@ -799,7 +799,7 @@ public class DapWorldwindProcessPanel extends JPanel {
         String userOutname = createSuitableLayerName(find_file.getName());
 
         if (!skip) {
-          f = new File(find_file.getAbsolutePath() + File.separator + userOutname + ".nc");
+          f = new File(find_file.getParentFile().getAbsolutePath() + File.separator + userOutname + ".nc");
 
           if (f.exists()) {
             if (Configuration.ALLOW_FILE_REPLACEMENT) {

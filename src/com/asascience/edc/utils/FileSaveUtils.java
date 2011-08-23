@@ -54,7 +54,7 @@ public class FileSaveUtils {
         newHomeDir.mkdirs();
       }
     }
-    return new File(outputPath.getDirectory());
+    return new File(newHomeDir.getAbsolutePath() + File.separator + outputPath.getFile());
   }
   
   public static String chooseDirectory(File path, String dirname, int count) {
