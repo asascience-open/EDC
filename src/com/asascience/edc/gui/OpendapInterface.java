@@ -559,7 +559,7 @@ public class OpendapInterface {
   public void openTabledap(ErddapDataset erd) {
     erd.buildVariables();
     ErddapTabledapGui tdg = new ErddapTabledapGui(erd, this, homeDir);
-    tabbedPane.addTabClose("ERDDAP - Tabledap", tdg);
+    tabbedPane.addTabClose("ERDDAP - Subset & Process", tdg);
     tabbedPane.setSelectedComponent(tdg);
   }
 
