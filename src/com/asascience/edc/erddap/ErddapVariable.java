@@ -6,6 +6,7 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
 import java.util.ArrayList;
+import java.util.Collection;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -35,7 +36,7 @@ public class ErddapVariable {
   private static String ZAXIS = "altitude";
   private static String XAXIS = "longitude";
   private static String YAXIS = "latitude";
-  private static String SAXIS = "timeseries_id";
+  private static ArrayList<String> CDM_TYPES = new ArrayList<String>();
   
   private ArrayList<String> double_types;
 
@@ -47,6 +48,8 @@ public class ErddapVariable {
     this.min = "";
     this.max = "";
     this.values = new ArrayList<String>();
+    CDM_TYPES.add("timeseries_id");
+    CDM_TYPES.add("trajectory_id");
     initDoubleTypes();
     if (values) {
       getConstraints();
@@ -61,6 +64,8 @@ public class ErddapVariable {
     this.min = min;
     this.max = max;
     this.values = new ArrayList<String>();
+    CDM_TYPES.add("timeseries_id");
+    CDM_TYPES.add("trajectory_id");
     initDoubleTypes();
   }
   
@@ -181,8 +186,8 @@ public class ErddapVariable {
     return axis.equals(ZAXIS);
   }
   
-  public boolean isStation() {
-    return axis.equals(SAXIS);
+  public boolean isCdm() {
+    return CDM_TYPES.contains(axis);
   }
   
   public boolean isSingleValue() {

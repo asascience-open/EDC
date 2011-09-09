@@ -81,7 +81,7 @@ public class ErddapVariableSubset extends JPanel {
           slider.setRange(Double.parseDouble(variable.getMin()), Double.parseDouble(variable.getMax()));
           add(slider, "gap 0, wmax 400, align right");
         } else {
-          if (variable.isStation()) {
+          if (variable.isCdm()) {
             check.setSelected(true);
             check.setEnabled(false);
           }

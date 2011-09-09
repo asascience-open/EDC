@@ -26,6 +26,7 @@ public class ErddapDataset {
   private String summary;
   private String background_info;
   private String institution;
+  private String cdm_data_type;
   private boolean griddap;
   private boolean tabledap;
   private boolean subset;
@@ -34,7 +35,7 @@ public class ErddapDataset {
   private ErddapVariable yVariable;
   private ErddapVariable xVariable;
   private ErddapVariable zVariable;
-  private ErddapVariable sVariable;
+  private ErddapVariable cdmVariable;
   private ArrayList<ErddapVariable> variables;
   private ArrayList<SensorContainer> locations = null;
   private static Logger guiLogger = Logger.getLogger("com.asascience.log." + ErddapDataset.class.getName());
@@ -165,12 +166,20 @@ public class ErddapDataset {
     return yVariable;
   }
   
+  public boolean hasZ() {
+    return getZ() != null;
+  }
+  
   public ErddapVariable getZ() {
     return zVariable;
   }
   
-  public ErddapVariable getS() {
-    return sVariable;
+  public boolean hasCdmAxis() {
+    return getCdmAxis() != null;
+  }
+  
+  public ErddapVariable getCdmAxis() {
+    return cdmVariable;
   }
   
   public boolean hasLocations() {
@@ -187,6 +196,14 @@ public class ErddapDataset {
   
   public ErddapVariable getTime() {
     return timeVariable;
+  }
+  
+  public boolean hasCdmDataType() {
+    return getCdmDataType() != null;
+  }
+
+  public String getCdmDataType() {
+    return cdm_data_type;
   }
 
   public String getSubset() {
@@ -245,6 +262,7 @@ public class ErddapDataset {
       variables = new ArrayList<ErddapVariable>();
       ErddapVariable edv = null;
       String[] subsetVars = null;
+      Double frst,scnd;
       for (int i = 0 ; i < ar.length() ; i++) {
         if (ar.getJSONArray(i).getString(2).equals("subsetVariables")) {
           subsetVars = ar.getJSONArray(i).getString(4).split(",");
@@ -253,6 +271,12 @@ public class ErddapDataset {
           }
           continue;
         }
+        
+        if (ar.getJSONArray(i).getString(2).equals("cdm_data_type")) {
+          cdm_data_type = ar.getJSONArray(i).getString(4);
+          continue;
+        }
+        
         if (ar.getJSONArray(i).getString(0).equals("variable")) {
           if (edv != null) {
             setAxis(edv);
@@ -271,9 +295,7 @@ public class ErddapDataset {
           } else if (ar.getJSONArray(i).getString(2).equals("units")) {
             edv.setUnits(ar.getJSONArray(i).getString(4).trim());
           } else if (ar.getJSONArray(i).getString(2).equals("cf_role")) {
-            if (ar.getJSONArray(i).getString(4).trim().equalsIgnoreCase("timeseries_id")) {
-              edv.setAxis(ar.getJSONArray(i).getString(4).trim());
-            }
+            edv.setAxis(ar.getJSONArray(i).getString(4).trim());
           } else if (ar.getJSONArray(i).getString(2).equalsIgnoreCase("description")) {
             edv.setDescription(ar.getJSONArray(i).getString(4).trim());
           }
@@ -333,8 +355,8 @@ public class ErddapDataset {
       yVariable = erv;
     } else if (erv.isZ()) {
       zVariable = erv;
-    } else if (erv.isStation()) {
-      sVariable = erv;
+    } else if (erv.isCdm()) {
+      cdmVariable = erv;
     }
   }
   

@@ -1,6 +1,6 @@
 package com.asascience.edc.erddap.gui;
 
-import com.asascience.edc.erddap.gui.ErddapTabledapGui.ErddapDataRequest;
+import com.asascience.edc.erddap.ErddapDataRequest;
 import com.asascience.edc.gui.FileBrowser;
 import com.asascience.edc.utils.FileSaveUtils;
 import java.awt.Cursor;
@@ -87,14 +87,11 @@ public class ErddapGetDataProgressMonitor extends JPanel implements ActionListen
     progressBar.setStringPainted(true);
     
     // NEED TO HAVE THE SAVE PATH SET AT THIS POINT
-    File saveFile;
-    if (request.getSaveFile() == null) {
-      saveFile = request.getComputedSaveFile();
-    } else {
-      saveFile = request.getSaveFile();
-    }
-    String filename = FileSaveUtils.chooseFilename(saveFile, request.getFilename() + request.getResponseFormat());
-    fileBrowser = new FileBrowser(filename);
+    // Save directory
+    File tempFileLocation = request.getComputedSaveFile().getParentFile();
+    // Do we need to increment the files?
+    File filepath = new File(FileSaveUtils.chooseFilename(tempFileLocation, request.getFilename()));
+    fileBrowser = new FileBrowser(filepath);
     fileBrowser.addPropertyChangeListener("fileChanged", new PropertyChangeListener() {
 
       public void propertyChange(PropertyChangeEvent evt) {

@@ -169,6 +169,7 @@ public class DifToArc extends GenericRequest {
           properties.setLatHeader("Latitude");
           properties.setLonHeader("Longitude");
           properties.setTimeHeader("DateTime");
+          properties.setCdmFeatureType("timeSeries");
           File savedfile = new File(filename);
           Writer fstream = new FileWriter(savedfile);
           pcs.firePropertyChange("message", null, "- Streaming transformed results to file");
