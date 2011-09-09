@@ -44,6 +44,7 @@ public class BoundingBoxPanel extends JPanel {
     this.add(east, "cell 4 3, width 55, align center");
     this.add(new JLabel("S"), "cell 3 5, align center");
     this.add(south, "cell 3 4, width 55, align center");
+    addListeners();
   }
 
   public LatLonRect getBoundingBox() {
