@@ -29,9 +29,11 @@ public class CsvProperties {
   private ArrayList<String> variableHeaders;
   private String latHeader;
   private String lonHeader;
+  private String zHeader;
   private String idHeader;
   private String timeHeader;
   private String path;
+  private String cdmFeatureType;
   private String suffix;
   private Document outDoc;
   private static Logger logger = Logger.getLogger(Configuration.class);
@@ -44,6 +46,8 @@ public class CsvProperties {
   public void createXml() {
     outDoc = new Document(new Element("asa_csvdata"));
     Element root = outDoc.getRootElement();
+    root.addContent(new Element("cdm_feature_type"));
+    root.addContent(new Element("z_header"));
     root.addContent(new Element("lat_header"));
     root.addContent(new Element("lon_header"));
     root.addContent(new Element("id_header"));
@@ -85,11 +89,15 @@ public class CsvProperties {
       root.getChild("lon_header").addContent(new Element("value").setText(lonHeader));
       root.getChild("id_header").addContent(new Element("value").setText(idHeader));
       root.getChild("time_header").addContent(new Element("value").setText(timeHeader));
+      root.getChild("cdm_feature_type").addContent(new Element("value").setText(cdmFeatureType));
+      root.getChild("z_header").addContent(new Element("value").setText(zHeader));
 
       root.getChild("output_loc").setAttribute("filepath", FileSaveUtils.getFilePathNoSuffix(path) + "." + suffix);
 
       try {
-        out.output(outDoc, new FileOutputStream(xmlFile));
+        FileOutputStream fos = new FileOutputStream(xmlFile);
+        out.output(outDoc, fos);
+        fos.close();
       } catch (IOException ex) {
         logger.error("IOException", ex);
       }
@@ -118,6 +126,10 @@ public class CsvProperties {
     this.lonHeader = lon;
   }
 
+  public void setZHeader(String z) {
+    this.zHeader = z;
+  }
+  
   public void setTimeHeader(String time) {
     this.timeHeader = time;
   }
@@ -128,5 +140,9 @@ public class CsvProperties {
 
   public void setVariableHeaders(ArrayList<String> variables) {
     this.variableHeaders = variables;
+  }
+  
+  public void setCdmFeatureType(String type) {
+    this.cdmFeatureType = type;
   }
 }
