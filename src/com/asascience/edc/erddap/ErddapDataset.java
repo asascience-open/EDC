@@ -288,8 +288,11 @@ public class ErddapDataset {
           
         if (ar.getJSONArray(i).getString(0).equals("attribute")) {
           if (ar.getJSONArray(i).getString(2).equals("actual_range")) {
-            edv.setMin(ar.getJSONArray(i).getString(4).split(",")[0].trim());
-            edv.setMax(ar.getJSONArray(i).getString(4).split(",")[1].trim());
+            // The range is not always going to be in the correct order
+            frst = Double.parseDouble(ar.getJSONArray(i).getString(4).split(",")[0].trim());
+            scnd = Double.parseDouble(ar.getJSONArray(i).getString(4).split(",")[1].trim());
+            edv.setMin(String.valueOf(Math.min(frst,scnd)));
+            edv.setMax(String.valueOf(Math.max(frst,scnd)));
           } else if (ar.getJSONArray(i).getString(2).equals("long_name")) {
             edv.setLongname(ar.getJSONArray(i).getString(4).trim());
           } else if (ar.getJSONArray(i).getString(2).equals("units")) {
