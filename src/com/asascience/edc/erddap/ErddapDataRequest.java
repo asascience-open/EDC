@@ -7,6 +7,7 @@ package com.asascience.edc.erddap;
 import cern.colt.Timer;
 import com.asascience.edc.Configuration;
 import com.asascience.edc.CsvProperties;
+import com.asascience.edc.utils.CsvFileUtils;
 import com.asascience.edc.utils.FileSaveUtils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -119,12 +120,6 @@ public class ErddapDataRequest implements PropertyChangeListener {
     public void getData() {
       boolean arc = false;
       CsvProperties properties;
-      if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {
-        arc = true;
-        if (responseFormat.equals(".esriCSV")) {
-          responseFormat = ".csv";
-        }
-      }
 
       Timer stopwatch = new Timer();
       File f = null;
@@ -143,7 +138,19 @@ public class ErddapDataRequest implements PropertyChangeListener {
         File incrementFile = new File(FileSaveUtils.chooseFilename(getSaveFile().getParentFile(), getSaveFile().getName()));
         pcs.firePropertyChange("message", null, "- Streaming Results to File: " + incrementFile.getAbsolutePath());
         f = incrementFile;
-        if (arc) {
+        OutputStream output = new BufferedOutputStream(new FileOutputStream(f));
+        byte[] buffer = new byte[2048];
+        int len = 0;
+        written = 0;
+        while (-1 != (len = is.read(buffer))) {
+          output.write(buffer, 0, len);
+          written += len;
+        }
+        is.close();
+        output.flush();
+        output.close();
+        // Now write the properties file if we need to (ARC)
+        if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {
           properties = new CsvProperties();
           properties.setPath(f.getAbsolutePath());
           properties.setSuffix("csv");
@@ -165,19 +172,10 @@ public class ErddapDataRequest implements PropertyChangeListener {
           if (erd.hasCdmDataType()) {
             properties.setCdmFeatureType(erd.getCdmDataType());
           }
+          properties.setTimesteps(CsvFileUtils.getTimesteps(f, erd.getTime().getName()));
+          properties.setVariableHeaders(CsvFileUtils.getVariables(f, properties.getHeaders()));
           properties.writeFile();
         }
-        OutputStream output = new BufferedOutputStream(new FileOutputStream(f));
-        byte[] buffer = new byte[2048];
-        int len = 0;
-        written = 0;
-        while (-1 != (len = is.read(buffer))) {
-          output.write(buffer, 0, len);
-          written += len;
-        }
-        is.close();
-        output.flush();
-        output.close();
       } catch (MalformedURLException e) {
         pcs.firePropertyChange("message", null, "- BAD URL, skipping sensor");
       } catch (IOException io) {

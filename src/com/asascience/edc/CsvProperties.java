@@ -145,4 +145,16 @@ public class CsvProperties {
   public void setCdmFeatureType(String type) {
     this.cdmFeatureType = type;
   }
+  
+  public ArrayList<String> getHeaders() {
+    ArrayList<String> headers = new ArrayList<String>();
+    headers.addAll(variableHeaders);
+    headers.add(latHeader);
+    headers.add(lonHeader);
+    headers.add(idHeader);
+    headers.add(zHeader);
+    headers.add(timeHeader);
+    return headers;
+  }
+  
 }
