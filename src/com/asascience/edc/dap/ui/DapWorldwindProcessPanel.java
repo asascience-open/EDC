@@ -400,7 +400,7 @@ public class DapWorldwindProcessPanel extends JPanel {
     return result.toString();
   }
 
-  private boolean rasterNameOk(String name) {
+  private boolean isArcNameGood(String name) {
     if (name.contains(" ")) {
       return false;
     }
@@ -769,11 +769,9 @@ public class DapWorldwindProcessPanel extends JPanel {
         }
       }
       if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {
-        if (selPanel.isMakeRaster()) {
-          // If longer, trim the name down to the first 8 characters
-          if (outname.length() > 8) {
-            outname = outname.substring(0, 7);
-          }
+        // If longer, trim the name down to the first 8 characters
+        if (outname.length() > 8) {
+          outname = outname.substring(0, 7);
         }
       }
 
@@ -783,14 +781,12 @@ public class DapWorldwindProcessPanel extends JPanel {
         skip = false;
 
         if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {// ESRI
-          if (selPanel.isMakeRaster()) {
-            if (!rasterNameOk(outname)) {
-              JOptionPane.showMessageDialog(null, "The name contains illegal characters "
-                      + "or is too long.\nThe maximum allowable size is 10 characters.\n"
-                      + "Special characters (i.e. @, #, $, \"space\", etc.) are not allowed.",
-                      "Invalid Name", JOptionPane.WARNING_MESSAGE);
-              skip = true;
-            }
+          if (!isArcNameGood(outname)) {
+            JOptionPane.showMessageDialog(null, "The name contains illegal characters "
+                    + "or is too long.\nThe maximum allowable size is 10 characters.\n"
+                    + "Special characters (i.e. @, #, $, \"space\", etc.) are not allowed.",
+                    "Invalid Name", JOptionPane.WARNING_MESSAGE);
+            skip = true;
           }
         }
 
