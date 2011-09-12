@@ -268,8 +268,10 @@ public class OpendapInterface {
     // The "Browse" Tab
     datasetChooser = makeDatasetChooser(tabbedPane);
 
-    // The "Data Viewer" Tab
-    tabbedPane.addTabNoClose("Data Viewer", makeViewerPanel());
+    // The "Data Viewer" Tab, only when not closing after processing
+    if (!Configuration.CLOSE_AFTER_PROCESSING) {
+      tabbedPane.addTabNoClose("Data Viewer", makeViewerPanel());
+    }
 
     // The "Log" Tab
     tabbedPane.addTabNoClose("Log", makeLogPanel());
