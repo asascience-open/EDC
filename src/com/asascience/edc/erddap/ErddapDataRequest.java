@@ -151,6 +151,9 @@ public class ErddapDataRequest implements PropertyChangeListener {
         output.close();
         // Now write the properties file if we need to (ARC)
         if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {
+          // We can assume a CSV file here, because we are in ESRI mode
+          // We need the date and times to be NOT zulu (go figure).
+          CsvFileUtils.convertTimestepsToEsri(f, erd.getTime().getName());
           properties = new CsvProperties();
           properties.setPath(f.getAbsolutePath());
           properties.setSuffix("csv");

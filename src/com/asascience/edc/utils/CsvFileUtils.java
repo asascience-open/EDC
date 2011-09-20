@@ -5,6 +5,7 @@
 package com.asascience.edc.utils;
 
 import com.csvreader.CsvReader;
+import com.csvreader.CsvWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -41,4 +42,28 @@ public class CsvFileUtils {
     reader.close();
     return variables;
   }
+  
+  public static void convertTimestepsToEsri(File csvFile, String timeHeader) throws IOException {
+    File outFile = new File(csvFile.getParentFile() + File.separator + "temp.csv");
+    CsvWriter writer = new CsvWriter(outFile.getAbsolutePath());
+    CsvReader reader = new CsvReader(new FileReader(csvFile));
+    reader.readHeaders();
+    reader.skipLine(); // skip headers
+    writer.writeRecord(reader.getHeaders());
+    String[] values;
+    while (reader.readRecord()) {
+      values = reader.getValues();
+      values[reader.getIndex(timeHeader)] = convertZuluToEsriTime(reader.get(timeHeader));
+      writer.writeRecord(values);
+    }
+    writer.close();
+    reader.close();
+    csvFile.delete();
+    outFile.renameTo(csvFile.getAbsoluteFile());
+  }
+  
+  private static String convertZuluToEsriTime(String zulu) {
+    return zulu.replace("T", " ").replace("Z", "");
+  }
+  
 }
