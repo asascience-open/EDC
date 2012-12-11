@@ -3,6 +3,7 @@ build/*
 dist/*
 output/*
 log/*
+bin/*
 data/highResCoast*
 edcsysout.log
 edcstore.xml
@@ -11,3 +12,6 @@ NcPointer.xml
 *~
 *.swp
 history.txt
+.classpath
+.project
+.settings/org.eclipse.jdt.core.prefs

@@ -71,7 +71,7 @@
     nbproject/build-impl.xml file. 
 
     -->
-    
+
   <target name="-post-jar">
     <copy todir="dist/lib/wwj">
       <fileset dir="lib/wwj/"/>
@@ -85,5 +85,9 @@
     <copy file="edcconfig.xml" todir="dist"/>
     <copy file="edcstore.xml" todir="dist"/>
     <copy file="log4j.properties" todir="dist"/>
+    <exec executable="bin\launch4j\launch4j.exe">
+              <arg value="${basedir}\edc_launch4j_config.xml" />
+          </exec>
+  	
   </target>
 </project>
