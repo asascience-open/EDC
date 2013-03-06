@@ -101,5 +101,7 @@ public class Configuration {
     public static final int GENERAL = 0;
     public static final int ESRI = 1;
     public static final int OILMAP = 2;
+    public static final int MATLAB = 3;
+    public static final int R = 4;
   }
 }
