@@ -9,6 +9,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import org.codehaus.jettison.json.JSONArray;
@@ -54,23 +55,29 @@ public class ErddapServer implements PropertyChangeListener {
       WebResource list = c.resource(serviceLinks.get("info").toString());
       pcs.firePropertyChange("message", null, "Reading available datasets from: " + list.getURI().toString());
       JSONObject listResult = list.get(JSONObject.class);
-      JSONArray ls = listResult.getJSONObject("table").getJSONArray("rows");
+      
+      JSONObject tbl = listResult.getJSONObject("table");
+      JSONArray ls = tbl.getJSONArray("rows");
+      JSONArray nms = tbl.getJSONArray("columnNames");
+      
+      ArrayList<String> columnNames = new ArrayList<String>(Arrays.asList(nms.join(",").split(",")));
+      
       datasets = new ArrayList<ErddapDataset>(ls.length());
       JSONArray ds;
       ErddapDataset erds;
       pcs.firePropertyChange("message", null, "Building datasets...");
       for (int j = 0 ; j < ls.length() ; j++) {
         ds = ls.getJSONArray(j);
-        erds = new ErddapDataset(ds.getString(12));
-        erds.setTitle(ds.getString(5));
-        erds.setSummary(ds.getString(6));
-        erds.setBackgroundInfo(ds.getString(8));
-        erds.setInstitution(ds.getString(11));
+        erds = new ErddapDataset(ds.getString(columnNames.indexOf("\"Dataset ID\"")));
+        erds.setTitle(ds.getString(columnNames.indexOf("\"Title\"")));
+        erds.setSummary(ds.getString(columnNames.indexOf("\"Summary\"")));
+        erds.setBackgroundInfo(ds.getString(columnNames.indexOf("\"Background Info\"")));
+        erds.setInstitution(ds.getString(columnNames.indexOf("\"Institution\"")));
         erds.setErddapServer(this);
-        erds.setGriddap(!ds.getString(0).isEmpty());
-        erds.setSubset(!ds.getString(1).isEmpty());
-        erds.setTabledap(!ds.getString(2).isEmpty());
-        erds.setWms(!ds.getString(4).isEmpty());
+        erds.setGriddap(!ds.getString(columnNames.indexOf("\"griddap\"")).isEmpty());
+        erds.setSubset(!ds.getString(columnNames.indexOf("\"Subset\"")).isEmpty());
+        erds.setTabledap(!ds.getString(columnNames.indexOf("\"tabledap\"")).isEmpty());
+        erds.setWms(!ds.getString(columnNames.indexOf("\"wms\"")).isEmpty());
         datasets.add(erds);
       }
     } catch (Exception e) {
