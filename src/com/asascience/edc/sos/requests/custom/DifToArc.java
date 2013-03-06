@@ -6,6 +6,7 @@ import cern.colt.Timer;
 import com.asascience.edc.CsvProperties;
 import com.asascience.edc.sos.SensorContainer;
 import com.asascience.edc.sos.requests.GenericRequest;
+import com.asascience.edc.utils.CsvFileUtils;
 import com.asascience.edc.utils.FileSaveUtils;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -179,6 +180,7 @@ public class DifToArc extends GenericRequest {
           filesize = Long.valueOf(savedfile.length());
           // Don't add empty files to the output path
           if (filesize > 0) {
+            CsvFileUtils.convertToEsri(savedfile, "DateTime");
             filenames.add(savedfile.getAbsolutePath());
             parseProperties(difDoc, properties);
             properties.writeFile();

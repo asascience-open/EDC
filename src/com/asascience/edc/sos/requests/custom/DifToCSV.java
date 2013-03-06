@@ -5,6 +5,7 @@ import org.jdom.Document;
 import cern.colt.Timer;
 import com.asascience.edc.sos.SensorContainer;
 import com.asascience.edc.sos.requests.GenericRequest;
+import com.asascience.edc.utils.CsvFileUtils;
 import com.asascience.edc.utils.FileSaveUtils;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -131,6 +132,7 @@ public class DifToCSV extends GenericRequest {
           filesize = Long.valueOf(savedfile.length());
           // Don't add empty files to the output path
           if (filesize > 0) {
+            CsvFileUtils.convertToGeneric(savedfile);
             filenames.add(savedfile.getAbsolutePath());
           }
         } else {

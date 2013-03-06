@@ -43,9 +43,37 @@ public class CsvFileUtils {
     return variables;
   }
   
-  public static void convertTimestepsToEsri(File csvFile, String timeHeader) throws IOException {
+  public static void convertToGeneric(File csvFile) throws IOException {
     File outFile = new File(csvFile.getParentFile() + File.separator + "temp.csv");
     CsvWriter writer = new CsvWriter(outFile.getAbsolutePath());
+    writer.setEscapeMode(CsvWriter.ESCAPE_MODE_BACKSLASH);
+    CsvReader reader = new CsvReader(new FileReader(csvFile));
+    reader.readHeaders();
+    writer.writeRecord(reader.getHeaders());
+    String[] values;
+    while (reader.readRecord()) {
+      values = reader.getValues();
+      for (int j = 0 ; j < values.length ; j++) {
+        if (convertToGenericRecord(values[j])) {
+          values[j] = '"' + values[j] + '"';
+          writer.setUseTextQualifier(false);
+        }
+        writer.write(values[j]);
+        writer.setUseTextQualifier(true);
+      }
+      writer.endRecord();
+    }
+    writer.flush();
+    writer.close();
+    reader.close();
+    csvFile.delete();
+    outFile.renameTo(csvFile.getAbsoluteFile());
+  }      
+  
+  public static void convertToEsri(File csvFile, String timeHeader) throws IOException {
+    File outFile = new File(csvFile.getParentFile() + File.separator + "temp.csv");
+    CsvWriter writer = new CsvWriter(outFile.getAbsolutePath());
+    writer.setEscapeMode(0);
     CsvReader reader = new CsvReader(new FileReader(csvFile));
     reader.readHeaders();
     reader.skipLine(); // skip headers
@@ -53,17 +81,35 @@ public class CsvFileUtils {
     String[] values;
     while (reader.readRecord()) {
       values = reader.getValues();
-      values[reader.getIndex(timeHeader)] = convertZuluToEsriTime(reader.get(timeHeader));
+      values[reader.getIndex(timeHeader)] = convertToEsriTime(reader.get(timeHeader));
+      for (int j = 0 ; j < values.length ; j++) {
+        values[j] = convertToEsriRecord(values[j]);
+      }
       writer.writeRecord(values);
     }
+    writer.flush();
     writer.close();
     reader.close();
     csvFile.delete();
     outFile.renameTo(csvFile.getAbsoluteFile());
   }
   
-  private static String convertZuluToEsriTime(String zulu) {
+  private static String convertToEsriTime(String zulu) {
     return zulu.replace("T", " ").replace("Z", "");
+  }
+  
+  private static String convertToEsriRecord(String record) {
+    if (record.contains(";")) {
+      record = "Data could not be imported into ArcMap";
+    }
+    return record;
+  }
+  
+  private static boolean convertToGenericRecord(String record) {
+    if (record.contains(";")) {
+      return true;
+    }
+    return false;
   }
   
 }
