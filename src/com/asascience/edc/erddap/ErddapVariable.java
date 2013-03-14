@@ -90,9 +90,7 @@ public class ErddapVariable {
       String v;
       for (int i = 0 ; i < ar.length() ; i++) {
         v = ar.getJSONArray(i).getString(0);
-        if (this.isString()) {
-          v = "\"" + v + "\"";
-        }
+   
         values.add(v);
       }
       min = values.get(0);

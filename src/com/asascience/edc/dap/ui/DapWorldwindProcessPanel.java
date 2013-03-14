@@ -128,6 +128,13 @@ public class DapWorldwindProcessPanel extends JPanel {
     initComponents();
   }
 
+  
+  public WorldwindSelectionMap getMapPanel(){
+	  return mapPanel;
+  }
+  
+  
+  
   public boolean initData() {
     try {
       gdsList = new ArrayList<GridDataset>();

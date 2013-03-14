@@ -11,6 +11,7 @@ import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JTextField;
@@ -61,19 +62,13 @@ public class ErddapDatasetSearch extends JTextField {
             datasets = new ArrayList<ErddapDataset>(ls.length());
             JSONArray ds;
             ErddapDataset erds;
+            JSONArray nms = listResult.getJSONObject("table").getJSONArray("columnNames");
+            
+            ArrayList<String> columnNames = new ArrayList<String>(Arrays.asList(nms.join(",").split(",")));
             guiLogger.info("Found " + ls.length() + " Datasets"); 
             for (int j = 0 ; j < ls.length() ; j++) {
               ds = ls.getJSONArray(j);
-              erds = new ErddapDataset(ds.getString(12));
-              erds.setTitle(ds.getString(5));
-              erds.setSummary(ds.getString(6));
-              erds.setBackgroundInfo(ds.getString(8));
-              erds.setInstitution(ds.getString(11));
-              erds.setErddapServer(erddapServer);
-              erds.setGriddap(!ds.getString(0).isEmpty());
-              erds.setSubset(!ds.getString(1).isEmpty());
-              erds.setTabledap(!ds.getString(2).isEmpty());
-              erds.setWms(!ds.getString(4).isEmpty());
+              erds = erddapServer.createErrdapDatasetFromRow(ds, columnNames);
               datasets.add(erds);
             }
           }

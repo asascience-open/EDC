@@ -1,3 +1,3 @@
 #!/bin/sh
 cd `dirname $0`
-jre7_linux/bin/java -Djava.library.path=lib/wwj -Xmx512m -jar EDC.jar
+jre1.7.0_13/bin/java  -Xmx512m -jar EDC.jar "" $1

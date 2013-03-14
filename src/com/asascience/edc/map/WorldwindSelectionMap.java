@@ -84,6 +84,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
   private JButton toggleViewButton;
   private String LABEL_2D = "2D";
   private String LABEL_3D = "3D";
+  private  JPanel toolbar; 
   private WorldwindBoundingBoxTool polygonTool;
 
   /**
@@ -104,7 +105,12 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
   public WorldwindSelectionMap(String dataDir) {
     this(dataDir, false);
   }
-
+  public void reInitComponents(){
+	  //  add(mapCanvas, "gap 0, grow, wrap");
+	  //  add(toolbar, "gap 0, growx");
+	  dataExtentLayer = null;
+	  initComponents();
+  }
   private void initComponents() {
     setLayout(new MigLayout("gap 0, fill"));
     setBorder(new EtchedBorder());
@@ -160,7 +166,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
     add(mapCanvas, "gap 0, grow, wrap");
 
     // Toolbar
-    JPanel toolbar = new JPanel(new MigLayout("gap 0, fill"));
+    toolbar = new JPanel(new MigLayout("gap 0, fill"));
 
     toggleViewButton = new JButton();
     toggleViewButton.setText(getButtonLabel());
@@ -189,6 +195,9 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
 
   }
 
+  public void makeGlobeVisible(boolean visible){
+	  mapCanvas.setVisible(visible);
+  }
   private String getButtonLabel() {
     if (mapCanvas.getModel().getGlobe() instanceof Earth) {
       return LABEL_2D;

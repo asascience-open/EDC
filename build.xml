@@ -7,7 +7,7 @@
 <!-- the Compile on Save feature is turned off for the project. -->
 <!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
 <!-- in the project's Project Properties dialog box.-->
-<project name="EDC_Standalone" default="default" basedir=".">
+<project name="EDC" default="default" basedir=".">
   <description>Builds, tests, and runs the project EDC_Standalone.</description>
   <import file="nbproject/build-impl.xml"/>
     <!--
@@ -73,14 +73,16 @@
     -->
 
   <target name="-post-jar">
-    <copy todir="dist/lib/wwj">
+    <!--<copy todir="dist/lib/wwj">
       <fileset dir="lib/wwj/"/>
-    </copy>
+    </copy>-->
     <copy todir="dist/data">
       <fileset dir="data"/>
     </copy>
     <copy file="EDC_WIN.bat" todir="dist"/>
     <copy file="EDC_MAC.command" todir="dist"/>
+    <copy file="EDC_MAC_preLion.command" todir="dist"/>
+
     <copy file="EDC_LINUX.sh" todir="dist"/>
     <copy file="edcconfig.xml" todir="dist"/>
     <copy file="edcstore.xml" todir="dist"/>

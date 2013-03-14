@@ -14,6 +14,7 @@
 package com.asascience.edc.gui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -70,6 +71,7 @@ import com.asascience.edc.erddap.ErddapDataset;
 import com.asascience.edc.erddap.gui.ErddapDatasetViewer;
 import com.asascience.edc.erddap.gui.ErddapTabledapGui;
 import com.asascience.edc.log.TextAreaAppender;
+import com.asascience.edc.map.WorldwindSelectionMap;
 import com.asascience.edc.nc.NetcdfConstraints;
 import com.asascience.edc.nc.io.NcProperties;
 import com.asascience.edc.particle.ParticleOutputLayer;
@@ -95,6 +97,9 @@ import java.awt.ScrollPane;
 import java.util.Arrays;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import ucar.nc2.ft.FeatureDatasetFactoryManager;
@@ -129,7 +134,7 @@ public class OpendapInterface {
   private static Logger logger = Logger.getLogger("com.asascience.edc");
   private static Logger guiLogger = Logger.getLogger("com.asascience.log");
   private static JTextArea logArea = new JTextArea();
-
+  private Component currentSelection;
   static {
     System.setProperty("java.net.useSystemProxies", "true");
     if (Utils.determineHostOS().getName().contains("Mac")) {
@@ -147,7 +152,7 @@ public class OpendapInterface {
    *
    * @param args
    */
-  public OpendapInterface(String[] args) {
+  public OpendapInterface(String args) {
     store = null;
     try {
       sysDir = System.getProperty("user.dir");
@@ -155,11 +160,11 @@ public class OpendapInterface {
       File sysFile = new File(sysDir);
       homeDir = sysFile.getParent();
       String loc = "";
-      if (args != null & args.length > 0) {
-        if (Utils.isNumeric(args[0])) {
-          Configuration.setDisplayType(Integer.valueOf(args[0]));
+      if (args != null) {
+        if (Utils.isNumeric(args)) {
+          Configuration.setDisplayType(Integer.valueOf(args));
         } else {
-          loc = args[0];
+          loc = args;
         }
       } else {
         loc = Configuration.OUTPUT_LOCATION;
@@ -206,8 +211,64 @@ public class OpendapInterface {
 
     constraints = new NetcdfConstraints();
     createAndShowGUI();
+    addChangeListener(new ChangeListener (){
+    
+    	@Override
+    	public void stateChanged(ChangeEvent arg0) {
+    	if((System.getProperty("os.name").contains("OS X")) && 
+    	   (currentSelection != tabbedPane.getSelectedComponent())){
+    			makeMapVisible(currentSelection,false);
+    			currentSelection = tabbedPane.getSelectedComponent();
+    			makeMapVisible(currentSelection, true);
+    		
+    		}
+    	}
+    	
+    });
+    
   }
 
+  // This code is needed due to an issue with the jogl library and
+  // Java 7 on the mac os. The world map will appear on top of
+  // all tabs regardless of which tab is selected. In order to 
+  // get around this the worldwind map is removed a tab is selected
+  // that does not contain a map
+  // This code should be removed when an update to the jogl library is available
+  private void makeMapVisible(Component currentSelection, boolean visible){
+	  WorldwindSelectionMap worldMap = null;
+	  if(currentSelection instanceof ErddapTabledapGui)
+		  worldMap = ((ErddapTabledapGui) currentSelection).getMapPanel();
+	  else  if(currentSelection instanceof DapWorldwindProcessPanel )
+		  worldMap  = ((DapWorldwindProcessPanel) currentSelection).getMapPanel();
+
+	  else if(currentSelection instanceof  SosWorldwindProcessPanel)
+		  worldMap = (( SosWorldwindProcessPanel) currentSelection).getMapPanel();
+	  
+	  if(worldMap != null){
+		  if(!visible){
+			  worldMap.removeAll();
+		  }
+		  else {
+			if(worldMap.getComponentCount() == 0){
+			  worldMap.reInitComponents();
+			  if(currentSelection instanceof ErddapTabledapGui){
+				  ((ErddapTabledapGui) currentSelection).reInitComponents();
+			  }
+			  else  if(currentSelection instanceof DapWorldwindProcessPanel ){
+				  ((DapWorldwindProcessPanel) currentSelection).initData();  
+
+			  }
+			  else if(currentSelection instanceof  SosWorldwindProcessPanel){
+				  (( SosWorldwindProcessPanel) currentSelection).initData();
+			  }
+			}
+		  }
+	  }
+
+  }
+  
+  
+  
   public void formWindowClose(String ncPath) {
 
     if (Configuration.MAKE_POINTER) {
@@ -218,6 +279,10 @@ public class OpendapInterface {
     closeInterface(ncPath);
   }
 
+  
+  private void addChangeListener(ChangeListener cl){
+	  tabbedPane.addChangeListener(cl);
+  }
   private void createAndShowGUI() {
     if (store == null) {
       logger.error("store null in C&SGui");
@@ -279,6 +344,8 @@ public class OpendapInterface {
     mainFrame.add(tabbedPane, "span, grow, wrap");
     tabbedPane.setSelectedIndex(0);
 
+    
+    currentSelection = tabbedPane.getSelectedComponent();
     // The Bottom-Right images
     ImagePanel noaaPanel = new ImagePanel(new ImageIcon(this.getClass().getResource("/resources/images/NOAA.png")).getImage());
     ImagePanel asaPanel = new ImagePanel(new ImageIcon(this.getClass().getResource("/resources/images/ASAIMG.png")).getImage());
@@ -758,11 +825,19 @@ public class OpendapInterface {
 
       public void run() {
         // read and apply the parameters from the configuration file
+    	String passArg = null;
+    	String configFile = "edcconfig.xml";
+    	if(pass != null){
+    		if(pass.length > 0 && pass[0] != null && !pass[0].equals(""))
+    			passArg = pass[0];
+    		if (pass.length > 1 && !pass[1].equals(""))
+    			configFile = pass[1];
+    	}
         PropertyConfigurator.configure("log4j.properties");
         TextAreaAppender.setTextArea(logArea);
-        Configuration.initialize(System.getProperty("user.dir") + File.separator + "edcconfig.xml");
+        Configuration.initialize(System.getProperty("user.dir") + File.separator + configFile);
         History.initialize(System.getProperty("user.dir") + File.separator + "history.txt");
-        new OpendapInterface(pass);
+        new OpendapInterface(passArg);
       }
     });
   }

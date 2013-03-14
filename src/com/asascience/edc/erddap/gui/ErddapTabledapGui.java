@@ -52,7 +52,23 @@ public class ErddapTabledapGui extends JPanel {
     this.homeDir = homeDir;
     initComponents();
   }
+  public WorldwindSelectionMap getMapPanel(){
+	  return mapPanel;
+  }
   
+  // Workaround for mac os - jogl issue where the
+  // worldwind always appears on top of everything.
+  public void reInitComponents(){
+	  if (erd.hasX() && erd.hasY()) {
+	  // Add either the sensor layer, or the data extent layer
+      if (erd.hasLocations()) {
+        mapPanel.addSensors(erd.getLocations());
+      } else {
+        mapPanel.makeDataExtentLayer(bboxGui.getBoundingBox());
+        mapPanel.makeSelectedExtentLayer(bboxGui.getBoundingBox());
+      }
+	  }
+  }
   private void initComponents() {
     setLayout(new MigLayout("gap 0, fill"));
     
@@ -189,6 +205,7 @@ public class ErddapTabledapGui extends JPanel {
       if (variables.get(i).isSelected()) {
         selections.add(erd.getVariables().get(i).getName());
         constraints.addAll(variables.get(i).toConstraints());
+
       }
     }
     

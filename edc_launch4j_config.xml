@@ -1,7 +1,7 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>\dist\EDC_Standalone.jar</jar>
+  <jar>\dist\EDC.jar</jar>
   <outfile>\dist\EDC.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>

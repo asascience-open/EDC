@@ -72,6 +72,11 @@ public class SosWorldwindProcessPanel extends JPanel {
     return true;
   }
 
+  public WorldwindSelectionMap getMapPanel(){
+	  return mapPanel;
+  }
+  
+  
   public void setData(SosServer data) {
     this.sosServer = data;
   }

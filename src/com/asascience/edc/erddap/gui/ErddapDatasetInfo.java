@@ -122,13 +122,15 @@ public class ErddapDatasetInfo extends JPanel {
 //    subset.setEnabled(dataset.isSubset());
 //    wms.setEnabled(dataset.isWms());
   }
-  
+
   private void setDataset(ErddapDataset dataset) {
-    this.dataset = dataset;
-    datasetText.setText(this.dataset.toHTMLString());
-    if (showButtons) {
-      toggleButtons();
-    }
+	  this.dataset = dataset;
+	  if(dataset != null){
+		  datasetText.setText(this.dataset.toHTMLString());
+		  if (showButtons) {
+			  toggleButtons();
+		  }
+	  }
   }
   
   public void setDatasetPublic(ErddapDataset dataset) {

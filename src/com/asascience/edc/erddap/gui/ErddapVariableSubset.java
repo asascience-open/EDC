@@ -111,22 +111,33 @@ public class ErddapVariableSubset extends JPanel {
     return check.isSelected();
   }
   
-  public List<String> toConstraints() {
-    ArrayList z = new ArrayList<String>();
-    if (getMin().equals(getMax())) {
-      z.add(variable.getName() + "=" + getMin());
-    } else {
-      // Add constraints to URL
-      if (!minConstraint.isEmpty() && !getMin().isEmpty()) {
-        z.add(variable.getName() + minConstraint + getMin());
-      }
+    
+    public List<String> toConstraints() {
+  	    ArrayList<String> z = new ArrayList<String>();
+  	    String minValue = getMin();
+  	    if(variable.isString()){
+  	        minValue =    "\"" + minValue + "\""; 	
+  	    }
+  	    if (getMin().equals(getMax())) {
+  	    		z.add(variable.getName() + "=" + minValue);
+  	    		
+  	    } else {
+  	      // Add constraints to URL
+  	      if (!minConstraint.isEmpty() && !getMin().isEmpty()) {
+  	        z.add(variable.getName() + minConstraint + minValue);
+  	      }
+  
+  	      if (!maxConstraint.isEmpty() && !getMax().isEmpty()) {
+  	    	  String maxValue = getMax();
+  	    	  if(variable.isString())
+  	    		  maxValue = "\"" + maxValue + "\"";
+  	        z.add(variable.getName() + maxConstraint + maxValue);
+  	      }
+  	    }    	
+  
+  	    return z;
+  	  }
 
-      if (!maxConstraint.isEmpty() && !getMax().isEmpty()) {
-        z.add(variable.getName() + maxConstraint + getMax());
-      }
-    }
-    return z;
-  }
   
   @Override
   public void addPropertyChangeListener(PropertyChangeListener l) {
