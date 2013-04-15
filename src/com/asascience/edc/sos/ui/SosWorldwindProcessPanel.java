@@ -117,6 +117,7 @@ public class SosWorldwindProcessPanel extends JPanel {
 
         public void propertyChange(PropertyChangeEvent e) {
           String name = e.getPropertyName();
+          
           // Bounding box was drawn
           if (name.equals("boundsStored")) {
             if (selPanel != null) {

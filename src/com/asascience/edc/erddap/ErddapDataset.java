@@ -42,6 +42,7 @@ public class ErddapDataset {
 
   public ErddapDataset(String id) {
     this.id = id;
+    timeVariable = null;
   }
 
   public ErddapDataset(String id, String title, String summary, String background_info) {
@@ -49,6 +50,8 @@ public class ErddapDataset {
     this.title = title;
     this.summary = summary;
     this.background_info = background_info;
+    timeVariable = null;
+
   }
 
   public void setTitle(String title) {
@@ -151,7 +154,7 @@ public class ErddapDataset {
   }
 
   public boolean hasX() {
-    return getX() != null;
+    return getX() != null && getX().getValues() != null;
   }
   
   public ErddapVariable getX() {
@@ -159,7 +162,7 @@ public class ErddapDataset {
   }
   
   public boolean hasY() {
-    return getY() != null;
+    return getY() != null && getY().getValues() != null;
   }
   
   public ErddapVariable getY() {
@@ -167,7 +170,7 @@ public class ErddapDataset {
   }
   
   public boolean hasZ() {
-    return getZ() != null;
+    return getZ() != null && getZ().getValues() != null;
   }
   
   public ErddapVariable getZ() {
@@ -175,7 +178,7 @@ public class ErddapDataset {
   }
   
   public boolean hasCdmAxis() {
-    return getCdmAxis() != null;
+    return getCdmAxis() != null && getCdmAxis().getValues() != null;
   }
   
   public ErddapVariable getCdmAxis() {
@@ -183,7 +186,7 @@ public class ErddapDataset {
   }
   
   public boolean hasLocations() {
-    return getLocations() != null;
+    return getLocations() != null ;
   }
   
   public List<SensorContainer> getLocations() {
@@ -191,7 +194,7 @@ public class ErddapDataset {
   }
       
   public boolean hasTime() {
-    return getTime() != null;
+    return getTime() != null && getTime().getValues() != null;
   }
   
   public ErddapVariable getTime() {
@@ -265,9 +268,11 @@ public class ErddapDataset {
       Double frst,scnd;
       for (int i = 0 ; i < ar.length() ; i++) {
         if (ar.getJSONArray(i).getString(2).equals("subsetVariables")) {
+        	
           subsetVars = ar.getJSONArray(i).getString(4).split(",");
           for (int j = 0 ; j < subsetVars.length ; j++) {
             subsetVars[j] = subsetVars[j].trim();
+            
           }
           continue;
         }
@@ -283,23 +288,26 @@ public class ErddapDataset {
             variables.add(edv);
           }
           edv = new ErddapVariable(this,ar.getJSONArray(i).getString(1),ar.getJSONArray(i).getString(3),Arrays.asList(subsetVars).contains(ar.getJSONArray(i).getString(1).trim()));
+
           continue;
         }
           
         if (ar.getJSONArray(i).getString(0).equals("attribute")) {
           if (ar.getJSONArray(i).getString(2).equals("actual_range")) {
             // The range is not always going to be in the correct order
-            frst = Double.parseDouble(ar.getJSONArray(i).getString(4).split(",")[0].trim());
-            scnd = Double.parseDouble(ar.getJSONArray(i).getString(4).split(",")[1].trim());
-            edv.setMin(String.valueOf(Math.min(frst,scnd)));
-            edv.setMax(String.valueOf(Math.max(frst,scnd)));
+        	edv.setMin(ar.getJSONArray(i).getString(4).split(",")[0].trim());
+            edv.setMax(ar.getJSONArray(i).getString(4).split(",")[1].trim());
+
+
           } else if (ar.getJSONArray(i).getString(2).equals("long_name")) {
             edv.setLongname(ar.getJSONArray(i).getString(4).trim());
           } else if (ar.getJSONArray(i).getString(2).equals("units")) {
             edv.setUnits(ar.getJSONArray(i).getString(4).trim());
-          } else if (ar.getJSONArray(i).getString(2).equals("cf_role")) {
-            edv.setAxis(ar.getJSONArray(i).getString(4).trim());
-          } else if (ar.getJSONArray(i).getString(2).equalsIgnoreCase("description")) {
+         } else if (ar.getJSONArray(i).getString(2).equals("cf_role")) {
+        	 if(!edv.isTime())
+        		 edv.setAxis(ar.getJSONArray(i).getString(4).trim());
+          } 
+          else if (ar.getJSONArray(i).getString(2).equalsIgnoreCase("description")) {
             edv.setDescription(ar.getJSONArray(i).getString(4).trim());
           }
         }
@@ -312,7 +320,8 @@ public class ErddapDataset {
       // Does this dataset have points we can strip out?
       // latitude and longitude also need to be subsetVariables or
       // this might be a long and hard query (from Bob Simmons).
-      if (hasX() && hasY() && !getX().getValues().isEmpty() && !getX().getValues().isEmpty()) {
+
+      if (hasX() && hasY() && !getX().getValues().isEmpty() && !getY().getValues().isEmpty()) {
         buildLocations();
       }
       
@@ -353,7 +362,7 @@ public class ErddapDataset {
     if (erv.isTime()) {
       timeVariable = erv;
     } else if (erv.isX()) {
-      xVariable = erv;
+      xVariable = erv; 
     } else if (erv.isY()) {
       yVariable = erv;
     } else if (erv.isZ()) {

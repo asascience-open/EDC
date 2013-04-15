@@ -38,10 +38,13 @@ public class ErddapServer implements PropertyChangeListener {
   public final static String ERDDAP_WMS = "\"wms\"";
   
   
-  
   public ErddapServer(String url) {
     if (url.contains("?")) {
       url = url.substring(0, url.indexOf('?'));
+    }
+    if(url.contains("index.html")){
+        url = url.substring(0, url.indexOf("index.html"));
+
     }
     if(!url.endsWith("/"))
     	url = url + "/";

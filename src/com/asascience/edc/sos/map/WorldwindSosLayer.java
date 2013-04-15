@@ -56,7 +56,19 @@ public class WorldwindSosLayer extends RenderableLayer {
     pickedSensors.clear();
     for (PointPlacemark sp : sensorPoints) {
       sp.setHighlighted(false);
-      if (bbox.contains(sp.getPosition().getLatitude().getDegrees(), sp.getPosition().getLongitude().getDegrees())) {
+      LatLon norm360Pt = LatLon.fromDegrees(WorldwindUtils.normLat( sp.getPosition().getLatitude().degrees),
+    		  WorldwindUtils.normLon360(  sp.getPosition().getLongitude().degrees));
+      LatLon minPt = LatLon.fromDegrees(WorldwindUtils.normLat(bbox.getLatMin()), 
+    		  WorldwindUtils.normLon360(bbox.getLonMin()));
+      LatLon maxPt = LatLon.fromDegrees(WorldwindUtils.normLat(bbox.getLatMax()), 
+    		  WorldwindUtils.normLon360(bbox.getLonMax()));
+
+      // normalize longitudes from 0-360 and determine if the box contains each point
+	  if(norm360Pt.latitude.degrees >= minPt.latitude.degrees && norm360Pt.latitude.degrees <= maxPt.latitude.degrees &&
+		 (norm360Pt.longitude.degrees >= minPt.longitude.degrees && norm360Pt.longitude.degrees <= maxPt.longitude.degrees ||
+		 (minPt.longitude.degrees > maxPt.longitude.degrees && 
+				 (norm360Pt.longitude.degrees >= minPt.longitude.degrees || norm360Pt.longitude.degrees <= maxPt.longitude.degrees ))
+		 )){
         pickedSensors.add(sp);
         sp.setHighlighted(true);
       }
@@ -94,7 +106,7 @@ public class WorldwindSosLayer extends RenderableLayer {
     pp.setAttributes(attrs);
     pp.setHighlightAttributes(selected_attrs);
     sensorPoints.add(pp);
-    sensorLatLons.add(LatLon.fromDegrees(lat, lon));
+    sensorLatLons.add(WorldwindUtils.normalizeLatLon(LatLon.fromDegrees(lat, lon)));
     return pp;
   }
 

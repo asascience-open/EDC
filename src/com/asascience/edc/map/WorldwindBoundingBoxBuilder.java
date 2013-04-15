@@ -166,6 +166,7 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
       Position ur = new Position(ul.getLatitude(), lr.getLongitude(), 0);
       Position ll = new Position(lr.getLatitude(), ul.getLongitude(), 0);
 
+
       positions.add(ul);
       positions.add(ur);
       positions.add(lr);

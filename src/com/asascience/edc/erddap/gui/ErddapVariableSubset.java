@@ -118,7 +118,8 @@ public class ErddapVariableSubset extends JPanel {
   	    if(variable.isString()){
   	        minValue =    "\"" + minValue + "\""; 	
   	    }
-  	    if (getMin().equals(getMax())) {
+  	    if (getMin().equals(getMax()) && !getMin().isEmpty()) {
+  	    	
   	    		z.add(variable.getName() + "=" + minValue);
   	    		
   	    } else {

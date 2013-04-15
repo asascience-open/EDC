@@ -50,6 +50,8 @@ public class ErddapTabledapGui extends JPanel {
     this.parent = parent;
     this.request = new ErddapDataRequest(homeDir, erd);
     this.homeDir = homeDir;
+	variables = new ArrayList<ErddapVariableSubset>();
+
     initComponents();
   }
   public WorldwindSelectionMap getMapPanel(){
@@ -63,7 +65,8 @@ public class ErddapTabledapGui extends JPanel {
 	  // Add either the sensor layer, or the data extent layer
       if (erd.hasLocations()) {
         mapPanel.addSensors(erd.getLocations());
-      } else {
+      }
+     else{
         mapPanel.makeDataExtentLayer(bboxGui.getBoundingBox());
         mapPanel.makeSelectedExtentLayer(bboxGui.getBoundingBox());
       }
@@ -77,9 +80,24 @@ public class ErddapTabledapGui extends JPanel {
     // Panel for bbox and timeslider
     JPanel mapControls = new JPanel(new MigLayout("gap 0, fillx"));
     
+    // Button and URL
+    JPanel bottom = new JPanel(new MigLayout("gap 0, fill"));
+    url = new JTextField();
+    bottom.add(url, "growx");
+    
     if (erd.hasX() && erd.hasY()) {
       // Map
       mapPanel = new WorldwindSelectionMap(homeDir);
+      
+      // BBOX panel
+      bboxGui = new BoundingBoxPanel();
+      if(erd.getX() != null && erd.getY() != null) {
+    	  bboxGui.setBoundingBox(Double.parseDouble(erd.getY().getMax()),
+    			  Double.parseDouble(erd.getX().getMax()),
+    			  Double.parseDouble(erd.getY().getMin()), 
+    			  Double.parseDouble(erd.getX().getMin()));
+
+      }
       mapPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent e) {
@@ -93,11 +111,7 @@ public class ErddapTabledapGui extends JPanel {
       });
       mapStuff.add(mapPanel, "gap 0, grow, wrap");
     
-      // BBOX panel
-      bboxGui = new BoundingBoxPanel();
-      // Set GUI to the datasets bounds
-      bboxGui.setBoundingBox(Double.parseDouble(erd.getY().getMax()), Double.parseDouble(erd.getX().getMin()), Double.parseDouble(erd.getY().getMin()), Double.parseDouble(erd.getX().getMax()));
-      bboxGui.addPropertyChangeListener(new PropertyChangeListener() {
+    bboxGui.addPropertyChangeListener(new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent evt) {
           if (evt.getPropertyName().equals("bboxchange")) {
@@ -111,12 +125,11 @@ public class ErddapTabledapGui extends JPanel {
       // Add either the sensor layer, or the data extent layer
       if (erd.hasLocations()) {
         mapPanel.addSensors(erd.getLocations());
-      } else {
+      } else  {
         mapPanel.makeDataExtentLayer(bboxGui.getBoundingBox());
         mapPanel.makeSelectedExtentLayer(bboxGui.getBoundingBox());
       }
     }
-
     if (erd.hasTime()) {
       // TIME panel
       JPanel timePanel = new JPanel(new MigLayout("gap 0, fill"));
@@ -125,23 +138,24 @@ public class ErddapTabledapGui extends JPanel {
       dateSlider.setAlwaysPost(true);
       dateSlider.setShowBorder(false);
       dateSlider.setHandleSize(6);
-      // Get min and max time for dataset
-      Date st = DateUnit.getStandardDate(erd.getTime().getMin() + " " + erd.getTime().getUnits());
-      Date et = DateUnit.getStandardDate(erd.getTime().getMax() + " " + erd.getTime().getUnits());
-      // getMax() was probably NaN returned from ERDDAP 
-      if (!erd.getTime().hasMax()) {
-        et = new Date();
-      }
-      dateSlider.setRange(st,et);
-      // 10 days before end date
-      //Date tempDate = new Date();
-      //tempDate.setTime(et.getTime() - 1000*60*60*24*10);
-      //dateSlider.setStartDate(tempDate);
-      // Beginning of dataset
-      dateSlider.setStartDate(st);
+    	  // Get min and max time for dataset
+    	  Date st = DateUnit.getStandardDate(erd.getTime().getMin() + " " + erd.getTime().getUnits());
+    	  Date et = DateUnit.getStandardDate(erd.getTime().getMax() + " " + erd.getTime().getUnits());
+    	  // getMax() was probably NaN returned from ERDDAP 
+    	  if (!erd.getTime().hasMax()) {
+    		  et = new Date();
+    	  }
+    	  dateSlider.setRange(st,et);
+    	  // 10 days before end date
+    	  //Date tempDate = new Date();
+    	  //tempDate.setTime(et.getTime() - 1000*60*60*24*10);
+    	  //dateSlider.setStartDate(tempDate);
+    	  // Beginning of dataset
+    	  dateSlider.setStartDate(st);
       
+    	  
       dateSlider.addPropertyChangeListener(new PropertyChangeListener() {
-
+      
         public void propertyChange(PropertyChangeEvent evt) {
           updateURL();
         }
@@ -159,11 +173,7 @@ public class ErddapTabledapGui extends JPanel {
     JScrollPane scroller = new JScrollPane(sliderPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     add(scroller, "gap 0, grow, wrap");
     createSliders();
-    
-    // Button and URL
-    JPanel bottom = new JPanel(new MigLayout("gap 0, fill"));
-    url = new JTextField();
-    bottom.add(url, "growx");
+
     
     JButton sub = new JButton("Submit");
     sub.addActionListener(new ActionListener() {
@@ -182,7 +192,7 @@ public class ErddapTabledapGui extends JPanel {
   }
   
   private void createSliders() {
-    variables = new ArrayList<ErddapVariableSubset>(erd.getVariables().size());
+
     for (ErddapVariable erv : erd.getVariables()) {
       ErddapVariableSubset evs = new ErddapVariableSubset(erv);
       evs.addPropertyChangeListener(new PropertyChangeListener() {
@@ -196,13 +206,45 @@ public class ErddapTabledapGui extends JPanel {
     }
   }
   
+  private String encodeConstraintRequest(String constraintsString){
+	  String updatedString = "";
+	    boolean inQuotes = false;
+	    for(int i=0; i < constraintsString.length()-1; i++){
+	    	if(!inQuotes && constraintsString.charAt(i) == ',' && 
+	    				    constraintsString.charAt(i+1) == ' '){
+	    		updatedString  += '&';
+	    		i = i+1;
+	    	}
+	    	else if(constraintsString.charAt(i) == ',' && inQuotes){
+	    		updatedString += "%2C";
+	    	}
+	    	else if(constraintsString.charAt(i) == ' ' && inQuotes){
+	    		updatedString += "%20";
+	    	}
+	    	else {
+	    		if(constraintsString.charAt(i) == '\"'){
+	    			updatedString += "%22";
+	    			if(inQuotes)
+	    				inQuotes = false;
+	    			else
+	    				inQuotes = true;
+	    		}
+	    		else
+	    			updatedString += constraintsString.charAt(i);
+
+	    	}
+	    }
+	    return updatedString;
+  }
   private void updateURL() {
     
     ArrayList<String> selections = new ArrayList<String>();
     ArrayList<String> constraints = new ArrayList<String>();
     
+ 
     for (int i = 0 ; i < variables.size() ; i++) {
       if (variables.get(i).isSelected()) {
+    	
         selections.add(erd.getVariables().get(i).getName());
         constraints.addAll(variables.get(i).toConstraints());
 
@@ -210,7 +252,7 @@ public class ErddapTabledapGui extends JPanel {
     }
     
     // Add the Time values
-    if (erd.hasTime()) {
+    if (erd.hasTime() && dateSlider != null) {
       SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
       constraints.add(erd.getTime().getName() + ">=" + fmt.format(dateSlider.getStartDate()));
       constraints.add(erd.getTime().getName() + "<=" + fmt.format(dateSlider.getEndDate()));
@@ -233,7 +275,8 @@ public class ErddapTabledapGui extends JPanel {
       params = params.substring(0,params.length() - 1);
     }
     params += "&";
-    params += constraints.toString().replace(", ", "&").replace("[","").replace("]","");
+    String updatedString =  encodeConstraintRequest(constraints.toString());
+    params += updatedString.replace("[","").replace("]","");
     // Strip off final '&'
     if (params.endsWith("&")) {
       params = params.substring(0,params.length() - 1);
@@ -241,7 +284,6 @@ public class ErddapTabledapGui extends JPanel {
 
     request.setBaseUrl(erd.getTabledap());
     request.setParameters(params);
-   
     url.setText(request.getRequestUrl());
     
   }

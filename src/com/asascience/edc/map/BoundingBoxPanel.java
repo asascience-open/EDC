@@ -55,7 +55,8 @@ public class BoundingBoxPanel extends JPanel {
   }
 
   public void setBoundingBox(LatLonRect llr) {
-    setBoundingBox(llr.getLatMax(), llr.getLonMax(), llr.getLatMin(), llr.getLonMin());
+    setBoundingBox(llr.getUpperRightPoint().getLatitude(), llr.getUpperRightPoint().getLongitude(), 
+    		llr.getLowerLeftPoint().getLatitude(), llr.getLowerLeftPoint().getLongitude());
   }
 
   public void setBoundingBox(double n, double e, double s, double w) {
@@ -64,6 +65,7 @@ public class BoundingBoxPanel extends JPanel {
     east.setDoubleValue(e);
     south.setDoubleValue(s);
     west.setDoubleValue(w);
+
     addListeners();
   }
 

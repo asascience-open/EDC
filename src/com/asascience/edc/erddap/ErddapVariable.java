@@ -105,15 +105,16 @@ public class ErddapVariable {
   }
 
   public boolean hasMax() {
-    return !this.max.isEmpty() && this.max != null && !this.max.equalsIgnoreCase("NaN");
+    return !this.max.isEmpty() && this.max != null && !this.max.equalsIgnoreCase("NaN") && !this.max.equals("");
   }
   
   public boolean hasMin() {
-    return !this.min.isEmpty() && this.min != null && !this.min.equalsIgnoreCase("NaN");
+    return !this.min.isEmpty() && this.min != null && !this.min.equalsIgnoreCase("NaN") && !this.min.equals("") ;
   }
   
   public void setMax(String max) {
     this.max = max;
+  
   }
 
   public void setLongname(String longname) {

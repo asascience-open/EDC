@@ -231,7 +231,7 @@ public class OpendapInterface {
   // This code is needed due to an issue with the jogl library and
   // Java 7 on the mac os. The world map will appear on top of
   // all tabs regardless of which tab is selected. In order to 
-  // get around this the worldwind map is removed a tab is selected
+  // get around this the worldwind map is removed when a tab is selected
   // that does not contain a map
   // This code should be removed when an update to the jogl library is available
   private void makeMapVisible(Component currentSelection, boolean visible){

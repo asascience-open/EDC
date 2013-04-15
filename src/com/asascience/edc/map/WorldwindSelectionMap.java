@@ -286,6 +286,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
       mapCanvas.getModel().getLayers().add(1, dataExtentLayer);
     }
     dataExtentLayer.setDataExtent(llr);
+   
     mapCanvas.getView().setEyePosition(dataExtentLayer.getEyePosition());
     mapCanvas.redraw();
   }

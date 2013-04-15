@@ -81,7 +81,11 @@ public class CsvFileUtils {
     String[] values;
     while (reader.readRecord()) {
       values = reader.getValues();
-      values[reader.getIndex(timeHeader)] = convertToEsriTime(reader.get(timeHeader));
+      if(timeHeader != null){
+    	  int timeIndex = reader.getIndex(timeHeader);
+    	  if(timeIndex >= 0)
+    		  values[timeIndex] = convertToEsriTime(reader.get(timeHeader));
+      }
       for (int j = 0 ; j < values.length ; j++) {
         values[j] = convertToEsriRecord(values[j]);
       }

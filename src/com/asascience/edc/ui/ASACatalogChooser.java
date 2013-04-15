@@ -327,6 +327,7 @@ public class ASACatalogChooser extends JPanel {
                   } else if (name.equals("taskcomplete")) {
                     frame.setVisible(false);
                     frame.dispose();
+                    
                     odapInterface.openSOSDataset(myData, (SwingWorker) e.getOldValue());
                   }
                 }
@@ -376,6 +377,7 @@ public class ASACatalogChooser extends JPanel {
                   } else if (name.equals("taskcomplete")) {
                     frame.setVisible(false);
                     frame.dispose();
+                    setCurrentURL(erddapViewer.getServer().getURL());
                     odapInterface.openErddapDataset(erddapViewer, (SwingWorker) e.getOldValue());
                   }
                 }
@@ -609,7 +611,6 @@ public class ASACatalogChooser extends JPanel {
         if (debugEvents) {
           logger.info("CatalogChooser propertyChange name=" + e.getPropertyName() + "=");
         }
-
         if (e.getPropertyName().equals("Catalog")) {
           String catalogURL = (String) e.getNewValue();
           setCurrentURL(catalogURL);
@@ -886,6 +887,7 @@ public class ASACatalogChooser extends JPanel {
     this.currentURL = currentURL;
     sourceText.setText(currentURL);
     statusLabel.setText("Connected...");
+    
   }
 
   /**

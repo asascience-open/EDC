@@ -654,6 +654,7 @@ public class DapWorldwindProcessPanel extends JPanel {
   }
 
   public void setNcExtent(LatLonRect llRect) {
+	  System.out.println("dap code");
     mapPanel.makeDataExtentLayer(llRect);
   }
 
@@ -761,6 +762,7 @@ public class DapWorldwindProcessPanel extends JPanel {
       boolean skip = false;
       boolean rept = false;
       String outname = "outname";
+      String userOutname = outname;
       String inname = "outname";
       if (selPanel.getCblVars().getSelItemsSize() > 0) {
         inname = selPanel.getCblVars().getSelectedItems().get(0);
@@ -783,7 +785,7 @@ public class DapWorldwindProcessPanel extends JPanel {
       }
 
       File f = null;
-      
+      userOutname = outname;
       do {
         skip = false;
 
@@ -799,7 +801,7 @@ public class DapWorldwindProcessPanel extends JPanel {
 
         File find_file = FileSaveUtils.chooseDirectSavePath(mainFrame, homeDir, createSuitableLayerName(outname.replace(".nc", "")));
         
-        String userOutname = createSuitableLayerName(find_file.getName());
+        userOutname = createSuitableLayerName(find_file.getName());
 
         if (!skip) {
           f = new File(find_file.getParentFile().getAbsolutePath() + File.separator + userOutname + ".nc");
@@ -839,7 +841,7 @@ public class DapWorldwindProcessPanel extends JPanel {
       ncOutPath = f.getAbsolutePath();
 
       IndeterminateProgressDialog pd = new IndeterminateProgressDialog(mainFrame, "Progress", new ImageIcon(new ImageIcon(this.getClass().getResource("/resources/images/ASA.png")).getImage()));
-      ProcessDataTask pdt = new ProcessDataTask("Processing Data...", ncOutPath, outname);
+      ProcessDataTask pdt = new ProcessDataTask("Processing Data...", ncOutPath, userOutname);
       pdt.addPropertyChangeListener(new ProcessPropertyListener());
       pd.setRunTask(pdt);
       pd.runTask();
@@ -1001,7 +1003,7 @@ public class DapWorldwindProcessPanel extends JPanel {
           Thread.sleep(250);
 
           props.setNcPath(ncPath);
-          props.setOutPath(outname);
+          props.setOutPath(outname.replace("-", "_"));
           props.setStartTime(sTime);
           props.setTimeInterval(constraints.getTimeInterval());
           props.setTimeUnits(constraints.getTimeUnits());

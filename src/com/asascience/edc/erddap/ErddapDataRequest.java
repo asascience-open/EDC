@@ -153,7 +153,10 @@ public class ErddapDataRequest implements PropertyChangeListener {
         if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {
           // We can assume a CSV file here, because we are in ESRI mode
           // We need the date and times to be NOT zulu (go figure).
-          CsvFileUtils.convertToEsri(f, erd.getTime().getName());
+         String timeHeader = null;
+         if(erd.getTime() != null)
+        	 timeHeader =	erd.getTime().getName();
+          CsvFileUtils.convertToEsri(f, timeHeader);
           properties = new CsvProperties();
           properties.setPath(f.getAbsolutePath());
           properties.setSuffix("csv");
@@ -175,7 +178,8 @@ public class ErddapDataRequest implements PropertyChangeListener {
           if (erd.hasCdmDataType()) {
             properties.setCdmFeatureType(erd.getCdmDataType());
           }
-          properties.setTimesteps(CsvFileUtils.getTimesteps(f, erd.getTime().getName()));
+          if(erd.getTime() != null)
+        	  properties.setTimesteps(CsvFileUtils.getTimesteps(f, erd.getTime().getName()));
           properties.setVariableHeaders(CsvFileUtils.getVariables(f, properties.getHeaders()));
           properties.writeFile();
         }
@@ -184,7 +188,10 @@ public class ErddapDataRequest implements PropertyChangeListener {
       } catch (IOException io) {
         pcs.firePropertyChange("message", null, "- NO DATA available for selected range: " + io.getMessage());
       }
-
+      catch(Exception e){
+    	  pcs.firePropertyChange("message", null, "Exception " + e.getMessage());
+    	  e.printStackTrace();
+      }
       pcs.firePropertyChange("message", null, "- Completed " + written + " bytes in " + stopwatch.elapsedTime() + " seconds.");
       pcs.firePropertyChange("progress", null, 100);
       if (f != null) {

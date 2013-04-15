@@ -13,6 +13,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+
+import com.asascience.edc.utils.WorldwindUtils;
+
 import net.miginfocom.swing.MigLayout;
 import ucar.unidata.geoloc.LatLonPoint;
 import ucar.unidata.geoloc.LatLonPointImpl;
@@ -69,8 +72,13 @@ public class WorldwindBoundingBoxTool extends JPanel {
   }
   
   public void calculateBBOX(SurfacePolygon polygon) {
+	
     if (polygon.getReferencePosition() != null) {
-      LatLonPointImpl fpoint = new LatLonPointImpl(polygon.getReferencePosition().getLatitude().getDegrees(), polygon.getReferencePosition().getLongitude().getDegrees());
+    	
+      LatLon point = WorldwindUtils.normalizeLatLon(LatLon.fromDegrees(polygon.getReferencePosition().getLatitude().degrees, 
+    		  polygon.getReferencePosition().getLongitude().degrees));
+      LatLonPointImpl fpoint = new LatLonPointImpl(point.getLatitude().getDegrees(), point.getLongitude().getDegrees());
+
       bbox = new LatLonRect(fpoint,fpoint);
     } else {
       // Reset point
@@ -78,11 +86,14 @@ public class WorldwindBoundingBoxTool extends JPanel {
       bbox = new LatLonRect(fpoint,fpoint);
     }
     for (LatLon pt : polygon.getOuterBoundary()) {
+    
+
       LatLonPoint pti = (LatLonPoint)new LatLonPointImpl(pt.getLatitude().getDegrees(), pt.getLongitude().getDegrees());
-      if (!bbox.contains(pti)) {
+      if (!bbox.contains(pti)) { 
         bbox.extend(pti);
       }
     }
+ 
     firePropertyChange("boundsStored", false, true);
   }
   
@@ -92,8 +103,13 @@ public class WorldwindBoundingBoxTool extends JPanel {
 
   public void setBBOX(LatLonRect llr) {
     lb.clear();
-    lb.setUpperLeftPoint(Position.fromDegrees(llr.getUpperLeftPoint().getLatitude(), llr.getUpperLeftPoint().getLongitude()));
-    lb.setLowerRightPoint(Position.fromDegrees(llr.getLowerRightPoint().getLatitude(), llr.getLowerRightPoint().getLongitude()));
+    LatLon ul = WorldwindUtils.normalizeLatLon(LatLon.fromDegrees(llr.getUpperLeftPoint().getLatitude(), llr.getUpperLeftPoint().getLongitude()));
+    LatLon lr = WorldwindUtils.normalizeLatLon(LatLon.fromDegrees(llr.getLowerRightPoint().getLatitude(), llr.getLowerRightPoint().getLongitude()));
+
+    lb.setUpperLeftPoint(Position.fromDegrees(ul.getLatitude().degrees, 
+    		ul.getLongitude().degrees));
+    lb.setLowerRightPoint(Position.fromDegrees(lr.getLatitude().degrees, 
+    		lr.getLongitude().degrees));
     lb.redraw();
     calculateBBOX(lb.getPolygon());
   }

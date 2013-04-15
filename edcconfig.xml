@@ -4,13 +4,13 @@
 	<!--DISPLAY_TYPE: MUST BE AN INTEGER VALUE.
 	Choose from: GENERAL=0, ESRI=1, OILMAP=2
 	-->
-  <DISPLAY_TYPE>0</DISPLAY_TYPE>
+  <DISPLAY_TYPE>1</DISPLAY_TYPE>
 	
 	<!--CLOSE_AFTER_PROCESSING: MUST BE A BOOLEAN VALUE.
 	If true, the application will close after processing a dataset.
 	If false, the application will remain open until it is closed maually.
 	-->
-  <CLOSE_AFTER_PROCESSING>false</CLOSE_AFTER_PROCESSING>
+  <CLOSE_AFTER_PROCESSING>true</CLOSE_AFTER_PROCESSING>
 	
 	<!--MAKE_POINTER: MUST BE A BOOLEAN VALUE.
 	If true, the NcPointer.xml file will be created in the indicated (or default) output directory.
