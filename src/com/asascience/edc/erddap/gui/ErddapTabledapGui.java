@@ -266,10 +266,12 @@ public class ErddapTabledapGui extends JPanel {
     if (erd.hasX()) {
     	double minLon = bboxGui.getBoundingBox().getLonMin();
     	double maxLon =  bboxGui.getBoundingBox().getLonMax();
-    	minLon =   WorldwindUtils.normLon360(minLon);
-    	maxLon =   WorldwindUtils.normLon360(maxLon);
-    	if(minLon > maxLon) {
-    		maxLon+=360.0;
+    	if(Double.valueOf(erd.getX().getMax()) > 180.0){ 
+    		minLon =   WorldwindUtils.normLon360(minLon);
+    		maxLon =   WorldwindUtils.normLon360(maxLon);
+    		if(minLon > maxLon) {
+    			maxLon+=360.0;
+    		}
     	}
     	constraints.add(erd.getX().getName() + ">=" + minLon);
     	constraints.add(erd.getX().getName() + "<=" + maxLon);
