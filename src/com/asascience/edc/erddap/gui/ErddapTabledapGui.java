@@ -8,6 +8,10 @@ import com.asascience.edc.map.BoundingBoxPanel;
 import com.asascience.edc.gui.OpendapInterface;
 import com.asascience.edc.gui.jslider.JSlider2Date;
 import com.asascience.edc.map.WorldwindSelectionMap;
+import com.asascience.edc.utils.WorldwindUtils;
+
+import gov.nasa.worldwind.geom.LatLon;
+
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -260,8 +264,16 @@ public class ErddapTabledapGui extends JPanel {
     
     // Add the X values
     if (erd.hasX()) {
-      constraints.add(erd.getX().getName() + ">=" + bboxGui.getBoundingBox().getLonMin());
-      constraints.add(erd.getX().getName() + "<=" + bboxGui.getBoundingBox().getLonMax());
+    	double minLon = bboxGui.getBoundingBox().getLonMin();
+    	double maxLon =  bboxGui.getBoundingBox().getLonMax();
+    	minLon =   WorldwindUtils.normLon360(minLon);
+    	maxLon =   WorldwindUtils.normLon360(maxLon);
+    	if(minLon > maxLon) {
+    		maxLon+=360.0;
+    	}
+    	constraints.add(erd.getX().getName() + ">=" + minLon);
+    	constraints.add(erd.getX().getName() + "<=" + maxLon);
+
     }
     
     // Add the Y values
