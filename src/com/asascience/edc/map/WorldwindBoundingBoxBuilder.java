@@ -4,6 +4,7 @@ import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.event.PositionEvent;
 import gov.nasa.worldwind.event.PositionListener;
+import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.BasicShapeAttributes;
@@ -165,11 +166,30 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
 
       Position ur = new Position(ul.getLatitude(), lr.getLongitude(), 0);
       Position ll = new Position(lr.getLatitude(), ul.getLongitude(), 0);
+      Position dl = null;
+      Position du = null; 
+     
+      if(ul.getLongitude().degrees > lr.getLongitude().degrees){
+    	  // crosses the dateline -- add all degrees that should
+    	  // be included in the bounding box. This is necessary
+    	  // so that the .extend function call in calcultateBoundingBox 
+    	  // extends the polygon in the correct direction
+    	 for(double lonI = 180; lonI > ul.getLongitude().degrees; lonI=lonI-1.0 ) {
+    	  positions.add(Position.fromDegrees(ul.getLatitude().degrees, lonI));
+    	  positions.add(Position.fromDegrees(lr.getLatitude().degrees, lonI));
+    	 }
 
+    	 for(double lonI = -179; lonI <lr.getLongitude().degrees; lonI=lonI+1.0){
+    		 positions.add(Position.fromDegrees(ul.getLatitude().degrees, lonI));
+    		 positions.add(Position.fromDegrees(lr.getLatitude().degrees, lonI));
 
+    	 }
+    	
+      }
       positions.add(ul);
-      positions.add(ur);
       positions.add(lr);
+
+      positions.add(ur);
       positions.add(ll);
 
       this.polygon.setLocations(positions);
