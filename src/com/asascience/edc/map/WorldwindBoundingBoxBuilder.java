@@ -15,6 +15,8 @@ import gov.nasa.worldwind.render.SurfacePolygon;
 import java.awt.event.*;
 import java.util.*;
 
+import com.asascience.edc.utils.WorldwindUtils;
+
 /**
  * WorldwindBoundingBoxBuilder.java
  * 
@@ -163,35 +165,64 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
     if (ul != null && lr != null) {
       // Set this.positions to the bounding box, computed from the corners.
       ArrayList<Position> positions = new ArrayList<Position>();
-
+  
       Position ur = new Position(ul.getLatitude(), lr.getLongitude(), 0);
       Position ll = new Position(lr.getLatitude(), ul.getLongitude(), 0);
-      Position dl = null;
-      Position du = null; 
-     
-      if(ul.getLongitude().degrees > lr.getLongitude().degrees){
-    	  // crosses the dateline -- add all degrees that should
-    	  // be included in the bounding box. This is necessary
-    	  // so that the .extend function call in calcultateBoundingBox 
-    	  // extends the polygon in the correct direction
-    	 for(double lonI = 180; lonI > ul.getLongitude().degrees; lonI=lonI-1.0 ) {
-    	  positions.add(Position.fromDegrees(ul.getLatitude().degrees, lonI));
-    	  positions.add(Position.fromDegrees(lr.getLatitude().degrees, lonI));
+      double leftLonNorm360 =  WorldwindUtils.normLon360(ul.getLongitude().degrees);
+      double rightLonNorm360 =  WorldwindUtils.normLon360(lr.getLongitude().degrees);
+      // add all degrees that should
+      // be included in the bounding box. This is necessary
+      // so that the .extend function call in calcultateBoundingBox 
+      // extends the polygon in the correct direction
+      if(rightLonNorm360 < leftLonNorm360) {
+    	  // crosses the prime meridian 
+    	  
+    	  // add top left
+    	 for(double lonI = leftLonNorm360; lonI <= 360; lonI=lonI+1.0 ) {
+    	  positions.add(Position.fromDegrees(ul.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
     	 }
-
-    	 for(double lonI = -179; lonI <lr.getLongitude().degrees; lonI=lonI+1.0){
-    		 positions.add(Position.fromDegrees(ul.getLatitude().degrees, lonI));
-    		 positions.add(Position.fromDegrees(lr.getLatitude().degrees, lonI));
-
+    	 // add top right
+    	 for(double lonI = 0; lonI <= rightLonNorm360; lonI=lonI+1.0){
+    		 positions.add(Position.fromDegrees(ul.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
     	 }
+    	 // add lower right
+    	 for(double lonI = rightLonNorm360; lonI >= 0;  lonI=lonI-1.0 ) {
+       	  positions.add(Position.fromDegrees(lr.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
+       	 }
+       	 // add lower left
+       	 for(double lonI = 360; lonI >= leftLonNorm360; lonI=lonI-1.0){
+       		 positions.add(Position.fromDegrees(lr.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
+
+       	 }
+
     	
       }
-      positions.add(ul);
-      positions.add(lr);
+      else {
+    	  double midPoint = (leftLonNorm360 + rightLonNorm360) / 2.0;
+       	  // add top right
+    	  for(double lonI = midPoint; lonI <= rightLonNorm360; lonI=lonI+1.0 ) {
+    		  positions.add(Position.fromDegrees(ur.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
+    	  }
+    	  positions.add(ur);
+    	  positions.add(lr);
+    	  // add bottom 
+    	  for(double lonI = rightLonNorm360; lonI >= leftLonNorm360; lonI=lonI-1.0 ) {
+    		  positions.add(Position.fromDegrees(lr.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
+    	  }
+    
+    	  positions.add(ll);
+    	  positions.add(ul);
+    	  
+    	  // add top left
+    	  for(double lonI = leftLonNorm360; lonI <=  midPoint; lonI=lonI+1.0){
+    		  positions.add(Position.fromDegrees(ul.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
 
-      positions.add(ur);
-      positions.add(ll);
 
+    	  }
+
+      }
+      
+      
       this.polygon.setLocations(positions);
       this.wwd.redraw();
       this.firePropertyChange("WorldwindBoundingBoxBuilder.BBOXDrawn", null, true);
