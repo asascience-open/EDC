@@ -43,10 +43,10 @@ public class BoundingBoxPanel extends JPanel {
     south.setColumns(numCols);
     east.setColumns(numCols);
     west.setColumns(numCols);
-//    north.setMinimumSize(new Dimension(25, north.getMinimumSize().height));
-//    south.setMinimumSize(new Dimension(25, north.getMinimumSize().height));
-//    east.setMinimumSize(new Dimension(25, north.getMinimumSize().height));
-//    west.setMinimumSize(new Dimension(25, north.getMinimumSize().height));
+    north.setMinimumSize(new Dimension(25, north.getMinimumSize().height));
+    south.setMinimumSize(new Dimension(25, north.getMinimumSize().height));
+    east.setMinimumSize(new Dimension(25, north.getMinimumSize().height));
+    west.setMinimumSize(new Dimension(25, north.getMinimumSize().height));
 
     this.add(new JLabel("N"), "cell 3 1, align center");
     this.add(north, "cell 3 2,  align center");
