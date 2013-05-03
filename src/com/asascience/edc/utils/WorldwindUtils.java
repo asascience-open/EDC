@@ -18,6 +18,7 @@ import java.util.List;
 public class WorldwindUtils {
   
   public static Position getEyePositionFromPositions(Iterable<? extends LatLon> positions) {
+	if(positions == null) return null;
     Sector sector = Sector.boundingSector(positions);
     Angle delta = sector.getDeltaLat();
     if (sector.getDeltaLon().compareTo(delta) > 0) {

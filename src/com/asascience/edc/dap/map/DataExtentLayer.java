@@ -1,6 +1,8 @@
 package com.asascience.edc.dap.map;
 
 import com.asascience.edc.utils.WorldwindUtils;
+
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.Position;
 import ucar.unidata.geoloc.LatLonRect;
 import gov.nasa.worldwind.geom.Angle;
@@ -27,6 +29,7 @@ public class DataExtentLayer extends RenderableLayer {
 	private SurfacePolygon polygon;
 	private SurfaceSector sector;
 	private SurfaceSector sector2;
+	private SurfaceSector initialZoomSector;
 	private Box box;
 	private Globe globe;
 
@@ -46,16 +49,25 @@ public class DataExtentLayer extends RenderableLayer {
 		this.polygon.setAttributes(satts);
 
 		this.sector = new SurfaceSector();
-		this.sector.setVisible(true);
+		this.sector.setVisible(false);
 		this.sector.setAttributes(satts);
+		// add an initial sector to set the initial fov
+		// make the box inivisible 
+		 sector.setSector(Sector.boundingSector(Position.fromDegrees(90,-180), 
+				 								Position.fromDegrees(-90, 0)));
+		this.sector.setPathType(AVKey.LINEAR);
 
 		this.sector2 = new SurfaceSector();
 		this.sector2.setVisible(true);
 		this.sector2.setAttributes(satts);
+		this.sector2.setPathType(AVKey.LINEAR);
+
 
 		this.box = new Box();
 		this.box.setVisible(true);
 		this.box.setAttributes(satts);
+		this.box.setCenterPosition(Position.fromDegrees(0,0));
+		
 
 		addRenderable(polygon);
 		addRenderable(sector2);
@@ -63,12 +75,22 @@ public class DataExtentLayer extends RenderableLayer {
 		addRenderable(box);
 	}
 
-  public void setDataExtent(LatLonRect bbox) {
+  public void setDataExtent(LatLonRect bbox, boolean is360) {
+	sector.setVisible(true);
+	Double leftLon = bbox.getUpperLeftPoint().getLongitude();
+	Double rightLon =  bbox.getLowerRightPoint().getLongitude();
 
-    LatLon ul = WorldwindUtils.normalizeLatLon(LatLon.fromDegrees(bbox.getUpperLeftPoint().getLatitude(), bbox.getUpperLeftPoint().getLongitude()));
-    LatLon lr = WorldwindUtils.normalizeLatLon(LatLon.fromDegrees(bbox.getLowerRightPoint().getLatitude(), bbox.getLowerRightPoint().getLongitude()));
+	// fix to deal with bbox that goes from 0 to 360
+	// when normalized both values would be 0 and the
+	// bounding box would be a single line
+	if(leftLon == 0 && rightLon == 0 && is360)
+		leftLon = 359.9999;
+	
+    LatLon ul = WorldwindUtils.normalizeLatLon(LatLon.fromDegrees(bbox.getUpperLeftPoint().getLatitude(), leftLon));
+    LatLon lr = WorldwindUtils.normalizeLatLon(LatLon.fromDegrees(bbox.getLowerRightPoint().getLatitude(), rightLon));
 
-   if (bbox.crossDateline()){
+
+ 	if (bbox.crossDateline() || is360){
 		LatLon eL;
     	LatLon wL;
 	   if(lr.longitude.degrees < 0){
@@ -81,7 +103,7 @@ public class DataExtentLayer extends RenderableLayer {
 	   }
     	 sector2.setSector(Sector.boundingSector(wL, ul));
     	 sector.setSector(Sector.boundingSector(eL, lr));
-    	 
+
     }
    else if (bbox.getWidth() > 180){
 	   LatLon eL;
@@ -96,6 +118,7 @@ public class DataExtentLayer extends RenderableLayer {
 	   }
 	   sector2.setSector(Sector.boundingSector(wL, ul));
 	   sector.setSector(Sector.boundingSector(eL, lr));
+
    }
    else {
 	   sector.setSector(Sector.boundingSector(ul, lr));

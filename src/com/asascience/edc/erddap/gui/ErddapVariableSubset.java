@@ -78,8 +78,16 @@ public class ErddapVariableSubset extends JPanel {
       slider.setHandleSize(6);
       if (!variable.getValues().isEmpty()) {
         if (variable.isDouble()) {
-          slider.setRange(Double.parseDouble(variable.getMin()), Double.parseDouble(variable.getMax()));
-          add(slider, "gap 0, wmax 400, align right");
+        	double minVal = Double.parseDouble(variable.getMin());
+        	double maxVal =  Double.parseDouble(variable.getMax());
+        	if((int)minVal!=(int)maxVal){
+        		slider.setRange(minVal, maxVal);
+        		add(slider, "gap 0, wmax 400, align right");
+        	}
+        	else{
+        		 JLabel singleLabel = new JLabel("Only one value present in dataset: " + variable.getMin());
+        	      add(singleLabel, "gap 0, align right");
+        	}
         } else {
           if (variable.isCdm()) {
             check.setSelected(true);

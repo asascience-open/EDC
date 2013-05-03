@@ -48,14 +48,14 @@ public class ErddapTabledapGui extends JPanel {
   private JSlider2Date dateSlider;
   private String homeDir;
   private static Logger guiLogger = Logger.getLogger("com.asascience.log." + ErddapTabledapGui.class.getName());
-  
+  private boolean dataExtentFound;
   public ErddapTabledapGui(ErddapDataset erd, OpendapInterface parent, String homeDir) {
     this.erd = erd;
     this.parent = parent;
     this.request = new ErddapDataRequest(homeDir, erd);
     this.homeDir = homeDir;
 	variables = new ArrayList<ErddapVariableSubset>();
-
+	this.dataExtentFound = true;
     initComponents();
   }
   public WorldwindSelectionMap getMapPanel(){
@@ -71,8 +71,7 @@ public class ErddapTabledapGui extends JPanel {
         mapPanel.addSensors(erd.getLocations());
       }
      else{
-        mapPanel.makeDataExtentLayer(bboxGui.getBoundingBox());
-        mapPanel.makeSelectedExtentLayer(bboxGui.getBoundingBox());
+        mapPanel.makeDataExtentLayer(bboxGui.getBoundingBox(), dataExtentFound,  bboxGui.isDataIs360());
       }
 	  }
   }
@@ -96,11 +95,18 @@ public class ErddapTabledapGui extends JPanel {
       // BBOX panel
       bboxGui = new BoundingBoxPanel();
       if(erd.getX() != null && erd.getY() != null) {
+    	  try{
+    	
     	  bboxGui.setBoundingBox(Double.parseDouble(erd.getY().getMax()),
     			  Double.parseDouble(erd.getX().getMax()),
     			  Double.parseDouble(erd.getY().getMin()), 
     			  Double.parseDouble(erd.getX().getMin()));
-
+    	  }
+    	  catch(NumberFormatException e){
+    		  guiLogger.warn("Error: Latitude/ Longitude bounds not defined");
+    		
+        		dataExtentFound = false;
+    	  }
       }
       mapPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -130,8 +136,7 @@ public class ErddapTabledapGui extends JPanel {
       if (erd.hasLocations()) {
         mapPanel.addSensors(erd.getLocations());
       } else  {
-        mapPanel.makeDataExtentLayer(bboxGui.getBoundingBox());
-        mapPanel.makeSelectedExtentLayer(bboxGui.getBoundingBox());
+        mapPanel.makeDataExtentLayer(bboxGui.getBoundingBox(), dataExtentFound, bboxGui.isDataIs360());
       }
     }
     if (erd.hasTime()) {
@@ -266,22 +271,33 @@ public class ErddapTabledapGui extends JPanel {
     if (erd.hasX()) {
     	double minLon = bboxGui.getBoundingBox().getLonMin();
     	double maxLon =  bboxGui.getBoundingBox().getLonMax();
-    	if(Double.valueOf(erd.getX().getMax()) > 180.0){ 
-    		minLon =   WorldwindUtils.normLon360(minLon);
-    		maxLon =   WorldwindUtils.normLon360(maxLon);
-    		if(minLon > maxLon) {
-    			maxLon+=360.0;
+    	try {
+    		if(Double.valueOf(erd.getX().getMax()) > 180.0){ 
+    			minLon =   WorldwindUtils.normLon360(minLon);
+    			maxLon =   WorldwindUtils.normLon360(maxLon);
+    			if(minLon > maxLon) {
+    				maxLon+=360.0;
+    			}
+    			if(bboxGui.isDataIs360())
+    				maxLon = 360.0;
     		}
+    		constraints.add(erd.getX().getName() + ">=" + minLon);
+    		constraints.add(erd.getX().getName() + "<=" + maxLon);
     	}
-    	constraints.add(erd.getX().getName() + ">=" + minLon);
-    	constraints.add(erd.getX().getName() + "<=" + maxLon);
-
+    	catch(NumberFormatException e){
+    		guiLogger.warn("No Longitude values defined");
+    	}
     }
     
     // Add the Y values
     if (erd.hasY()) {
+    	try{
       constraints.add(erd.getY().getName() + ">=" + bboxGui.getBoundingBox().getLatMin());
       constraints.add(erd.getY().getName() + "<=" + bboxGui.getBoundingBox().getLatMax());
+    	}
+    	catch(Exception e){
+    		guiLogger.warn("No Latitude values defined");
+    	}
     }
     
     String params = selections.toString().replace(" ","").replace("[","").replace("]","");

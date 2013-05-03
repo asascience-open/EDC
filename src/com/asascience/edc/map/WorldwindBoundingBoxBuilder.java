@@ -28,6 +28,7 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
   private boolean armed = false;
   private Position ul;
   private Position lr;
+  private Position initialPressedPos;
   private final RenderableLayer layer;
   private final SurfacePolygon polygon;
   private boolean active = false;
@@ -108,7 +109,7 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
           return;
         }
 
-        addPosition();
+       addPosition();
       }
     });
   }
@@ -163,13 +164,25 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
   private void drawBBOX() {
 
     if (ul != null && lr != null) {
+    	Position realUl = ul;
+    	Position realLr = lr;
+       
+
+    	if(realUl.latitude.degrees < realLr.latitude.degrees) {
+    		realUl = lr;
+    		realLr = ul;
+    	}
+
+      
+
+    	
       // Set this.positions to the bounding box, computed from the corners.
       ArrayList<Position> positions = new ArrayList<Position>();
   
-      Position ur = new Position(ul.getLatitude(), lr.getLongitude(), 0);
-      Position ll = new Position(lr.getLatitude(), ul.getLongitude(), 0);
-      double leftLonNorm360 =  WorldwindUtils.normLon360(ul.getLongitude().degrees);
-      double rightLonNorm360 =  WorldwindUtils.normLon360(lr.getLongitude().degrees);
+      Position ur = new Position(realUl.getLatitude(), realLr.getLongitude(), 0);
+      Position ll = new Position(realLr.getLatitude(), realUl.getLongitude(), 0);
+      double leftLonNorm360 =  WorldwindUtils.normLon360(realUl.getLongitude().degrees);
+      double rightLonNorm360 =  WorldwindUtils.normLon360(realLr.getLongitude().degrees);
       // add all degrees that should
       // be included in the bounding box. This is necessary
       // so that the .extend function call in calcultateBoundingBox 
@@ -179,19 +192,19 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
     	  
     	  // add top left
     	 for(double lonI = leftLonNorm360; lonI <= 360; lonI=lonI+1.0 ) {
-    	  positions.add(Position.fromDegrees(ul.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
+    	  positions.add(Position.fromDegrees(realUl.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
     	 }
     	 // add top right
     	 for(double lonI = 0; lonI <= rightLonNorm360; lonI=lonI+1.0){
-    		 positions.add(Position.fromDegrees(ul.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
+    		 positions.add(Position.fromDegrees(realUl.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
     	 }
     	 // add lower right
     	 for(double lonI = rightLonNorm360; lonI >= 0;  lonI=lonI-1.0 ) {
-       	  positions.add(Position.fromDegrees(lr.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
+       	  positions.add(Position.fromDegrees(realLr.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
        	 }
        	 // add lower left
        	 for(double lonI = 360; lonI >= leftLonNorm360; lonI=lonI-1.0){
-       		 positions.add(Position.fromDegrees(lr.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
+       		 positions.add(Position.fromDegrees(realLr.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
 
        	 }
 
@@ -204,18 +217,18 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
     		  positions.add(Position.fromDegrees(ur.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
     	  }
     	  positions.add(ur);
-    	  positions.add(lr);
+    	  positions.add(realLr);
     	  // add bottom 
     	  for(double lonI = rightLonNorm360; lonI >= leftLonNorm360; lonI=lonI-1.0 ) {
-    		  positions.add(Position.fromDegrees(lr.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
+    		  positions.add(Position.fromDegrees(realLr.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
     	  }
     
     	  positions.add(ll);
-    	  positions.add(ul);
+    	  positions.add(realUl);
     	  
     	  // add top left
     	  for(double lonI = leftLonNorm360; lonI <=  midPoint; lonI=lonI+1.0){
-    		  positions.add(Position.fromDegrees(ul.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
+    		  positions.add(Position.fromDegrees(realUl.getLatitude().degrees, WorldwindUtils.normLon(lonI)));
 
 
     	  }
@@ -241,6 +254,7 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
     drawBBOX();
   }
 
+
   private void addPosition() {
     Position curPos = this.wwd.getCurrentPosition();
     if (curPos == null) {
@@ -251,6 +265,7 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
     } else {
       this.lr = curPos;
     }
+
     drawBBOX();
   }
 

@@ -1,6 +1,8 @@
 package com.asascience.edc.map;
 
 import com.asascience.edc.map.BoundingBoxPanel.BBoxChanged;
+
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -29,21 +31,31 @@ public class BoundingBoxPanel extends JPanel {
   private JDoubleField west = new JDoubleField(fmt);
   private PropertyChangeSupport pcs;
   private BBoxChanged bboxEvent = new BBoxChanged();
-
+  private boolean dataIs360;
   public BoundingBoxPanel() {
-
+	  
     pcs = new PropertyChangeSupport(this);
-
+    dataIs360 = false;
+    int numCols = 3;
     this.setLayout(new MigLayout("gap 0, fill"));
     this.setBorder(new EtchedBorder());
+    north.setColumns(numCols);
+    south.setColumns(numCols);
+    east.setColumns(numCols);
+    west.setColumns(numCols);
+//    north.setMinimumSize(new Dimension(25, north.getMinimumSize().height));
+//    south.setMinimumSize(new Dimension(25, north.getMinimumSize().height));
+//    east.setMinimumSize(new Dimension(25, north.getMinimumSize().height));
+//    west.setMinimumSize(new Dimension(25, north.getMinimumSize().height));
+
     this.add(new JLabel("N"), "cell 3 1, align center");
-    this.add(north, "cell 3 2, width 55, align center");
+    this.add(north, "cell 3 2,  align center");
     this.add(new JLabel("W"), "cell 1 3, align center");
-    this.add(west, "cell 2 3, width 55, align center");
+    this.add(west, "cell 2 3,  align center");
     this.add(new JLabel("E"), "cell 5 3, align center");
-    this.add(east, "cell 4 3, width 55, align center");
+    this.add(east, "cell 4 3,  align center");
     this.add(new JLabel("S"), "cell 3 5, align center");
-    this.add(south, "cell 3 4, width 55, align center");
+    this.add(south, "cell 3 4,  align center");
     addListeners();
   }
 
@@ -51,6 +63,7 @@ public class BoundingBoxPanel extends JPanel {
     LatLonPointImpl uL = new LatLonPointImpl(north.getDoubleValue(), west.getDoubleValue());
     LatLonPointImpl lR = new LatLonPointImpl(south.getDoubleValue(), east.getDoubleValue());
     LatLonRect llr = new LatLonRect(uL, lR);
+ 
     return llr;
   }
 
@@ -65,7 +78,10 @@ public class BoundingBoxPanel extends JPanel {
     east.setDoubleValue(e);
     south.setDoubleValue(s);
     west.setDoubleValue(w);
-
+    if((e == 360.0 && w == 0.0) ||
+       (e ==0.0 && w == 360.0)) {
+    	dataIs360 = true;
+    }
     addListeners();
   }
 
@@ -96,4 +112,8 @@ public class BoundingBoxPanel extends JPanel {
       }
     }
   }
+
+public boolean isDataIs360() {
+	return dataIs360;
+}
 }

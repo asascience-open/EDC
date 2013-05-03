@@ -29,6 +29,7 @@ import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.event.SelectListener;
 import gov.nasa.worldwind.exception.WWAbsentRequirementException;
 import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Earth;
 import gov.nasa.worldwind.globes.EarthFlat;
@@ -230,7 +231,12 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
     });
     mapCanvas.getModel().getLayers().add(1, sensorLayer);
     sensorLayer.setSensors(sensorList);
-    mapCanvas.getView().setEyePosition(sensorLayer.getEyePosition());
+    Position eyePosition = sensorLayer.getEyePosition();
+    if(eyePosition != null)
+    	mapCanvas.getView().setEyePosition(eyePosition);
+    else
+    	mapCanvas.getView().setEyePosition(Position.fromDegrees(0,0));
+    
   }
 
   public void toggleSensor(PointPlacemark sensor) {
@@ -245,8 +251,11 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
     ovl.setCenterLocationLimits(Sector.FULL_SPHERE);
     ovl.setPitchLimits(Angle.ZERO, Angle.ZERO);
     BasicOrbitViewLimits.applyLimits(fov, ovl);
-    fov.setEyePosition(mapCanvas.getView().getCurrentEyePosition());
-
+    Position eyePosition = mapCanvas.getView().getCurrentEyePosition();
+    if(eyePosition != null)
+    	fov.setEyePosition(eyePosition);
+    else
+    	mapCanvas.getView().setEyePosition(Position.fromDegrees(0,0));
     mapCanvas.getModel().setGlobe(new EarthFlat());
     mapCanvas.setView(fov);
 
@@ -280,15 +289,26 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
     return null;
   }
 
-  public void makeDataExtentLayer(LatLonRect llr) {
+  public void makeDataExtentLayer(LatLonRect llr){
+	  makeDataExtentLayer(llr, true, false);
+  }
+  
+  
+  public void makeDataExtentLayer(LatLonRect llr, boolean dataExtentFound, boolean is360) {
     if (dataExtentLayer == null) {
       dataExtentLayer = new DataExtentLayer(mapCanvas.getModel().getGlobe());
       mapCanvas.getModel().getLayers().add(1, dataExtentLayer);
     }
-    dataExtentLayer.setDataExtent(llr);
-   
-    mapCanvas.getView().setEyePosition(dataExtentLayer.getEyePosition());
+    if(dataExtentFound)
+    	dataExtentLayer.setDataExtent(llr, is360);
+    Position eyePosition = dataExtentLayer.getEyePosition();
+    if(eyePosition != null) 
+    	mapCanvas.getView().setEyePosition(eyePosition);
+    else
+    	mapCanvas.getView().setEyePosition(Position.fromDegrees(0,0));
     mapCanvas.redraw();
+    
+    
   }
 
   public void makeSelectedExtentLayer(LatLonRect llr) {

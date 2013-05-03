@@ -118,8 +118,7 @@ public class ErddapDataRequest implements PropertyChangeListener {
     }
     
     public void getData() {
-      boolean arc = false;
-      CsvProperties properties;
+    
 
       Timer stopwatch = new Timer();
       File f = null;
@@ -150,43 +149,17 @@ public class ErddapDataRequest implements PropertyChangeListener {
         output.flush();
         output.close();
         // Now write the properties file if we need to (ARC)
-        if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {
-          // We can assume a CSV file here, because we are in ESRI mode
-          // We need the date and times to be NOT zulu (go figure).
-         String timeHeader = null;
-         if(erd.getTime() != null)
-        	 timeHeader =	erd.getTime().getName();
-          CsvFileUtils.convertToEsri(f, timeHeader);
-          properties = new CsvProperties();
-          properties.setPath(f.getAbsolutePath());
-          properties.setSuffix("csv");
-          if (erd.hasZ()) {
-            properties.setZHeader(erd.getZ().getName());
-          }
-          if (erd.hasCdmAxis()) {
-            properties.setIdHeader(erd.getCdmAxis().getName());
-          }
-          if (erd.hasX()) {
-            properties.setLonHeader(erd.getX().getName());
-          }
-          if (erd.hasY()) {
-            properties.setLatHeader(erd.getY().getName());
-          }
-          if (erd.hasTime()) {
-            properties.setTimeHeader(erd.getTime().getName());
-          }
-          if (erd.hasCdmDataType()) {
-            properties.setCdmFeatureType(erd.getCdmDataType());
-          }
-          if(erd.getTime() != null)
-        	  properties.setTimesteps(CsvFileUtils.getTimesteps(f, erd.getTime().getName()));
-          properties.setVariableHeaders(CsvFileUtils.getVariables(f, properties.getHeaders()));
-          properties.writeFile();
-        }
+        writeArcFile( f);
       } catch (MalformedURLException e) {
+    	  e.printStackTrace();
+
         pcs.firePropertyChange("message", null, "- BAD URL, skipping sensor");
       } catch (IOException io) {
-        pcs.firePropertyChange("message", null, "- NO DATA available for selected range: " + io.getMessage());
+    	  io.printStackTrace();
+    	  if(written == 0)
+    		  pcs.firePropertyChange("message", null, "- NO DATA available for selected range: " + io.getMessage());
+    	  else
+    	       writeArcFile( f);
       }
       catch(Exception e){
     	  pcs.firePropertyChange("message", null, "Exception " + e.getMessage());
@@ -197,5 +170,50 @@ public class ErddapDataRequest implements PropertyChangeListener {
       if (f != null) {
         pcs.firePropertyChange("done", null, f.getAbsolutePath());
       }
+    }
+    
+    private void writeArcFile( File f ){
+    	// Now write the properties file if we need to (ARC)
+    	if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {
+    	      CsvProperties properties;
+
+    		// We can assume a CSV file here, because we are in ESRI mode
+    		// We need the date and times to be NOT zulu (go figure).
+    		String timeHeader = null;
+    		if(erd.getTime() != null)
+    			timeHeader =	erd.getTime().getName();
+    		try {
+    			CsvFileUtils.convertToEsri(f, timeHeader);
+
+    			properties = new CsvProperties();
+    			properties.setPath(f.getAbsolutePath());
+    			properties.setSuffix("csv");
+    			if (erd.hasZ()) {
+    				properties.setZHeader(erd.getZ().getName());
+    			}
+    			if (erd.hasCdmAxis()) {
+    				properties.setIdHeader(erd.getCdmAxis().getName());
+    			}
+    			if (erd.hasX()) {
+    				properties.setLonHeader(erd.getX().getName());
+    			}
+    			if (erd.hasY()) {
+    				properties.setLatHeader(erd.getY().getName());
+    			}
+    			if (erd.hasTime()) {
+    				properties.setTimeHeader(erd.getTime().getName());
+    			}
+    			if (erd.hasCdmDataType()) {
+    				properties.setCdmFeatureType(erd.getCdmDataType());
+    			}
+    			if(erd.getTime() != null)
+    				properties.setTimesteps(CsvFileUtils.getTimesteps(f, erd.getTime().getName()));
+    			properties.setVariableHeaders(CsvFileUtils.getVariables(f, properties.getHeaders()));
+    			properties.writeFile();
+    		} catch (IOException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+    	}
     }
   }

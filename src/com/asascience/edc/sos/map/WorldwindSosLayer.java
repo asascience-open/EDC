@@ -88,7 +88,7 @@ public class WorldwindSosLayer extends RenderableLayer {
       sensorPoints.clear();
       sensorLatLons.clear();
       for (SensorContainer sensor : sensors) {
-        addRenderable(createPoint(sensor.getNESW()[0], sensor.getNESW()[1], sensor));
+        addRenderable(createPoint(sensor.getNESW()[0], WorldwindUtils.normLon(sensor.getNESW()[1]), sensor));
       }
       pcs.firePropertyChange("sensorsloaded", false, true);
     } catch (Exception ex) {

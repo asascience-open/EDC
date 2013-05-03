@@ -654,7 +654,6 @@ public class DapWorldwindProcessPanel extends JPanel {
   }
 
   public void setNcExtent(LatLonRect llRect) {
-	  System.out.println("dap code");
     mapPanel.makeDataExtentLayer(llRect);
   }
 
@@ -718,7 +717,6 @@ public class DapWorldwindProcessPanel extends JPanel {
           bounds = ncReader.getBounds();
         }// bounds = parent.getNcExtent();
         constraints.setBoundingBox(bounds);
-
         // set the start & end date/time
         constraints.setStartTime(null);
         constraints.setEndTime(null);
