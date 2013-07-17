@@ -141,9 +141,14 @@ public class ErddapDataRequest implements PropertyChangeListener {
         byte[] buffer = new byte[2048];
         int len = 0;
         written = 0;
+        try{
         while (-1 != (len = is.read(buffer))) {
           output.write(buffer, 0, len);
           written += len;
+        }
+        }
+        catch(Exception e){
+        	e.printStackTrace();
         }
         is.close();
         output.flush();
@@ -213,6 +218,8 @@ public class ErddapDataRequest implements PropertyChangeListener {
     		} catch (IOException e) {
     			// TODO Auto-generated catch block
     			e.printStackTrace();
+    		} catch(ArrayIndexOutOfBoundsException e2){
+    			e2.printStackTrace();
     		}
     	}
     }

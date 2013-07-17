@@ -267,50 +267,56 @@ public class ErddapDataset {
       String[] subsetVars = null;
       Double frst,scnd;
       for (int i = 0 ; i < ar.length() ; i++) {
-        if (ar.getJSONArray(i).getString(2).equals("subsetVariables")) {
-        	
-          subsetVars = ar.getJSONArray(i).getString(4).split(",");
-          for (int j = 0 ; j < subsetVars.length ; j++) {
-            subsetVars[j] = subsetVars[j].trim();
-            
-          }
-          continue;
-        }
-        
-        if (ar.getJSONArray(i).getString(2).equals("cdm_data_type")) {
-          cdm_data_type = ar.getJSONArray(i).getString(4);
-          continue;
-        }
-        
-        if (ar.getJSONArray(i).getString(0).equals("variable")) {
-          if (edv != null) {
-            setAxis(edv);
-            variables.add(edv);
-          }
-          edv = new ErddapVariable(this,ar.getJSONArray(i).getString(1),ar.getJSONArray(i).getString(3),Arrays.asList(subsetVars).contains(ar.getJSONArray(i).getString(1).trim()));
+    	  if (ar.getJSONArray(i).getString(2).equals("subsetVariables")) {
 
-          continue;
-        }
-          
-        if (ar.getJSONArray(i).getString(0).equals("attribute")) {
-          if (ar.getJSONArray(i).getString(2).equals("actual_range")) {
-            // The range is not always going to be in the correct order
-        	edv.setMin(ar.getJSONArray(i).getString(4).split(",")[0].trim());
-            edv.setMax(ar.getJSONArray(i).getString(4).split(",")[1].trim());
+    		  subsetVars = ar.getJSONArray(i).getString(4).split(",");
+    		  for (int j = 0 ; j < subsetVars.length ; j++) {
+    			  subsetVars[j] = subsetVars[j].trim();
+
+    		  }
+    		  continue;
+    	  }
+
+    	  if (ar.getJSONArray(i).getString(2).equals("cdm_data_type")) {
+    		  cdm_data_type = ar.getJSONArray(i).getString(4);
+    		  continue;
+    	  }
+
+    	  if (ar.getJSONArray(i).getString(0).equals("variable")) {
+    		  if (edv != null) {
+    			  setAxis(edv);
+    			  variables.add(edv);
+    		  }
+    		  boolean subsetVar = false;
+    		  if(subsetVars != null) {
+    			  subsetVar = 	  Arrays.asList(subsetVars).contains(ar.getJSONArray(i).getString(1).trim());
+
+    		  }
+    		  edv = new ErddapVariable(this,ar.getJSONArray(i).getString(1),
+    				  ar.getJSONArray(i).getString(3), subsetVar);
+
+    		  continue;
+    	  }
+
+    	  if (ar.getJSONArray(i).getString(0).equals("attribute") && edv != null) {
+    		  if (ar.getJSONArray(i).getString(2).equals("actual_range")) {
+    			  // The range is not always going to be in the correct order
+    			  edv.setMin(ar.getJSONArray(i).getString(4).split(",")[0].trim());
+    			  edv.setMax(ar.getJSONArray(i).getString(4).split(",")[1].trim());
 
 
-          } else if (ar.getJSONArray(i).getString(2).equals("long_name")) {
-            edv.setLongname(ar.getJSONArray(i).getString(4).trim());
-          } else if (ar.getJSONArray(i).getString(2).equals("units")) {
-            edv.setUnits(ar.getJSONArray(i).getString(4).trim());
-         } else if (ar.getJSONArray(i).getString(2).equals("cf_role")) {
-        	 if(!edv.isTime())
-        		 edv.setAxis(ar.getJSONArray(i).getString(4).trim());
-          } 
-          else if (ar.getJSONArray(i).getString(2).equalsIgnoreCase("description")) {
-            edv.setDescription(ar.getJSONArray(i).getString(4).trim());
-          }
-        }
+    		  } else if (ar.getJSONArray(i).getString(2).equals("long_name")) {
+    			  edv.setLongname(ar.getJSONArray(i).getString(4).trim());
+    		  } else if (ar.getJSONArray(i).getString(2).equals("units")) {
+    			  edv.setUnits(ar.getJSONArray(i).getString(4).trim());
+    		  } else if (ar.getJSONArray(i).getString(2).equals("cf_role")) {
+    			  if(!edv.isTime())
+    				  edv.setAxis(ar.getJSONArray(i).getString(4).trim());
+    		  } 
+    		  else if (ar.getJSONArray(i).getString(2).equalsIgnoreCase("description")) {       	  
+    			  edv.setDescription(ar.getJSONArray(i).getString(4).trim());
+    		  }
+    	  }
       }
       // Get the last iteration's edv variable
       if (edv != null) {
@@ -326,6 +332,7 @@ public class ErddapDataset {
       }
       
     } catch (Exception e) {
+    	e.printStackTrace();
       guiLogger.error("Exception", e);
     }
   }

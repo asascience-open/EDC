@@ -799,9 +799,9 @@ public class DapWorldwindProcessPanel extends JPanel {
 
         File find_file = FileSaveUtils.chooseDirectSavePath(mainFrame, homeDir, createSuitableLayerName(outname.replace(".nc", "")));
         
-        userOutname = createSuitableLayerName(find_file.getName());
+        if (!skip && find_file != null) {
+            userOutname = createSuitableLayerName(find_file.getName());
 
-        if (!skip) {
           f = new File(find_file.getParentFile().getAbsolutePath() + File.separator + userOutname + ".nc");
 
           if (f.exists()) {
@@ -826,6 +826,8 @@ public class DapWorldwindProcessPanel extends JPanel {
             cont = true;
           }
         }
+        else if(find_file == null)
+        	return;
       } while (!cont);
 
       if (f != null) {
