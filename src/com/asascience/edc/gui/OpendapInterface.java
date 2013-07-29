@@ -36,6 +36,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -335,7 +336,9 @@ public class OpendapInterface {
 
     // The "Data Viewer" Tab, only when not closing after processing
     if (!Configuration.CLOSE_AFTER_PROCESSING) {
-      tabbedPane.addTabNoClose("Data Viewer", makeViewerPanel());
+    	  JPanel viewerPanel =  makeViewerPanel();
+    	  JScrollPane viewerScrollPane = new JScrollPane(viewerPanel);
+    	  tabbedPane.addTabNoClose("Data Viewer", viewerScrollPane);
     }
 
     // The "Log" Tab
@@ -609,8 +612,9 @@ public class OpendapInterface {
         if (i != -1) {
           tabbedPane.removeTabAt(i);
         }
-        tabbedPane.addTabClose("SOS - Subset & Process", sosPanel);
-        tabbedPane.setSelectedComponent(sosPanel);
+        JScrollPane sosScrollPane = new JScrollPane(sosPanel);
+        tabbedPane.addTabClose("SOS - Subset & Process", sosScrollPane);
+        tabbedPane.setSelectedComponent(sosScrollPane);
         return true;
       }
     } catch (Exception ex) {
@@ -628,8 +632,9 @@ public class OpendapInterface {
   public void openTabledap(ErddapDataset erd) {
     erd.buildVariables();
     ErddapTabledapGui tdg = new ErddapTabledapGui(erd, this, homeDir);
-    tabbedPane.addTabClose("ERDDAP - Subset & Process", tdg);
-    tabbedPane.setSelectedComponent(tdg);
+    JScrollPane tdgScrollPane = new JScrollPane(tdg);
+    tabbedPane.addTabClose("ERDDAP - Subset & Process", tdgScrollPane);
+    tabbedPane.setSelectedComponent(tdgScrollPane);
   }
 
   public boolean openDataset(NetcdfDataset ncd) {
@@ -649,8 +654,10 @@ public class OpendapInterface {
           if (!spPanel.initData()) {
             return false;
           }
-          tabbedPane.addTabClose("Grid - Subset & Process", spPanel);
-          tabbedPane.setSelectedComponent(spPanel);
+          
+          JScrollPane spScrollPane = new JScrollPane(spPanel);
+          tabbedPane.addTabClose("Grid - Subset & Process", spScrollPane);
+          tabbedPane.setSelectedComponent(spScrollPane);
           return true;
         } else {
           if (addToSpp != null) {
@@ -820,7 +827,7 @@ public class OpendapInterface {
    *            the command line arguments
    */
   public static void main(String[] args) {
-    final String[] pass = args;
+    final String[] pass = args; 
     javax.swing.SwingUtilities.invokeLater(new Runnable() {
 
       public void run() {
@@ -837,7 +844,7 @@ public class OpendapInterface {
         TextAreaAppender.setTextArea(logArea);
         Configuration.initialize(System.getProperty("user.dir") + File.separator + configFile);
         History.initialize(System.getProperty("user.dir") + File.separator + "history.txt");
-        new OpendapInterface(passArg);
+        new OpendapInterface(passArg); 
       }
     });
   }
