@@ -1,6 +1,7 @@
 package com.asascience.edc.sos.requests.custom;
 
 import com.asascience.edc.sos.requests.GenericRequest;
+import com.asascience.edc.sos.requests.SosRequest;
 
 /**
  * SweToCSV.java
@@ -9,7 +10,7 @@ import com.asascience.edc.sos.requests.GenericRequest;
  */
 public class SweToCSV extends GenericRequest {
 
-  public SweToCSV(GenericRequest gr) {
-    super(gr);
+  public SweToCSV(SosRequest sosRequest) {
+    super(sosRequest);
   }
 }

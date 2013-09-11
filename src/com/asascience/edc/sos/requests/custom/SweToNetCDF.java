@@ -1,15 +1,16 @@
 package com.asascience.edc.sos.requests.custom;
 
-import com.asascience.edc.sos.requests.GenericRequest;
+import com.asascience.edc.sos.requests.SosRequest;
+import com.asascience.edc.sos.requests.SweVers1Request;
 
 /**
  * SweToNetCDF.java
  * 
  * @author Kyle Wilcox <kwilcox@asascience.com>
  */
-public class SweToNetCDF extends GenericRequest {
+public class SweToNetCDF extends SweVers1Request {
 
-  public SweToNetCDF(GenericRequest gr) {
-    super(gr);
+  public SweToNetCDF(SosRequest sr) {
+    super(sr);
   }
 }

@@ -98,4 +98,10 @@ public class OutputReaderBase implements CancelTask {
 
   public void setError(String arg0) {
   }
+
+@Override
+public void setProgress(String arg0, int arg1) {
+	// TODO Auto-generated method stub
+	
+}
 }

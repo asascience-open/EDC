@@ -21,8 +21,11 @@ import org.jdom.output.XMLOutputter;
 
 import cern.colt.Timer;
 import com.asascience.edc.sos.parsers.GenericParser;
+
 import com.asascience.edc.sos.requests.GenericRequest;
 import com.asascience.edc.sos.requests.ResponseFormat;
+import com.asascience.edc.sos.requests.SosRequest;
+import com.asascience.edc.sos.requests.SweVers1Request;
 import com.asascience.edc.sos.requests.custom.DifToArc;
 import com.asascience.edc.sos.requests.custom.DifToCSV;
 import com.asascience.edc.sos.requests.custom.DifToNetCDF;
@@ -41,7 +44,7 @@ import java.util.Date;
 public class SosServer implements PropertyChangeListener {
 
   private GenericParser sosParser;
-  private GenericRequest sosRequest;
+  private SosRequest sosRequest;
   
   private String myUrl;
   private float requestTime;
@@ -109,10 +112,12 @@ public class SosServer implements PropertyChangeListener {
       pcs.firePropertyChange("message", null, "Could not get the size of the xml document");
       return false;
     }
+    
 
-    // If there are more types of parsers in the future,
+
     // call them here instead of the GenericParser
     sosParser = new GenericParser(getCapDoc);
+  
     sosParser.addPropertyChangeListener(this);
     sosParser.process();
     
@@ -170,7 +175,7 @@ public class SosServer implements PropertyChangeListener {
     responseFormat = format;
   }
 
-  public GenericRequest getRequest() {
+  public SosRequest getRequest() {
     return sosRequest;
   }
 
@@ -198,7 +203,12 @@ public class SosServer implements PropertyChangeListener {
       } else {
         sosRequest = new GenericRequest(sosRequest);
       }
-    } else {
+    }
+    else if (responseFormat.getName().equals(ResponseFormat.SWE_1_0_0)){
+    	sosRequest = new SweVers1Request(sosRequest);
+    }
+    else {
+    
       sosRequest = new GenericRequest(sosRequest);
     }
     sosRequest.setFileSuffix(responseFormat.getFileSuffix());

@@ -1,6 +1,7 @@
 package com.asascience.edc.sos.requests.custom;
 
 import com.asascience.edc.sos.requests.GenericRequest;
+import com.asascience.edc.sos.requests.SosRequest;
 
 /**
  * DifToNetCDF.java
@@ -9,7 +10,7 @@ import com.asascience.edc.sos.requests.GenericRequest;
  */
 public class DifToNetCDF extends GenericRequest {
 
-  public DifToNetCDF(GenericRequest gr) {
+  public DifToNetCDF(SosRequest gr) {
     super(gr);
   }
 }

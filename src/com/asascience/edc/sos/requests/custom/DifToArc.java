@@ -6,6 +6,7 @@ import cern.colt.Timer;
 import com.asascience.edc.CsvProperties;
 import com.asascience.edc.sos.SensorContainer;
 import com.asascience.edc.sos.requests.GenericRequest;
+import com.asascience.edc.sos.requests.SosRequest;
 import com.asascience.edc.utils.CsvFileUtils;
 import com.asascience.edc.utils.FileSaveUtils;
 import java.io.BufferedWriter;
@@ -21,6 +22,8 @@ import java.util.List;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+
+import org.jdom.Content;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.Text;
@@ -38,11 +41,11 @@ import org.jdom.xpath.XPath;
  */
 public class DifToArc extends GenericRequest {
   
-  public DifToArc(GenericRequest gr) {
+  public DifToArc(SosRequest gr) {
     super(gr);
   }
 
-  protected List<Text> transform(Document doc, Document xsldoc) throws JDOMException {
+  protected List<Content> transform(Document doc, Document xsldoc) throws JDOMException {
     try {
       JDOMSource xslSource = new JDOMSource(xsldoc);
 
@@ -65,7 +68,7 @@ public class DifToArc extends GenericRequest {
       ArrayList<String> els;
       
       // Get unique times
-      List<Element> timeList = XPath.selectNodes(doc, ".//gml:timePosition");
+      List<Element> timeList = (List<Element>) XPath.selectNodes(doc, ".//gml:timePosition");
       if (!timeList.isEmpty()) {
         ArrayList<String> times = new ArrayList<String>(timeList.size());
         for (Element e : timeList) {
@@ -77,7 +80,7 @@ public class DifToArc extends GenericRequest {
       }
       
       // Get unique variable names
-      List<Element> varList = XPath.selectNodes(doc, ".//ioos:Quantity");
+      List<Element> varList = (List<Element>) XPath.selectNodes(doc, ".//ioos:Quantity");
       if (!varList.isEmpty()) {
         ArrayList<String> vars = new ArrayList<String>(varList.size());
         for (Element e : varList) {
@@ -156,13 +159,13 @@ public class DifToArc extends GenericRequest {
       stopwatch.start();
       
 
-      List<Text> myList = null;
+      List<Content> myList = null;
       try {
         pcs.firePropertyChange("message", null, "- Transforming XML to CSV");
         myList = transform(difDoc, xslDoc);
         // These two tests are common error messages.
-        if ((!myList.get(0).getText().trim().substring(0, 20).contains("No")) 
-            && (!myList.get(0).getText().trim().substring(0, 20).contains("Response format"))) {
+        if ((!myList.get(0).getValue().trim().substring(0, 20).contains("No")) 
+            && (!myList.get(0).getValue().trim().substring(0, 20).contains("Response format"))) {
           String filename = FileSaveUtils.chooseFilename(savePath, sensor.getName(), fileSuffix);
           properties.setPath(filename);
           properties.setSuffix(fileSuffix);
@@ -175,7 +178,7 @@ public class DifToArc extends GenericRequest {
           Writer fstream = new FileWriter(savedfile);
           pcs.firePropertyChange("message", null, "- Streaming transformed results to file");
           BufferedWriter out = new BufferedWriter(fstream);
-          out.write(myList.get(0).getText());
+          out.write(myList.get(0).getValue());
           out.close();
           filesize = Long.valueOf(savedfile.length());
           // Don't add empty files to the output path

@@ -16,7 +16,7 @@ public class ResponseFormat {
   private String fileSuffix;
   private boolean postProcess;
   private List<ResponseFormat> childFormats;
-  
+  public static final String SWE_1_0_0 =  "NetCDF (post-process from SWE)"; 
   public ResponseFormat(String value) {
     this.value = value;
     this.className = "";
@@ -37,16 +37,21 @@ public class ResponseFormat {
     if (value.contains("0.6.1")) {
       name = "IOOS DIF (0.6.1)";
     } else if (value.contains("swe")) {
-      name = "SWE 1.0.0";
+      name = SWE_1_0_0;
     } else if (value.contains("kml")) {
       name = "KML";
     } else if (value.contains("csv")) {
       name = "Comma Seperated";
     } else if (value.contains("tab-separated-values")) {
       name = "Tab Seperated";
-    } else if (value.contains("om/1.0.0")) {
+    }
+    else if (value.contains("om/1.0.0/profiles/ioos_sos/1.0")){
+    	 name = SWE_1_0_0;
+    }
+    else if (value.contains("om/1.0.0")) {
       name = "OM (1.0.0)";
-    } else {
+    }
+    else {
       name = value;
     }
   }

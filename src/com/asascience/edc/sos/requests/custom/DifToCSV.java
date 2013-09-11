@@ -5,6 +5,7 @@ import org.jdom.Document;
 import cern.colt.Timer;
 import com.asascience.edc.sos.SensorContainer;
 import com.asascience.edc.sos.requests.GenericRequest;
+import com.asascience.edc.sos.requests.SosRequest;
 import com.asascience.edc.utils.CsvFileUtils;
 import com.asascience.edc.utils.FileSaveUtils;
 import java.io.BufferedWriter;
@@ -18,6 +19,8 @@ import java.util.List;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+
+import org.jdom.Content;
 import org.jdom.JDOMException;
 import org.jdom.Text;
 import org.jdom.input.SAXBuilder;
@@ -33,11 +36,11 @@ import org.jdom.transform.JDOMSource;
  */
 public class DifToCSV extends GenericRequest {
 
-  public DifToCSV(GenericRequest gr) {
+  public DifToCSV(SosRequest gr) {
     super(gr);
   }
 
-  protected List<Text> transform(Document doc, Document xsldoc) throws JDOMException {
+  protected List<Content> transform(Document doc, Document xsldoc) throws JDOMException {
     try {
       JDOMSource xslSource = new JDOMSource(xsldoc);
 
@@ -115,19 +118,19 @@ public class DifToCSV extends GenericRequest {
       
       stopwatch.start();
       
-      List<Text> myList = null;
+      List<Content> myList = null;
       try {
         
         pcs.firePropertyChange("message", null, "- Transforming XML to CSV");
         myList = transform(difDoc, xslDoc);
-        if ((!myList.get(0).getText().trim().substring(0, 20).contains("No")) 
-            && (!myList.get(0).getText().trim().substring(0, 20).contains("Response format"))) {
+        if ((!myList.get(0).getValue().trim().substring(0, 20).contains("No")) 
+            && (!myList.get(0).getValue().trim().substring(0, 20).contains("Response format"))) {
           String filename = FileSaveUtils.chooseFilename(savePath, sensor.getName(), fileSuffix);
           File savedfile = new File(filename);
           Writer fstream = new FileWriter(savedfile);
           pcs.firePropertyChange("message", null, "- Streaming transformed results to file");
           BufferedWriter out = new BufferedWriter(fstream);
-          out.write(myList.get(0).getText());
+          out.write(myList.get(0).getValue());
           out.close();
           filesize = Long.valueOf(savedfile.length());
           // Don't add empty files to the output path

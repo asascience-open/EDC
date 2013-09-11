@@ -365,14 +365,15 @@ public class OpendapInterface {
     UrlAuthenticatorDialog authenticator = new UrlAuthenticatorDialog(mainFrame);
     java.net.Authenticator.setDefault(authenticator);
 
+    
     // use HTTPClient
     CredentialsProvider provider = authenticator;
     HttpClientManager.init(provider, "OpendapConnector");
     ucar.nc2.dods.DODSNetcdfFile.setAllowSessions(false);
-
-    // load protocol for ADDE URLs
+//
+//    // load protocol for ADDE URLs
     URLStreamHandlerFactory.install();
-    URLStreamHandlerFactory.register("adde", new edu.wisc.ssec.mcidas.adde.AddeURLStreamHandler());
+//    URLStreamHandlerFactory.register("adde", new edu.wisc.ssec.mcidas.adde.AddeURLStreamHandler());
 
   }
 
@@ -612,9 +613,8 @@ public class OpendapInterface {
         if (i != -1) {
           tabbedPane.removeTabAt(i);
         }
-        JScrollPane sosScrollPane = new JScrollPane(sosPanel);
-        tabbedPane.addTabClose("SOS - Subset & Process", sosScrollPane);
-        tabbedPane.setSelectedComponent(sosScrollPane);
+        tabbedPane.addTabClose("SOS - Subset & Process", sosPanel);
+        tabbedPane.setSelectedComponent(sosPanel);
         return true;
       }
     } catch (Exception ex) {
