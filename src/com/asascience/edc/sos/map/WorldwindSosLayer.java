@@ -8,11 +8,15 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.PointPlacemark;
 import gov.nasa.worldwind.render.PointPlacemarkAttributes;
+
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import ucar.unidata.geoloc.LatLonRect;
 import com.asascience.utilities.Utils;
@@ -31,7 +35,6 @@ public class WorldwindSosLayer extends RenderableLayer {
   private PropertyChangeSupport pcs;
   private PointPlacemarkAttributes attrs;
   private PointPlacemarkAttributes selected_attrs;
-
   public WorldwindSosLayer() {
     pickedSensors = new ArrayList();
     sensorPoints = new ArrayList();
@@ -54,14 +57,15 @@ public class WorldwindSosLayer extends RenderableLayer {
   
   public void setPickedByBBOX(LatLonRect bbox) {
     pickedSensors.clear();
+    LatLon minPt = LatLon.fromDegrees(WorldwindUtils.normLat(bbox.getLatMin()), 
+  		  WorldwindUtils.normLon360(bbox.getLonMin()));
+    LatLon maxPt = LatLon.fromDegrees(WorldwindUtils.normLat(bbox.getLatMax()), 
+  		  WorldwindUtils.normLon360(bbox.getLonMax()));
     for (PointPlacemark sp : sensorPoints) {
       sp.setHighlighted(false);
       LatLon norm360Pt = LatLon.fromDegrees(WorldwindUtils.normLat( sp.getPosition().getLatitude().degrees),
     		  WorldwindUtils.normLon360(  sp.getPosition().getLongitude().degrees));
-      LatLon minPt = LatLon.fromDegrees(WorldwindUtils.normLat(bbox.getLatMin()), 
-    		  WorldwindUtils.normLon360(bbox.getLonMin()));
-      LatLon maxPt = LatLon.fromDegrees(WorldwindUtils.normLat(bbox.getLatMax()), 
-    		  WorldwindUtils.normLon360(bbox.getLonMax()));
+   
 
       // normalize longitudes from 0-360 and determine if the box contains each point
 	  if(norm360Pt.latitude.degrees >= minPt.latitude.degrees && norm360Pt.latitude.degrees <= maxPt.latitude.degrees &&
@@ -75,6 +79,68 @@ public class WorldwindSosLayer extends RenderableLayer {
     }
   }
 
+  public List<LatLon> setPickedByPolygon(List<Position> posList){
+	  List<LatLon> selectedSosLocs = new ArrayList<LatLon>();
+	  Path2D polyPath = new Path2D.Double();
+
+	  boolean first = true;
+	  for(Position pos : posList){
+		  if(first)
+			  polyPath.moveTo(pos.latitude.degrees, pos.longitude.degrees);
+		  else
+			  polyPath.lineTo(pos.latitude.degrees,  pos.longitude.degrees);
+		  first = false;
+	  }
+	  polyPath.closePath();
+	  for (PointPlacemark sp : sensorPoints) {
+	      sp.setHighlighted(false);
+	      if(polyPath.contains(sp.getPosition().getLatitude().degrees, sp.getPosition().getLongitude().degrees)){
+	    	  sp.setHighlighted(true);
+	    	 
+	    	  selectedSosLocs.add(sp.getPosition());
+	      }
+	  }
+	  return selectedSosLocs;
+  }
+  public List<LatLon> setPickedByTrackLine(List<Position> posList, Double trackLineWidth){
+	  List<LatLon> selectedSosLocs = new ArrayList<LatLon>();
+	   for (PointPlacemark sp : sensorPoints) {
+		      sp.setHighlighted(false);
+		      LatLon normPt = LatLon.fromDegrees(WorldwindUtils.normLat( sp.getPosition().getLatitude().degrees),
+		    		  WorldwindUtils.normLon(  sp.getPosition().getLongitude().degrees));
+		      Iterator<Position> posIter = posList.iterator();
+		      boolean intersects = false;
+		      Position previous = null;
+		      while(posIter.hasNext()){
+		    	  Position firstSeg;
+		    	  if(previous !=  null)
+		    		  firstSeg = previous;
+		    	  else
+		    		  firstSeg = posIter.next();
+		    	  Position secSeg = null;
+		    	  if(posIter.hasNext())
+		    		  secSeg = posIter.next();
+		    	  if(secSeg == null)
+		    		  break;
+		    	  previous = secSeg;
+		    	  Line2D trackLineSeg = new Line2D.Double(firstSeg.latitude.degrees, firstSeg.longitude.degrees,
+		    			  							secSeg.latitude.degrees, secSeg.longitude.degrees);
+		    
+
+		    	 Double dist = trackLineSeg.ptSegDist(normPt.latitude.degrees, normPt.longitude.degrees);
+		    	  if(dist <= trackLineWidth) {
+		    			  
+		    		  intersects = true;
+		    		  break;
+		    	  }
+		      }
+		      if(intersects){
+		    	  sp.setHighlighted(true);
+		    	  selectedSosLocs.add(normPt);
+		      }
+	   }
+	   return selectedSosLocs;
+  }
   public Position getEyePosition() {
     return WorldwindUtils.getEyePositionFromPositions(sensorLatLons);
   }
@@ -88,7 +154,9 @@ public class WorldwindSosLayer extends RenderableLayer {
       sensorPoints.clear();
       sensorLatLons.clear();
       for (SensorContainer sensor : sensors) {
-        addRenderable(createPoint(sensor.getNESW()[0], WorldwindUtils.normLon(sensor.getNESW()[1]), sensor));
+    	  double[] bBox = sensor.getNESW();
+    	  if(bBox != null && bBox.length >= 2)
+    		  addRenderable(createPoint(sensor.getNESW()[0], WorldwindUtils.normLon(sensor.getNESW()[1]), sensor));
       }
       pcs.firePropertyChange("sensorsloaded", false, true);
     } catch (Exception ex) {
@@ -156,4 +224,6 @@ public class WorldwindSosLayer extends RenderableLayer {
       }
     }
   }
+
+
 }

@@ -204,6 +204,7 @@ public class ASACatalogChooser extends JPanel {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         ErddapDataset erd;
         // GRIDDAP
+        
         if (evt.getPropertyName().equals("griddap")) {
           erd = (ErddapDataset) evt.getNewValue();
           try {
@@ -315,7 +316,7 @@ public class ASACatalogChooser extends JPanel {
               String sosServerURL = sosListBox.getSelectedItem().toString();
               final SosServer myData = new SosServer(sosServerURL);
               myData.setHomeDir(odapInterface.getHomeDir());
-              JComponent newContentPanel = new SosGetCapProgressMonitor(myData);
+              final SosGetCapProgressMonitor newContentPanel = new SosGetCapProgressMonitor(myData);
               sosListBox.addItem(sosServerURL);
               newContentPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -324,11 +325,12 @@ public class ASACatalogChooser extends JPanel {
                   if (name.equals("closed")) {
                     frame.setVisible(false);
                     frame.dispose();
-                  } else if (name.equals("taskcomplete")) {
+                  } else if (name.equals(SosGetCapProgressMonitor.TASK_COMPLETE)) {
                     frame.setVisible(false);
-                    frame.dispose();
-                    
-                    odapInterface.openSOSDataset(myData, (SwingWorker) e.getOldValue());
+                    frame.dispose();                    
+                    odapInterface.openSOSDataset(myData, (boolean) e.getNewValue());
+                   
+
                   }
                 }
               });

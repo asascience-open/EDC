@@ -30,7 +30,7 @@ public final class ErddapResponseSelectionPanel extends JPanel implements Action
     pcs = new PropertyChangeSupport(this);
   }
 
-  public void initComponents() {
+  public void initComponents(boolean isPolygonSelection) {
     setLayout(new MigLayout("gap 0, fill, top, left"));
 
     ButtonGroup group = new ButtonGroup();
@@ -41,7 +41,7 @@ public final class ErddapResponseSelectionPanel extends JPanel implements Action
     ArrayList<ResponseFormat> responses = new ArrayList<ResponseFormat>();
     
     responses.add(new ResponseFormat("csv", "Download a comma-separated ASCII text table (line 1: names; line 2: units; ISO 8601 times).","",".csv",false));
-    if (Configuration.DISPLAY_TYPE != Configuration.DisplayType.ESRI) {
+    if (Configuration.DISPLAY_TYPE != Configuration.DisplayType.ESRI && !isPolygonSelection) {
       responses.add(new ResponseFormat("asc", "View an OPeNDAP-style comma-separated ASCII text file.","",".asc",false));
       responses.add(new ResponseFormat("csvp", "Download a .csv file with line 1: name (units). Times are ISO 8601 strings.","",".csvp",false));
       responses.add(new ResponseFormat("das", "View the data's metadata via an OPeNDAP Dataset Attribute Structure (DAS).","",".das",false));

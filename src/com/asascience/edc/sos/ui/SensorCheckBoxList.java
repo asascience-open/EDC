@@ -31,7 +31,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class SensorCheckBoxList extends JPanel implements ActionListener {
 
-  private List<SensorCheckbox> sensorChecks = new ArrayList();
+  private List<SensorCheckbox> sensorChecks = new ArrayList<SensorCheckbox>();
   private JButton btnToggleAll;
   private JButton btnSelectAll;
   private JButton btnSelectNone;

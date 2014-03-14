@@ -34,7 +34,7 @@ public class SweVers1Request extends SosRequest {
 		super(sr);
 	}
 
-	
+	/*
 	 public String buildRequest(SensorContainer sensor) {
 		    try {
 		      ArrayList<String> params = new ArrayList<String>();
@@ -68,11 +68,11 @@ public class SweVers1Request extends SosRequest {
 		    }
 		  }
 
-	
+	*/
 	@Override
 	public void getObservations(File savePath) {
 
-		
+	
 		double numSens = getSelectedSensorCount();
 	    double countSens = 0;
 	    String requestURL;
@@ -86,7 +86,7 @@ public class SweVers1Request extends SosRequest {
 	      pcs.firePropertyChange("message", null, "Sensor: " + sensor.getName());
 	      pcs.firePropertyChange("message", null, "- Building Request String");
 
-	      requestURL = buildRequest(sensor);
+	      requestURL = super.buildRequest(sensor);
 	   
 	      int written = 0;
 	      try {

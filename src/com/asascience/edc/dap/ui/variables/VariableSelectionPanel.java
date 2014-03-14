@@ -74,7 +74,7 @@ public class VariableSelectionPanel extends JPanel {
    * @param parent
    */
   public VariableSelectionPanel(String borderTitle, NetcdfConstraints cons, DapWorldwindProcessPanel parent) {
-    super(new MigLayout("fill"));
+    super(new MigLayout());
 
     TitledBorder tb = BorderFactory.createTitledBorder(borderTitle);
     tb.setTitleJustification(TitledBorder.CENTER);
@@ -84,7 +84,7 @@ public class VariableSelectionPanel extends JPanel {
   }
 
   public void createPanel() {
-    this.add(variablePanel(), "grow, center");
+    this.add(variablePanel(), "grow, center, wrap");
   }
 
   public void gridRegularity(boolean isRegular) {

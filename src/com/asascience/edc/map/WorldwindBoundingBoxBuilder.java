@@ -5,6 +5,7 @@ import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.event.PositionEvent;
 import gov.nasa.worldwind.event.PositionListener;
 import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.BasicShapeAttributes;
@@ -22,16 +23,14 @@ import com.asascience.edc.utils.WorldwindUtils;
  * 
  * @author Kyle Wilcox <kwilcox@asascience.com>
  */
-public class WorldwindBoundingBoxBuilder extends AVListImpl {
+public class WorldwindBoundingBoxBuilder extends WorldWindMapControl {
 
-  private final WorldWindow wwd;
-  private boolean armed = false;
-  private Position ul;
-  private Position lr;
-  private Position initialPressedPos;
-  private final RenderableLayer layer;
-  private final SurfacePolygon polygon;
-  private boolean active = false;
+  private BoundingBox bbox;
+  protected final SurfacePolygon polygon;
+
+public final static String BBOX_DRAWN = "WorldwindBoundingBoxBuilder.BBOXDrawn";
+public final static String BBOX_COMPLETE = "WorldwindBoundingBoxBuilder.BBOXComplete";
+public final static String BBOX_STARTED = "WorldwindBoundingBoxBuilder.BBOXStarted";
 
   /**
    * Construct a new line builder using the specified polygon and layer and drawing events from the specified world
@@ -42,87 +41,78 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
    * @param polyline  the polygon object to build. May be null, in which case a new polygon is created.
    */
   public WorldwindBoundingBoxBuilder(final WorldWindow wwd, RenderableLayer lineLayer, SurfacePolygon polygon) {
-    this.wwd = wwd;
-
-    if (polygon != null) {
-      this.polygon = polygon;
-    } else {
-      ShapeAttributes atts = new BasicShapeAttributes();
-      atts.setInteriorMaterial(Material.WHITE);
-      atts.setOutlineOpacity(0.8);
-      atts.setInteriorOpacity(0.3);
-      atts.setOutlineMaterial(Material.GREEN);
-      atts.setOutlineWidth(1);
-      atts.setDrawOutline(true);
-      atts.setDrawInterior(true);
-      this.polygon = new SurfacePolygon();
-      this.polygon.setAttributes(atts);
-    }
-    this.layer = lineLayer != null ? lineLayer : new RenderableLayer();
-    this.layer.setPickEnabled(false);
-    this.layer.addRenderable(this.polygon);
-    this.wwd.getModel().getLayers().add(this.layer);
-    this.wwd.getInputHandler().addMouseListener(new MouseAdapter() {
-
-      @Override
-      public void mousePressed(MouseEvent mouseEvent) {
-        if (armed && mouseEvent.getButton() == MouseEvent.BUTTON1) {
-          active = true;
-          clear();
-          addPosition();
-          mouseEvent.consume();
-        }
-      }
-
-      @Override
-      public void mouseReleased(MouseEvent mouseEvent) {
-        if (armed && mouseEvent.getButton() == MouseEvent.BUTTON1) {
-          if (ul != null) {
-            addPosition();
-            completeBBOX();
-          }
-          active = false;
-          mouseEvent.consume();
-        }
-      }
-    });
-
-    this.wwd.getInputHandler().addMouseMotionListener(new MouseMotionAdapter() {
-
-      @Override
-      public void mouseDragged(MouseEvent mouseEvent) {
-        if (armed && (mouseEvent.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) != 0) {
-          // Don't update the polygon here because the wwd current cursor position will not
-          // have been updated to reflect the current mouse position. Wait to update in the
-          // position listener, but consume the event so the view doesn't respond to it.
-          if (active) {
-            mouseEvent.consume();
-          }
-        }
-      }
-    });
-
-    this.wwd.addPositionListener(new PositionListener() {
-
-      public void moved(PositionEvent event) {
-        if (!active) {
-          return;
-        }
-
-       addPosition();
-      }
-    });
+	  super(wwd, lineLayer);
+	  if (polygon != null) {
+	      this.polygon = polygon;
+	    } else {
+	 
+	      this.polygon = new SurfacePolygon();
+	      this.polygon.setAttributes(atts);
+	    }
+	    this.layer.addRenderable(this.polygon);
+	    bbox = new BoundingBox();
+	  initListeners();
+    
   }
 
-  /**
-   * Returns the layer holding the polygon being created.
-   *
-   * @return the layer containing the polygon.
-   */
-  public RenderableLayer getLayer() {
-    return this.layer;
-  }
 
+  
+  private void initListeners(){
+	  this.wwd.getInputHandler().addMouseListener(new MouseAdapter() {
+
+	      @Override
+	      public void mousePressed(MouseEvent mouseEvent) {
+	        if (armed && mouseEvent.getButton() == MouseEvent.BUTTON1) {
+	          active = true;
+	          clear();
+	          firePropertyChange(BBOX_STARTED, null, true);
+
+	          addPosition();
+	          mouseEvent.consume();
+	        }
+	      }
+
+	      @Override
+	      public void mouseReleased(MouseEvent mouseEvent) {
+	        if (armed && mouseEvent.getButton() == MouseEvent.BUTTON1) {
+	          if (bbox.upperLeft != null) {
+	            addPosition();
+	            completeBBOX();
+	          }
+	          active = false;
+	          mouseEvent.consume();
+	        }
+	      }
+	    });
+
+	    this.wwd.getInputHandler().addMouseMotionListener(new MouseMotionAdapter() {
+
+	      @Override
+	      public void mouseDragged(MouseEvent mouseEvent) {
+	        if (armed && (mouseEvent.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) != 0) {
+	          // Don't update the polygon here because the wwd current cursor position will not
+	          // have been updated to reflect the current mouse position. Wait to update in the
+	          // position listener, but consume the event so the view doesn't respond to it.
+	          if (active) {
+	            mouseEvent.consume();
+	          }
+	        }
+	      }
+	    });
+
+	    this.wwd.addPositionListener(new PositionListener() {
+
+	      public void moved(PositionEvent event) {
+	        if (!active) {
+	          return;
+	        }
+
+	       addPosition();
+	      }
+	    });
+  }
+  
+ 
   /**
    * Returns the layer currently used to display the polygon.
    *
@@ -137,8 +127,8 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
    */
   public void clear() {
     this.polygon.clearList();
-    this.ul = null;
-    this.lr = null;
+    this.bbox.upperLeft = null;
+    this.bbox.lowerRight = null;
     drawBBOX();
   }
 
@@ -162,22 +152,22 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
   }
 
   private void drawBBOX() {
-
-    if (ul != null && lr != null) {
-    	Position realUl = ul;
-    	Position realLr = lr;
+	    // Set this.positions to the bounding box, computed from the corners.
+      ArrayList<Position> positions = new ArrayList<Position>();
+    if (bbox.upperLeft != null && bbox.lowerRight != null) {
+    	Position realUl = bbox.upperLeft;
+    	Position realLr = bbox.lowerRight;
        
 
     	if(realUl.latitude.degrees < realLr.latitude.degrees) {
-    		realUl = lr;
-    		realLr = ul;
+    		realUl = bbox.upperLeft;
+    		realLr = bbox.lowerRight;
     	}
 
       
 
     	
-      // Set this.positions to the bounding box, computed from the corners.
-      ArrayList<Position> positions = new ArrayList<Position>();
+  
   
       Position ur = new Position(realUl.getLatitude(), realLr.getLongitude(), 0);
       Position ll = new Position(realLr.getLatitude(), realUl.getLongitude(), 0);
@@ -235,19 +225,19 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
 
       }
       
-      
+    }  
       this.polygon.setLocations(positions);
       this.wwd.redraw();
-      this.firePropertyChange("WorldwindBoundingBoxBuilder.BBOXDrawn", null, true);
-    }
+      this.firePropertyChange(BBOX_DRAWN, null, true);
+    
   }
 
   public void setUpperLeftPoint(Position ul) {
-    this.ul = ul;
+    this.bbox.setUpperLeft(ul);
   }
 
   public void setLowerRightPoint(Position lr) {
-    this.lr = lr;
+	  this.bbox.setLowerRight(lr);
   }
 
   public void redraw() {
@@ -260,16 +250,16 @@ public class WorldwindBoundingBoxBuilder extends AVListImpl {
     if (curPos == null) {
       return;
     }
-    if (ul == null) {
-      this.ul = curPos;
+    if (bbox.upperLeft == null) {
+      this.bbox.upperLeft = curPos;
     } else {
-      this.lr = curPos;
+      this.bbox.lowerRight = curPos;
     }
 
     drawBBOX();
   }
 
   private void completeBBOX() {
-    this.firePropertyChange("WorldwindBoundingBoxBuilder.BBOXComplete", null, true);
+    this.firePropertyChange(BBOX_COMPLETE, null, true);
   }
 }

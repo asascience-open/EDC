@@ -2,10 +2,11 @@ package com.asascience.edc.sos.ui;
 
 import com.asascience.edc.Configuration;
 import com.asascience.edc.sos.SosServer;
-import com.asascience.edc.map.BoundingBoxPanel;
 import com.asascience.edc.gui.OpendapInterface;
 import com.asascience.edc.gui.jslider.JSlider2Date;
-import com.asascience.edc.map.WorldwindSelectionMap;
+import com.asascience.edc.map.view.BoundingBoxPanel;
+import com.asascience.edc.map.view.SelectionMethodsPanel;
+import com.asascience.edc.map.view.WorldwindSelectionMap;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -23,10 +24,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+
+import ucar.unidata.geoloc.LatLonRect;
 
 /**
  * SosWorldwindProcessPanel.java
@@ -119,12 +123,15 @@ public class SosWorldwindProcessPanel extends JPanel {
           String name = e.getPropertyName();
           
           // Bounding box was drawn
-          if (name.equals("boundsStored")) {
+          if (name.equals(SelectionMethodsPanel.BOUNDS_STORED)) {
             if (selPanel != null) {
-              bboxGui.setBoundingBox(mapPanel.getSelectedExtent());
+            	List<LatLonRect> bbox = mapPanel.getSelectedExtent();
+            	if(bbox != null && bbox.size() > 0)
+            		bboxGui.setBoundingBox(bbox.get(0));
               sensorPanel.setWorldwindSensors(mapPanel.getSensorLayer().getSensors());
               sensorSelected = !(mapPanel.getSensorLayer().getPickedSensors().isEmpty());
               shouldWeEnableGetObservations();
+        
             }
           } else if (name.equals("sensorsloaded")) {
             sensorPanel.setWorldwindSensors(mapPanel.getSensorLayer().getSensors());
@@ -276,9 +283,9 @@ public class SosWorldwindProcessPanel extends JPanel {
       TimeZone tz = TimeZone.getTimeZone("GMT");
       dateFormatter.setTimeZone(tz);
 
-      if (startDate.compareTo(endDate) >= 0) {
+      if (startDate.compareTo(endDate) > 0) {
         JOptionPane.showConfirmDialog(this,
-                "The start and end date are invalid (Start is after or equal to end?).", "Invalid Time",
+                "The start and end date are invalid (Start is after end?).", "Invalid Time",
                 JOptionPane.CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
         return false;
       }

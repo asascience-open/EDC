@@ -63,6 +63,32 @@ public class NetcdfConstraints extends GeoConstraints implements PropertyChangeL
     propertyChangeSupport = new PropertyChangeSupport(this);
   }
 
+  public NetcdfConstraints(NetcdfConstraints copy){
+	  this();
+	  yDim = copy.yDim;
+	  xDim = copy.xDim;
+	  zDim = copy.zDim;
+	  timeDim = copy.timeDim;
+	  bandDim = copy.bandDim;
+	  projection = copy.projection;
+	  isZPositive = copy.isZPositive;
+	  trimByDim = copy.trimByDim;
+	  trimByIndex = copy.trimByIndex;
+	  trimByZ = copy.trimByZ;
+	  useAllValues = copy.useAllValues;
+	  startTimeIndex = copy.startTimeIndex;
+	  endTimeIndex = copy.endTimeIndex;
+	  sTime = new Date(copy.sTime.getTime());
+	  eTime = new Date(copy.eTime.getTime());
+	  timeInterval = copy.timeInterval;
+	  timeUnits = copy.timeUnits;
+	  stride_h = copy.stride_h;
+	  stride_z = copy.stride_z;
+	  stride_t = copy.stride_t;
+	  selVars .addAll(copy.selVars);
+	  tVar = copy.tVar;
+  }
+  
   public void propertyChange(PropertyChangeEvent evt) {
   }
 

@@ -261,7 +261,7 @@ public class NcGridReader {
     if (times.length == 1) {
       return 0;
     }
-    for (int i = 0; i < times.length; i++) {
+    for (int i = 0; i < times.length -1; i++) {
       if (time <= times[i + 1]) {
         // if(i == 0) return i;
         //

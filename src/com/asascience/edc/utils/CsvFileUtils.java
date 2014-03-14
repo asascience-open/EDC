@@ -83,7 +83,7 @@ public class CsvFileUtils {
       values = reader.getValues();
       if(timeHeader != null){
     	  int timeIndex = reader.getIndex(timeHeader);
-    	  if(timeIndex >= 0)
+    	  if(timeIndex >= 0 && timeIndex < values.length)
     		  values[timeIndex] = convertToEsriTime(reader.get(timeHeader));
       }
       for (int j = 0 ; j < values.length ; j++) {

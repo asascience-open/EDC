@@ -208,7 +208,7 @@ public class NcReaderBase implements CancelTask {
     this.hasZ = hasZ;
   }
 
-@Override
+
 public void setProgress(String arg0, int arg1) {
 	// TODO Auto-generated method stub
 	

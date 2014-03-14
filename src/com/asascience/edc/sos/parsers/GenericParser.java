@@ -12,6 +12,8 @@ import com.asascience.edc.sos.SensorContainer;
 import com.asascience.edc.sos.map.SensorPoint;
 import com.asascience.edc.sos.VariableContainer;
 import com.asascience.edc.sos.requests.ResponseFormat;
+import com.asascience.edc.utils.EdcDateUtils;
+
 import gov.nasa.worldwind.render.PointPlacemark;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -39,7 +41,6 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
   protected double[] NESW;
   protected Date startTime;
   protected Date endTime;
-  protected String[] dateFormats;
   protected String sosURL;
   protected String homeDir;
   protected Document getCapDoc;
@@ -166,7 +167,7 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
 
     sensorList = getCapXPath(getCapDoc);
 
-    if (sensorList != null) {
+    if (sensorList != null && sensorList.size() > 0) {
       // See if this service has a network all sensor
       // (http://sdf.ndbc.noaa.gov/sos/server.php?request=GetCapabilities&service=SOS)
       if (sensorList.get(0).getName().equals("network-all")) {
@@ -334,29 +335,14 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
     // Instantiate double array here and copy inside the setter...
     double[] NESW = new double[4];
 
-    // Create DateFormats
-    dateFormats = new String[12];
-    dateFormats[0] = "yyyy-MM-dd'T'HH:mm:ss'.'S'Z'";// Zulu with Millis
-    dateFormats[1] = "yyyy-MM-dd'T'HH:mm:ss'.'SZ";  // Millis, RFC822 zone
-    dateFormats[2] = "yyyy-MM-dd'T'HH:mm:ss'.'Sz";  // Millis, long zone
-    dateFormats[3] = "yyyy-MM-dd'T'HH:mm:ss'.'S";   // Millis, no zone
-    dateFormats[4] = "yyyy-MM-dd'T'HH:mm:ssZ";      // ISO8601 long, RFC822 zone
-    dateFormats[5] = "yyyy-MM-dd'T'HH:mm:ssz";      // ISO8601 long, long zone
-    dateFormats[6] = "yyyy-MM-dd'T'HH:mm:ss'Z'";    // Zulu
-    dateFormats[7] = "yyyy-MM-dd'T'HH:mm:ss";       // No 'Z', No zone
-    dateFormats[8] = "yyyy-MM-dd'T'HH:mmZ";         // No seconds, RFC822 zone
-    dateFormats[9] = "yyyy-MM-dd'T'HH:mmz";         // No seconds, long zone
-    dateFormats[10] = "yyyy-MM-dd'T'HH:mm";         // No seconds, no zone
-    dateFormats[11] = "yyyyMMddHHmmssZ";            // ISO8601 short
+    EdcDateUtils dateUtils = new EdcDateUtils();
 
     // Min date for SOS obs.  This avoids bad SOS servers that serve dates
     // like 0000-00-00 00:00:00
     Date minDate = null;
-    try {
-      minDate = DateUtils.parseDate("1900-01-01T00:00:00Z", dateFormats);
-    } catch (ParseException pe) {
-      pe.printStackTrace();
-    }
+
+   minDate = dateUtils.parseDate("1900-01-01T00:00:00Z");
+  
     
     for (Object o : obsList) {
 
@@ -454,7 +440,12 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
       Element begin = null;
       try {
         begin = (Element) XPATH_BeginPosition.selectSingleNode(obsOffering);
-        Date tempDate = DateUtils.parseDate(begin.getValue().trim(), dateFormats);
+      
+        if(begin == null) {
+        	sensor = null;
+        	continue;
+        }
+        Date tempDate = dateUtils.parseDate(begin.getValue().trim());
         if (tempDate.before(minDate)) {
           tempDate = minDate;
         }
@@ -467,12 +458,7 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
         System.out.println("Can not find BeginPosition: returned null beginPosition");
         sensor = null;
         continue;
-      } catch (ParseException e) {
-        System.out.println("================= Can not parse beginPosition ==================");
-        System.out.println(e.getLocalizedMessage());
-        sensor = null;
-        continue;
-      }
+      } 
 
       // Get endPosition
       Element ending = null;
@@ -482,7 +468,13 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
         Attribute indPos = (Attribute) XPATH_IndeterminatePosition.selectSingleNode(ending);
         endString = ending.getValue().trim();
         if (endString != null && endString.length() > 0) {
-          sensor.setEndTime(DateUtils.parseDate(endString, dateFormats));
+        	Date endTime = dateUtils.parseDate(endString);
+        	if(endTime == null){
+        		sensor = null;
+        		continue;
+        	}
+        	sensor.setEndTime(endTime);
+          
         } else if (indPos.getValue() != null
                 && (indPos.getValue().equals("now") || indPos.getValue().equals("unknown"))) {
           sensor.setEndTime(new Date()); // Defaults to now
@@ -493,11 +485,6 @@ public class GenericParser implements PropertyChangeListener, SosParserInterface
         continue;
       } catch (NullPointerException enull) {
         System.out.println("Can not find EndPosition: returned null endPosition");
-        sensor = null;
-        continue;
-      } catch (ParseException e) {
-        System.out.println("================== Can not parse EndPosition ===================");
-        System.out.println(e.getLocalizedMessage());
         sensor = null;
         continue;
       }

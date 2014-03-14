@@ -80,6 +80,7 @@ public class GridReader extends NcReaderBase {
     Formatter errlog = new Formatter();
     CancelTask cancelTask = null;
     //gds = (GridDataset) TypedDatasetFactory.open(thredds.catalog.DataType.GRID, ncd, this, errlog);
+    System.out.println("grid reader "+ ncFile.getLocation());
     gds = (GridDataset) FeatureDatasetFactoryManager.open(FeatureType.GRID, ncFile.getLocation(), cancelTask, errlog);
     //gds = GridDataset.open(ncd.getLocation());
 
@@ -213,32 +214,7 @@ public class GridReader extends NcReaderBase {
     return NcReaderBase.UNDEFINED_ERROR;
   }
 
-  //
-  // public int getTimeIndex(Date date){
-  // return getTimeIndex(date, times);
-  // }
-  // public int getTimeIndex(Date date, Date[] dates){
-  // for(int i = 0; i < dates.length; i++){
-  // if(((Date)dates[i]).compareTo(date) == 0){
-  // return i;
-  // }
-  // }
-  // return -1;
-  // }
-  // used
-  @Override
-  public int extractData2(NetcdfConstraints cons, String outnc, List<GridDataset> gdsList, PropertyChangeSupport pcs) {
-    try {
-      NetcdfGridWriter write = new NetcdfGridWriter(pcs);
 
-      return write.writeFile(outnc, gdsList, cons, null);
-
-    } catch (Exception ex) {
-      logger.error("IO", ex);
-      guiLogger.error("IO", ex);
-    }
-    return -1;
-  }
 
   
 

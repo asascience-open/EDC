@@ -9,19 +9,33 @@ import com.asascience.edc.Configuration;
 import com.asascience.edc.CsvProperties;
 import com.asascience.edc.utils.CsvFileUtils;
 import com.asascience.edc.utils.FileSaveUtils;
+
+import gov.nasa.worldwind.render.PointPlacemark;
+
+import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.JFrame;
+
+import org.jfree.util.Log;
 
 /**
  *
@@ -32,6 +46,10 @@ public class ErddapDataRequest implements PropertyChangeListener {
     private String baseUrl;
     private String responseFormat = ".htmlTable";
     private String parameters;
+  
+    private boolean filterByPolygon;
+    private List<String> selectedStationLocations;
+    private Path2D.Double polygon;
     private PropertyChangeSupport pcs;
     private String homeDir;
     private JFrame parent;
@@ -41,6 +59,8 @@ public class ErddapDataRequest implements PropertyChangeListener {
     public ErddapDataRequest(String homeDir, ErddapDataset erd) {
       this.homeDir = homeDir;
       this.erd = erd;
+      selectedStationLocations = new ArrayList<String>();
+      
       pcs = new PropertyChangeSupport(this);
     }
 
@@ -105,6 +125,9 @@ public class ErddapDataRequest implements PropertyChangeListener {
       return baseUrl + responseFormat + "?" + parameters;
     }
 
+    public String getRequestUrl(Double stationLat, Double stationLon) {
+        return baseUrl + responseFormat + "?" + parameters;
+      }
     public void propertyChange(PropertyChangeEvent evt) {
       pcs.firePropertyChange(evt);
     }
@@ -116,6 +139,219 @@ public class ErddapDataRequest implements PropertyChangeListener {
     public void removePropertyChangeListener(PropertyChangeListener l) {
       pcs.removePropertyChangeListener(l);
     }
+    
+    
+    public void getDataForPolygon(){
+
+        Timer stopwatch = new Timer();
+        File f = null;
+                
+        stopwatch.reset();
+
+        int written = 0;
+        try {
+        	// Increment the file
+        	File incrementFile = new File(FileSaveUtils.chooseFilename(getSaveFile().getParentFile(), getSaveFile().getName()));
+        	f = incrementFile;
+        	OutputStream output = new BufferedOutputStream(new FileOutputStream(f));
+        	for(String currStationQuery : selectedStationLocations){
+        		URL u = new URL(getRequestUrl() + currStationQuery );
+
+        		// Add the 
+        		pcs.firePropertyChange("message", null, "- Making Request (" + getRequestUrl() + currStationQuery +")");
+
+
+        		pcs.firePropertyChange("message", null, "- Streaming Results to File: " + incrementFile.getAbsolutePath());
+        		int currWrote;
+        		currWrote = writeData(output, u);
+        		pcs.firePropertyChange("message", null, "- Wrote " + currWrote +" bytes");
+        		written += currWrote;
+        	}
+        	output.close();
+        	// Now write the properties file if we need to (ARC)
+        	writeArcFile( f);
+        } catch (MalformedURLException e) {
+      	  e.printStackTrace();
+
+          pcs.firePropertyChange("message", null, "- BAD URL, skipping sensor");
+        } catch (IOException io) {
+      	  io.printStackTrace();
+      	  if(written == 0)
+      		  pcs.firePropertyChange("message", null, "- NO DATA available for selected range: " + io.getMessage());
+      	  else
+      	       writeArcFile( f);
+        }
+        catch(Exception e){
+      	  pcs.firePropertyChange("message", null, "Exception " + e.getMessage());
+      	  e.printStackTrace();
+        }
+        pcs.firePropertyChange("message", null, "- Completed " + written + " bytes in " + stopwatch.elapsedTime() + " seconds.");
+        pcs.firePropertyChange("progress", null, 100);
+        if (f != null) {
+          pcs.firePropertyChange("done", null, f.getAbsolutePath());
+        }
+    }
+    
+    
+    public int writeData(OutputStream output, URL u){
+        int written = 0;
+
+    	try {  
+    	HttpURLConnection ht = (HttpURLConnection) u.openConnection();
+          ht.setDoInput(true);
+          ht.setRequestMethod("GET");
+	        InputStream is = ht.getInputStream();
+	        byte[] buffer = new byte[2048];
+	        int len = 0;
+	        written = 0;
+	        try{
+	        while (-1 != (len = is.read(buffer))) {
+	          output.write(buffer, 0, len);
+	          written += len;
+	        }
+	        }
+	        catch(Exception e){
+	        	e.printStackTrace();
+	        }
+	        is.close();
+	        output.flush();
+	        
+		} catch (ProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return written;
+    }
+    
+    
+    public void getCsvForPolygon(){
+        Timer stopwatch = new Timer();
+        File f = null;
+                
+        stopwatch.reset();
+
+        int written = 0;
+        try {
+          URL u = new URL(getRequestUrl());
+          pcs.firePropertyChange("message", null, "- Making Request (" + getRequestUrl() + ")");
+   
+          // Increment the file
+          File incrementFile = new File(FileSaveUtils.chooseFilename(getSaveFile().getParentFile(), getSaveFile().getName()));
+          pcs.firePropertyChange("message", null, "- Streaming Results to File: " + incrementFile.getAbsolutePath());
+          f = incrementFile;
+          OutputStream output = new BufferedOutputStream(new FileOutputStream(f));
+      	HttpURLConnection ht = (HttpURLConnection) u.openConnection();
+          ht.setDoInput(true);
+          ht.setRequestMethod("GET");
+  	        InputStream is = ht.getInputStream();
+  	        InputStreamReader isReader = new InputStreamReader(is);
+  	       BufferedReader bufReader = new BufferedReader(isReader);
+  	        int len = 0;
+  	        written = 0;
+  	        try{
+  	        	int currLineNum = 0;
+  	        	int xIndex = -1;
+  	        	int yIndex = -1;
+  	        	System.out.println("filter by polygon " +filterByPolygon );
+  	        	String currLine;
+  	        	while ((currLine = bufReader.readLine()) !=  null){
+  	        		currLine = currLine + "\n";
+  	        		if(currLineNum < 2 || !filterByPolygon){
+  	        			byte [] outB = currLine.getBytes();
+  					    output.write(outB);
+  						written += outB.length;
+
+  	        			if(currLineNum == 0 && filterByPolygon){
+  	        				int currIndex = 0;
+  	        				for(String tok : currLine.split(",") ){
+  	        					if(tok.equals(this.erd.getX().getName())){
+  	        						xIndex = currIndex;
+  	        					}
+  	        					else if(tok.equals(this.erd.getY().getName())){
+  	        						yIndex = currIndex;
+  	        					}
+  	        					currIndex++;
+  	        				}
+  	        				System.out.println("xindex " +xIndex+ " yindex " +yIndex);
+  	        			}
+  	        		}
+  	        		else if(polygon != null){
+  	        			System.out.println(currLine);
+  	        			// make sure the current data is within the polygon
+  	        			if(xIndex >= 0 && yIndex >= 0){
+  	        					String[] decoded = currLine.split(",");
+  	        					Double x = null;
+  	        					Double y = null;
+  	        					if(xIndex < decoded.length){
+  	        						try{
+  	        							x = Double.valueOf(decoded[xIndex]);
+  	        						}
+  	        						catch(NumberFormatException e){
+  	        							Log.error(e.getMessage());
+  	        							e.printStackTrace();
+  	        						}
+  	        					}
+  	        					if(yIndex < decoded.length){
+  	        						try{
+  	        							y = Double.valueOf(decoded[yIndex]);
+  	        						}
+  	        						catch(NumberFormatException e){
+  	        							Log.error(e.getMessage());
+  	        							e.printStackTrace();
+  	        						}
+  	        					}
+  	        					System.out.println("x " + x + " y" + y);
+  	        					if(x != null && y != null && polygon.contains(x, y) ){
+  	        						byte [] outB = currLine.getBytes();
+  	        					    output.write(outB);
+
+  	        						System.out.println("wrote line");
+  	        						written += outB.length;
+  	        					}
+  	        					else{
+  	        						System.out.println("not including");
+  	        					}
+  	        				}
+  	        			
+  	        		}
+  	        		output.flush();
+  	        		currLineNum++;
+  	        	}
+  	        }
+  	        catch(Exception e){
+  	        	e.printStackTrace();
+  	        }
+  	        is.close();
+  	        output.flush();
+          output.close();
+          // Now write the properties file if we need to (ARC)
+          if(written > 0)
+          	writeArcFile( f);
+        } catch (MalformedURLException e) {
+      	  e.printStackTrace();
+
+          pcs.firePropertyChange("message", null, "- BAD URL, skipping sensor");
+        } catch (IOException io) {
+      	  io.printStackTrace();
+      	  if(written == 0)
+      		  pcs.firePropertyChange("message", null, "- NO DATA available for selected range: " + io.getMessage());
+      	  else
+      	       writeArcFile( f);
+        }
+        catch(Exception e){
+      	  pcs.firePropertyChange("message", null, "Exception " + e.getMessage());
+      	  e.printStackTrace();
+        }
+        pcs.firePropertyChange("message", null, "- Completed " + written + " bytes in " + stopwatch.elapsedTime() + " seconds.");
+        pcs.firePropertyChange("progress", null, 100);
+        if (f != null) {
+          pcs.firePropertyChange("done", null, f.getAbsolutePath());
+        }
+    }
+    
     
     public void getData() {
     
@@ -129,32 +365,18 @@ public class ErddapDataRequest implements PropertyChangeListener {
       try {
         URL u = new URL(getRequestUrl());
         pcs.firePropertyChange("message", null, "- Making Request (" + getRequestUrl() + ")");
-        HttpURLConnection ht = (HttpURLConnection) u.openConnection();
-        ht.setDoInput(true);
-        ht.setRequestMethod("GET");
-        InputStream is = ht.getInputStream();
+ 
         // Increment the file
         File incrementFile = new File(FileSaveUtils.chooseFilename(getSaveFile().getParentFile(), getSaveFile().getName()));
         pcs.firePropertyChange("message", null, "- Streaming Results to File: " + incrementFile.getAbsolutePath());
         f = incrementFile;
         OutputStream output = new BufferedOutputStream(new FileOutputStream(f));
-        byte[] buffer = new byte[2048];
-        int len = 0;
-        written = 0;
-        try{
-        while (-1 != (len = is.read(buffer))) {
-          output.write(buffer, 0, len);
-          written += len;
-        }
-        }
-        catch(Exception e){
-        	e.printStackTrace();
-        }
-        is.close();
-        output.flush();
+        written = writeData(output, u);
+  
         output.close();
         // Now write the properties file if we need to (ARC)
-        writeArcFile( f);
+        if(written > 0)
+        	writeArcFile( f);
       } catch (MalformedURLException e) {
     	  e.printStackTrace();
 
@@ -223,4 +445,29 @@ public class ErddapDataRequest implements PropertyChangeListener {
     		}
     	}
     }
+
+	public List<String> getSelectedStationLocations() {
+		return selectedStationLocations;
+	}
+
+	public void setSelectedStationLocations(List<String> selectedStationLocations) {
+		this.selectedStationLocations = selectedStationLocations;
+	}
+
+	public Path2D.Double getPolygon() {
+		return polygon;
+	}
+
+	public void setPolygon(Path2D.Double polygon) {
+		this.polygon = polygon;
+	}
+
+
+	public boolean isFilterByPolygon() {
+		return filterByPolygon;
+	}
+
+	public void setFilterByPolygon(boolean filterByPolygon) {
+		this.filterByPolygon = filterByPolygon;
+	}
   }

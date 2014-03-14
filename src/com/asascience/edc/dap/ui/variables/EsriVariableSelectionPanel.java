@@ -29,6 +29,7 @@ import javax.swing.event.ChangeListener;
 import net.miginfocom.swing.MigLayout;
 import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.dt.GridCoordSystem;
+import ucar.nc2.dt.grid.GeoGrid;
 
 import com.asascience.edc.nc.NetcdfConstraints;
 import com.asascience.ui.CheckBoxList;
@@ -102,7 +103,7 @@ public class EsriVariableSelectionPanel extends VariableSelectionPanel {
   @Override
   public void createPanel() {
     super.createPanel();
-    this.add(outputPanel(), BorderLayout.SOUTH);
+    this.add(outputPanel(),"aligny bottom");
   }
 
   private JPanel outputPanel() {
@@ -326,11 +327,15 @@ public class EsriVariableSelectionPanel extends VariableSelectionPanel {
 
       // get the grid for the selected variable
       // GeoGrid grid = parentSpp.getGridByName(vName);
-      GridCoordSystem coordSys = ((DapWorldwindProcessPanel) parentSpp).getGridByName(vName, true).getCoordinateSystem();
-      CoordinateAxis1D vert;// = coordSys.getVerticalAxis();
-
-      vert = coordSys.getVerticalAxis();
-
+      GeoGrid grid = ((DapWorldwindProcessPanel) parentSpp).getGridByName(vName, true);
+    		  
+      GridCoordSystem coordSys = null;
+      if(grid != null)
+    	  coordSys = ((DapWorldwindProcessPanel) parentSpp).getGridByName(vName, true).getCoordinateSystem();
+      CoordinateAxis1D vert = null;// = coordSys.getVerticalAxis();
+      if(coordSys != null)
+    	  vert = coordSys.getVerticalAxis();
+      
       if (propName.equals(CheckBoxList.ADDED)) {
         // if the raster tab is selected
 
@@ -409,14 +414,20 @@ public class EsriVariableSelectionPanel extends VariableSelectionPanel {
                 // cbTrimBy.removeAllItems();
 
                 int i = cbBandDim.getSelectedIndex();
-                String bDim = cbBandDim.getSelectedItem().toString();
+                String bDim = "";
+                if(cbBandDim.getSelectedItem() != null)
+                	bDim = cbBandDim.getSelectedItem().toString();
                 String trimByDim;
+                int trimIndex = 0;
                 if (i == 0) {
-                  trimByDim = cbBandDim.getItemAt(1).toString();
-                } else {
-                  trimByDim = cbBandDim.getItemAt(0).toString();
-                }
-
+                	trimIndex = 1;
+                } 
+                Object trimOb =  cbBandDim.getItemAt(trimIndex);
+                if(trimOb != null)
+                	trimByDim = trimOb.toString();
+                else 
+                	trimByDim = "";
+                
                 if (trimByDim.equals(constraints.getZDim())) {// trim
                   // by
                   // depth

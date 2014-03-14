@@ -72,7 +72,7 @@ import com.asascience.edc.erddap.ErddapDataset;
 import com.asascience.edc.erddap.gui.ErddapDatasetViewer;
 import com.asascience.edc.erddap.gui.ErddapTabledapGui;
 import com.asascience.edc.log.TextAreaAppender;
-import com.asascience.edc.map.WorldwindSelectionMap;
+import com.asascience.edc.map.view.WorldwindSelectionMap;
 import com.asascience.edc.nc.NetcdfConstraints;
 import com.asascience.edc.nc.io.NcProperties;
 import com.asascience.edc.particle.ParticleOutputLayer;
@@ -210,7 +210,7 @@ public class OpendapInterface {
     filters[1] = new FileManager.NetcdfExtFilter();
     fileChooser = new FileManager(mainFrame, null, filters, (PreferencesExt) prefs.node("FileManager"));
 
-    constraints = new NetcdfConstraints();
+    //constraints = new NetcdfConstraints();
     createAndShowGUI();
     addChangeListener(new ChangeListener (){
     
@@ -273,7 +273,7 @@ public class OpendapInterface {
   public void formWindowClose(String ncPath) {
 
     if (Configuration.MAKE_POINTER) {
-      NcProperties ncprops = new NcProperties();
+      NcProperties ncprops = new NcProperties(1);
       ncprops.createPointerXml(ncPath, sysDir);
     }
 
@@ -291,7 +291,9 @@ public class OpendapInterface {
 
     mainFrame = new JFrame("Environmental Data Connector");
     mainFrame.setLayout(new MigLayout("fill"));
-    mainFrame.setIconImage(new ImageIcon(this.getClass().getResource("/resources/images/ASA.png")).getImage());
+    ImageIcon icon = new ImageIcon(this.getClass().getResource("/resources/images/ASA.png"));
+    if(icon != null)
+    	mainFrame.setIconImage(icon.getImage());
     Rectangle bounds = (Rectangle) prefs.getBean(FRAME_SIZE, new Rectangle(100, 50, 800, 600));
     mainFrame.setBounds(bounds);
     // mainFrame.setSize(800, 600);
@@ -599,26 +601,27 @@ public class OpendapInterface {
     }
   }
 
-  public boolean openSOSDataset(SosServer sosData, SwingWorker task) {
+  public boolean openSOSDataset(SosServer sosData, boolean taskCancelled) {
     try {
-      if (!task.isCancelled()) {
+      if (!taskCancelled) {
         sosPanel = new SosWorldwindProcessPanel(this, sosData, homeDir, sysDir);
       }
-      if (task.isCancelled() || !sosPanel.initData()) {
+      if (taskCancelled || !sosPanel.initData()) {
         return false;
       }
-
-      if (!task.isCancelled()) {
+      if (!taskCancelled) {
         int i = tabbedPane.indexOfTab("SOS - Subset & Process");
         if (i != -1) {
           tabbedPane.removeTabAt(i);
         }
         tabbedPane.addTabClose("SOS - Subset & Process", sosPanel);
         tabbedPane.setSelectedComponent(sosPanel);
+        tabbedPane.repaint();
         return true;
       }
     } catch (Exception ex) {
       logger.error("Exception", ex);
+      ex.printStackTrace();
     }
     return false;
   }
@@ -632,9 +635,8 @@ public class OpendapInterface {
   public void openTabledap(ErddapDataset erd) {
     erd.buildVariables();
     ErddapTabledapGui tdg = new ErddapTabledapGui(erd, this, homeDir);
-    JScrollPane tdgScrollPane = new JScrollPane(tdg);
-    tabbedPane.addTabClose("ERDDAP - Subset & Process", tdgScrollPane);
-    tabbedPane.setSelectedComponent(tdgScrollPane);
+    tabbedPane.addTabClose("ERDDAP - Subset & Process", tdg);
+    tabbedPane.setSelectedComponent(tdg);
   }
 
   public boolean openDataset(NetcdfDataset ncd) {

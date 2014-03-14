@@ -65,6 +65,8 @@ public class JSlider2 extends JComponent
     this(true);
     setSize(40,40);
   }
+  
+ 
 
   /**
    * Class for the GeoDate and Double JSlider2 classes. This class creates

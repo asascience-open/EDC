@@ -60,7 +60,38 @@ public abstract class SosRequest implements PropertyChangeListener {
 		sosURL = url;
 	}
 	
+	public String buildRequest(SensorContainer sensor) {
+	    try {
+	      ArrayList<String> params = new ArrayList<String>();
+	      // request
+	      params.add("request=GetObservation");
+	      // service
+	      params.add("service=SOS");
+	      // version
+	      params.add("version=1.0.0");
+	      // responseFormat
+	      params.add("responseFormat=" + URLEncoder.encode(getResponseFormatValue(), "utf-8"));
+	      // offering
+	      params.add("offering=" + URLEncoder.encode(sensor.getGmlName(), "utf-8"));
+	      // observedProperty
+	      ArrayList<String> variableQueryString = new ArrayList<String>();
+	      for (VariableContainer variable : selectedVariables) {
+	        for (VariableContainer sv : sensor.getVarList()) {
+	          if (sv.compareTo(variable) == 0) {
+	            variableQueryString.add(variable.getName());
+	            break;
+	          }
+	        }
+	      }
+	      params.add("observedProperty=" + StringUtils.join(variableQueryString, ','));
+	      // eventTime
+	      params.add("eventtime=" + dateFormatter.format(selectedStartTime) + "/" + dateFormatter.format(selectedEndTime));
 
+	      return sosURL + "?" + StringUtils.join(params, '&');
+	    } catch (Exception e) {
+	      return "";
+	    }
+	  }
 	public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
 		pcs.addPropertyChangeListener(l);
 	}

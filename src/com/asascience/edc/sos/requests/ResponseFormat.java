@@ -34,6 +34,7 @@ public class ResponseFormat {
   }
 
   private void parseReadableNames() {
+	  System.out.println(value);
     if (value.contains("0.6.1")) {
       name = "IOOS DIF (0.6.1)";
     } else if (value.contains("swe")) {
@@ -54,6 +55,7 @@ public class ResponseFormat {
     else {
       name = value;
     }
+    System.out.println(name);
   }
 
   private void parseChildrenAndClass() {

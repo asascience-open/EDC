@@ -15,6 +15,7 @@ import com.asascience.edc.dap.ui.variables.VariableSelectionPanel;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Path2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -22,7 +23,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import javax.swing.ImageIcon;
@@ -36,28 +39,36 @@ import javax.swing.border.EtchedBorder;
 import net.miginfocom.swing.MigLayout;
 import ucar.ma2.Array;
 import ucar.ma2.IndexIterator;
+import ucar.nc2.Attribute;
+import ucar.nc2.FileWriter;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dt.GridCoordSystem;
+import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GeoGrid;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.units.DateUnit;
+import ucar.unidata.geoloc.LatLonPointImpl;
 import ucar.unidata.geoloc.LatLonRect;
 import ucar.util.prefs.PreferencesExt;
 
 import com.asascience.edc.ArcType;
 import com.asascience.edc.Configuration;
 import com.asascience.edc.History;
-import com.asascience.edc.map.BoundingBoxPanel;
 import com.asascience.edc.gui.OpendapInterface;
 import com.asascience.edc.gui.jslider.JSlider2Date;
-import com.asascience.edc.map.WorldwindSelectionMap;
+import com.asascience.edc.map.TrackLineVertex;
+import com.asascience.edc.map.view.BoundingBoxPanel;
+import com.asascience.edc.map.view.SelectionMethodsPanel;
+import com.asascience.edc.map.view.WorldwindSelectionMap;
+import com.asascience.edc.map.view.SelectionMethodsPanel.ActiveSelectionSource;
 import com.asascience.edc.nc.GridReader;
 import com.asascience.edc.nc.NcReaderBase;
 import com.asascience.edc.nc.NetcdfConstraints;
+import com.asascience.edc.nc.io.NcGridObjectProperties;
 import com.asascience.edc.nc.io.NcProperties;
 import com.asascience.edc.nc.io.NetcdfGridWriter;
 import com.asascience.edc.utils.FileSaveUtils;
@@ -96,9 +107,18 @@ public class DapWorldwindProcessPanel extends JPanel {
   private JLabel lblDateIncrement;
   private JLabel lblNumDatesSelected;
   private JLabel lblNcName;
+  public static final String DISABLE_BBOX = "disableBBOX";
+  public static final String DISABLE_SLIDER = "disableSlider";
   private static Logger logger = Logger.getLogger(Configuration.class);
   private static Logger guiLogger = Logger.getLogger("com.asascience.log." + DapWorldwindProcessPanel.class.getName());
 
+  
+	public enum ErrdapRequestType{
+		BOUNDING_BOX,
+		TRACK_LINE,
+		POLYGON
+	}
+	
   /**
    * Creates a new instance of SubsetProcessPanel
    *
@@ -170,8 +190,11 @@ public class DapWorldwindProcessPanel extends JPanel {
           setVariables(((GridReader) ncReader).getGeoGrids());
           // setBandDims();
 
+      	System.out.println("REgular grid " +((GridReader) ncReader).isRegularSpatial());
+
           if (!((GridReader) ncReader).isRegularSpatial()) {
             if (selPanel.getPanelType() == VariableSelectionPanel.ESRI) {
+            	
               selPanel.gridRegularity(((GridReader) ncReader).isRegularSpatial());
             }
           }
@@ -249,17 +272,35 @@ public class DapWorldwindProcessPanel extends JPanel {
 
       // create the map panel
       String gisDataDir = sysDir + "data";
-      mapPanel = new WorldwindSelectionMap(gisDataDir);
+      mapPanel = new WorldwindSelectionMap(gisDataDir, true);
       mapPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent e) {
           String name = e.getPropertyName();
           // Bounding box was drawn
-          if (name.equals("boundsStored")) {
+          if (name.equals(SelectionMethodsPanel.BOUNDS_STORED)) {
             if (selPanel != null) {
-              selPanel.setHasGeoSub(true);
-              bboxGui.setBoundingBox(mapPanel.getSelectedExtent());
+            	selPanel.setHasGeoSub(true);
+            	List<LatLonRect> bbox = mapPanel.getSelectedExtent();
+            	if(bbox != null && bbox.size() > 0)
+            		bboxGui.setBoundingBox(bbox.get(0));
             }
+          }
+          else if(name.equals(DISABLE_BBOX)){
+        	  bboxGui.setEnabled((Boolean)e.getNewValue());
+        	  
+          }
+          else if(name.equals(DISABLE_SLIDER)){
+        	  Boolean enabled = (Boolean) e.getNewValue();
+        	  dateSlider.setEnabled(enabled);
+        	  dateSlider.getSlider_().setVisible(enabled);
+        	  if(enabled == false){
+        		  dateSlider.getDisableReasonLabel().setText("Temporal Contraints Set Via Track Import");
+        	  }
+        	  dateSlider.getDisableReasonLabel().setVisible(!enabled);
+        	  lblDateIncrement.setEnabled(enabled);
+        	  lblNumDatesSelected.setEnabled(enabled);
+        	  lblNcName.setEnabled(enabled);
           }
         }
       });
@@ -286,6 +327,7 @@ public class DapWorldwindProcessPanel extends JPanel {
             if (name.equals("processEnabled")) {
               btnProcess.setEnabled(Boolean.valueOf(e.getNewValue().toString()));
             }
+        
           }
         }
       });
@@ -302,6 +344,7 @@ public class DapWorldwindProcessPanel extends JPanel {
           if (evt.getPropertyName().equals("bboxchange")) {
             mapPanel.makeSelectedExtentLayer(bboxGui.getBoundingBox());
           }
+         
         }
       });
       pageEndPanel.add(bboxGui, "gap 0, growy");
@@ -706,332 +749,459 @@ public class DapWorldwindProcessPanel extends JPanel {
   }
 
   class ProcessDataListener implements ActionListener {
+	  private String userOutname;
 
-    public void actionPerformed(ActionEvent e) {
-      // Process button is clicked
-      if (selPanel != null) {
-        // get the extent set by the user
-        LatLonRect bounds = mapPanel.getSelectedExtent();
-        // if no user extent, use entire extent
-        if (bounds == null) {
-          bounds = ncReader.getBounds();
-        }// bounds = parent.getNcExtent();
-        constraints.setBoundingBox(bounds);
-        // set the start & end date/time
-        constraints.setStartTime(null);
-        constraints.setEndTime(null);
-        if (ncReader.isHasTime()) {
-          constraints.setStartTime(dateSlider.getStartDate());
-          constraints.setEndTime(dateSlider.getEndDate());
-        }
+	 private File getOutputFile(){
+		  File f = null;
+		  String outname = "outname";
+		  String inname = "outname";
+		  boolean cont = false;
+		  boolean skip = false;
+		
+		  if (selPanel.getCblVars().getSelItemsSize() > 0) {
+			  inname = selPanel.getCblVars().getSelectedItems().get(0);
+		  }
+		  if (inname != null) {
+			  // alter default name
+			  if (Configuration.USE_VARIABLE_NAME_FOR_OUTPUT) {
+				  // just the variable name
+				  outname = createSuitableLayerName(inname.substring(1, inname.indexOf("]")));
+			  } else {
+				  // the description with underscores
+				  outname = createSuitableLayerName(selPanel.getFullDescriptionFromShortDescription(inname));
+			  }
+		  }
+		  if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {
+			  // If longer, trim the name down to the first 8 characters
+			  if (outname.length() > 8) {
+				  outname = outname.substring(0, 7);
+			  }
+		  }
 
-        // set the panel type
-        constraints.setPanelType(selPanel.getPanelType());
+		  do {
+			  skip = false;
 
-        double lonSpan = Math.abs(constraints.getWesternExtent()) - Math.abs(constraints.getEasternExtent());
-        double latSpan = constraints.getNorthernExtent() - constraints.getSouthernExtent();
+			  if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {// ESRI
+				  if (!isArcNameGood(outname)) {
+					  JOptionPane.showMessageDialog(null, "The name contains illegal characters "
+							  + "or is too long.\nThe maximum allowable size is 10 characters.\n"
+							  + "Special characters (i.e. @, #, $, \"space\", etc.) are not allowed.",
+							  "Invalid Name", JOptionPane.WARNING_MESSAGE);
+					  skip = true;
+				  }
+			  }
 
-        // if(!selPanel.isHasGeoSub() | (Math.abs(lonSpan) > 90 |
-        // Math.abs(latSpan) > 90)){
-        if ((Math.abs(lonSpan) > 90 | Math.abs(latSpan) > 90)) {
-          if (JOptionPane.showConfirmDialog(mainFrame, "The geospatial subset is larger than 90 degrees.\n"
-                  + "This may result in a very large dataset.\n\nDo you wish to continue?", "Geospatial Subset",
-                  JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
-            return;
-          }
-        }
-        // int rng = endSlider.getValue() - startSlider.getValue();
-        if (ncReader.isHasTime()) {
-          double rng = calcNumTimesteps();
-          if (rng >= 100) {
-            if (JOptionPane.showConfirmDialog(mainFrame, "The temporal subset has not been indicated"
-                    + " or is larger than 100 timesteps.\n"
-                    + "This may result in a very large dataset.\n\nDo you wish to continue?",
-                    "Temporal Subset", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
-              return;
-            }
-          }
-        }
-      } else {
-        return;
-      }
+			  File find_file = FileSaveUtils.chooseDirectSavePath(mainFrame, homeDir, createSuitableLayerName(outname.replace(".nc", "")));
 
-      boolean cont = false;
-      boolean skip = false;
-      boolean rept = false;
-      String outname = "outname";
-      String userOutname = outname;
-      String inname = "outname";
-      if (selPanel.getCblVars().getSelItemsSize() > 0) {
-        inname = selPanel.getCblVars().getSelectedItems().get(0);
-      }
-      if (inname != null) {
-        // alter default name
-        if (Configuration.USE_VARIABLE_NAME_FOR_OUTPUT) {
-          // just the variable name
-          outname = createSuitableLayerName(inname.substring(1, inname.indexOf("]")));
-        } else {
-          // the description with underscores
-          outname = createSuitableLayerName(selPanel.getFullDescriptionFromShortDescription(inname));
-        }
-      }
-      if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {
-        // If longer, trim the name down to the first 8 characters
-        if (outname.length() > 8) {
-          outname = outname.substring(0, 7);
-        }
-      }
+			  if (!skip && find_file != null) {
+				  userOutname = createSuitableLayerName(find_file.getName());
 
-      File f = null;
-      userOutname = outname;
-      do {
-        skip = false;
+				  f = new File(find_file.getParentFile().getAbsolutePath() + File.separator + userOutname + ".nc");
 
-        if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {// ESRI
-          if (!isArcNameGood(outname)) {
-            JOptionPane.showMessageDialog(null, "The name contains illegal characters "
-                    + "or is too long.\nThe maximum allowable size is 10 characters.\n"
-                    + "Special characters (i.e. @, #, $, \"space\", etc.) are not allowed.",
-                    "Invalid Name", JOptionPane.WARNING_MESSAGE);
-            skip = true;
-          }
-        }
+				  if (f.exists()) {
+					  if (Configuration.ALLOW_FILE_REPLACEMENT) {
+						  int i = JOptionPane.showConfirmDialog(mainFrame,
+								  "An output file with this name already exists." + "\nDo you wish to replace it?",
+								  "Duplicate Name", JOptionPane.YES_NO_OPTION);
+						  if (i == JOptionPane.YES_OPTION) {
+							  f.delete();
+							  cont = true;
+						  } else {
+							  cont = false;
+						  }
+					  } else {
+						  JOptionPane.showMessageDialog(mainFrame,
+								  "An output file with this name already exists."
+										  + "\nPlease select a different name to continue.", "Duplicate Name",
+										  JOptionPane.OK_OPTION);
+						  cont = false;
+					  }
+				  } else {
+					  cont = true;
+				  }
+			  }
+			  else if(find_file == null)
+				  return null;
+		  } while (!cont);
+		  return f;
+	 }
+	  
+	  public void actionPerformed(ActionEvent e) {
+		  // Process button is clicked
+		  if (selPanel == null) 
+			  return;
+		  List<LatLonRect> boundsList;
+		  List<LatLonPointImpl> polygonVertices = null;
+		  List<NetcdfConstraints> constraintsList = new ArrayList<NetcdfConstraints>();
+		
 
-        File find_file = FileSaveUtils.chooseDirectSavePath(mainFrame, homeDir, createSuitableLayerName(outname.replace(".nc", "")));
-        
-        if (!skip && find_file != null) {
-            userOutname = createSuitableLayerName(find_file.getName());
+	
+			  // get the extent set by the user
+			  boundsList = mapPanel.getSelectedExtent();
+		  
+		  ErrdapRequestType requestType = null;
+		  ActiveSelectionSource activeSelectionSource = mapPanel.getLocationSelectionTool().getActiveSelectionSource();
+		  switch(activeSelectionSource){
+		  case BBOX:
+			  requestType = ErrdapRequestType.BOUNDING_BOX;
+			  break;
+		  case POLYGON:
+			  requestType = ErrdapRequestType.POLYGON;
+			  polygonVertices = mapPanel.getSelectedVertices();
+			  
+			  break;
+		  case TRACK_LINE:
+			  requestType = ErrdapRequestType.TRACK_LINE;		 
+			  break;
+		  }
+		  
+		  if(requestType == ErrdapRequestType.TRACK_LINE){
+			  processTrackLineRequest(constraintsList,
+					  					selPanel.getPanelType(), dateSlider.getStartDate(), dateSlider.getEndDate());
+			  System.out.println("TRACK LINE - num cons = " +constraintsList.size());
+		  }
+		  else {
+			  // set the start & end date/time
+			  constraints.setStartTime(null);
+			  constraints.setEndTime(null);
+			  if (ncReader.isHasTime()) {
+				  constraints.setStartTime(dateSlider.getStartDate());
+				  constraints.setEndTime(dateSlider.getEndDate());
+			  }
 
-          f = new File(find_file.getParentFile().getAbsolutePath() + File.separator + userOutname + ".nc");
+			  // set the panel type
+			  constraints.setPanelType(selPanel.getPanelType());
 
-          if (f.exists()) {
-            if (Configuration.ALLOW_FILE_REPLACEMENT) {
-              int i = JOptionPane.showConfirmDialog(mainFrame,
-                      "An output file with this name already exists." + "\nDo you wish to replace it?",
-                      "Duplicate Name", JOptionPane.YES_NO_OPTION);
-              if (i == JOptionPane.YES_OPTION) {
-                f.delete();
-                cont = true;
-              } else {
-                cont = false;
-              }
-            } else {
-              JOptionPane.showMessageDialog(mainFrame,
-                      "An output file with this name already exists."
-                      + "\nPlease select a different name to continue.", "Duplicate Name",
-                      JOptionPane.OK_OPTION);
-              cont = false;
-            }
-          } else {
-            cont = true;
-          }
-        }
-        else if(find_file == null)
-        	return;
-      } while (!cont);
+			  // if no user extent, use entire extent
+			  if (boundsList == null || boundsList.size() == 0) {
+				  boundsList.add(ncReader.getBounds());
+			  }// bounds = parent.getNcExtent();
+			  constraints.setBoundingBox(boundsList.get(0));
+		  
+			  if((!checkLocationExtents(constraints)) || (!checkTimeExtents(constraints)))
+				  return;
+			  constraintsList.add(constraints);
 
-      if (f != null) {
-        try {
-          f.createNewFile();
-        } catch (Exception ex) {
-          ex.printStackTrace();
-        }
-      }
+		  }
+		  File outFile = getOutputFile();
+		  if (outFile != null) {
+			  try {
+				  outFile.createNewFile();
+			  } catch (Exception ex) {
+				  ex.printStackTrace();
+			  }
+		  }
 
-      ncOutPath = f.getAbsolutePath();
+		  ncOutPath = outFile.getAbsolutePath();
 
-      IndeterminateProgressDialog pd = new IndeterminateProgressDialog(mainFrame, "Progress", new ImageIcon(new ImageIcon(this.getClass().getResource("/resources/images/ASA.png")).getImage()));
-      ProcessDataTask pdt = new ProcessDataTask("Processing Data...", ncOutPath, userOutname);
-      pdt.addPropertyChangeListener(new ProcessPropertyListener());
-      pd.setRunTask(pdt);
-      pd.runTask();
-    }
+		  IndeterminateProgressDialog pd = new IndeterminateProgressDialog(mainFrame, 
+				  "Progress", new ImageIcon(new ImageIcon
+						  (this.getClass().getResource("/resources/images/ASA.png")).getImage()));
+		  ProcessDataTask pdt = new ProcessDataTask("Processing Data...", ncOutPath, 
+				  userOutname, constraintsList, polygonVertices, requestType);
+		  pdt.addPropertyChangeListener(new ProcessPropertyListener());
+		  pd.setRunTask(pdt);
+		  pd.runTask();
+	  }
+	  
+	  
+	  
+	  public void  processTrackLineRequest(List<NetcdfConstraints> constraintsList,
+			  							  int panelType, Date sliderStart, Date sliderEnd){
+			 List<TrackLineVertex> trackPts = mapPanel.getLocationSelectionTool().getTrackSel().getTrackConnectorModel();
+			 boolean  passedLocationCheck = false;
+			 boolean   passedTimeCheck = false;
+			 int vertexId = 1;
+			 for(TrackLineVertex pt : trackPts){
+				 NetcdfConstraints cons = new NetcdfConstraints(constraints);
+				 cons.setBoundingBox(pt.getBoundingBox());
+				 Date startDate = pt.getStartTime();
+				 if(startDate == null)
+					 startDate = sliderStart;
+				 Date endDate = pt.getEndTime();
+				 if(endDate == null)
+					 endDate = sliderEnd;
+				 cons.setStartTime(startDate);
+				 cons.setEndTime(endDate);
+				 cons.setPanelType(panelType);
+				 String bandDim = cons.getBandDim();
+				 String trimDim = cons.getTrimByDim();
+				 if(bandDim != null && !bandDim.equals("") && !bandDim.equals("null"))
+					 cons.setBandDim(bandDim + vertexId);
+				 if(trimDim != null && !trimDim.equals("") && !trimDim.equals("null"))
+					 cons.setTrimByDim(trimDim + vertexId);
+				 if(passedLocationCheck || checkLocationExtents(cons)){
+					 passedLocationCheck = true;
+					 System.out.println("passed loc" );
+					 if(passedTimeCheck || checkTimeExtents(cons))
+						 constraintsList.add(cons);
+					 else 
+						 return;
+				 }
+				 else {
+					 constraintsList = null;
+					 return;
+				 }
+				 vertexId++;
+			 }
+	  }
+	  
+	  
+	  public boolean checkLocationExtents(NetcdfConstraints constraints){
+		  double lonSpan = Math.abs(constraints.getWesternExtent()) - Math.abs(constraints.getEasternExtent());
+		  double latSpan = constraints.getNorthernExtent() - constraints.getSouthernExtent();
+		  // if(!selPanel.isHasGeoSub() | (Math.abs(lonSpan) > 90 |
+		  // Math.abs(latSpan) > 90)){
+		  if ((Math.abs(lonSpan) > 90 | Math.abs(latSpan) > 90)) {
+			  if (JOptionPane.showConfirmDialog(mainFrame, "The geospatial subset is larger than 90 degrees.\n"
+					  + "This may result in a very large dataset.\n\nDo you wish to continue?", "Geospatial Subset",
+					  JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
+				  return false;
+			  }
+		  }
+	
+		  return true;
+	  }
+	  public boolean checkTimeExtents(NetcdfConstraints constraints){
+		  // int rng = endSlider.getValue() - startSlider.getValue();
+		  if (ncReader.isHasTime()) {
+			  double rng = calcNumTimesteps();
+			  if (rng >= 100) {
+				  if (JOptionPane.showConfirmDialog(mainFrame, "The temporal subset has not been indicated"
+						  + " or is larger than 100 timesteps.\n"
+						  + "This may result in a very large dataset.\n\nDo you wish to continue?",
+						  "Temporal Subset", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) {
+					  return false;
+				  }
+			  }
+		  }
+		  return true;
+	  }
+
   }
-
-
   public class ProcessDataTask extends com.asascience.utilities.BaseTask {
 
     private List<String> ncPaths;
     private String ncPath;
     private String outname;
+	protected List<NetcdfConstraints> constraintsList;
+	protected List<LatLonPointImpl> polygonVertices;
+	private ErrdapRequestType requestType;
+	
 
-    public ProcessDataTask(String name, String ncfile, String outname) {
-      super();
-      this.setName(name);
-      this.ncPath = ncfile;
-      this.outname = outname;
-    }
+	
+	  
+	
+	public ProcessDataTask(String name, String ncfile, 
+			String outname, List<NetcdfConstraints> constraintsList, 
+			List<LatLonPointImpl> polygonVertices, ErrdapRequestType type) {
+		super();
+		this.setName(name);
+		this.ncPath = ncfile;
+		this.outname = outname;
+		this.requestType = type;
+
+		this.constraintsList = constraintsList;
+		this.polygonVertices = polygonVertices;
+
+	}
 
     @Override
     public Void doInBackground() {
-      try {
-        firePropertyChange("progress", null, 0);// starts the dialog
-        Thread.sleep(500);// sleep for a half second to allow the dialog
-        // to display
-        firePropertyChange("note", null, "Initializing...");
-        Thread.sleep(500);
-        // constraints.getBoundingBox().toString2());
-        constraints.resetVariables();
-        for (String s : selPanel.getCblVars().getSelectedItems()) {
-          // constraints.addVariable(s);//orig
-          constraints.addVariable(selPanel.getVarNameFromDescription(s));
-        }
+    	try {
+    		firePropertyChange("progress", null, 0);// starts the dialog
+    		Thread.sleep(500);// sleep for a half second to allow the dialog
+    		// to display
+    		firePropertyChange("note", null, "Initializing...");
+    		Thread.sleep(500);
+    		NcProperties props = new NcProperties(ncPath, constraintsList.size());
+    		ArcType type = ArcType.NULL;
+    		String sTime = null;
 
-        // //MOVED TO PROCESSDATALISTENER
-        // LatLonRect bounds = mapPanel.getSelectedExtent();
-        // //if no user extent, use entire extent
-        // if(bounds == null) bounds = gridReader.getBounds();//bounds =
-        // parent.getNcExtent();
-        // constraints.setBoundingBox(bounds);
+    		List<String> vars = null;
+    		FileMonitor fm = new FileMonitor(ncPath);
+    		Map<Integer, List<Variable>> varVertexMap = new HashMap<Integer, List<Variable>>();
+    		Map<Integer, Boolean[][]> includeIndicesMap = new HashMap<Integer, Boolean[][]>();
+    		 Map<Integer, String> xDimNameMap = new HashMap<Integer, String>();
+    		 Map<Integer, String> yDimNameMap = new HashMap<Integer, String>();
+    		 Map<Integer, String> zDimNameMap = new HashMap<Integer, String>();
 
-        NcProperties props = new NcProperties();
-        ArcType type = ArcType.NULL;
-        List<String> vars = constraints.getSelVars();
+    		NetcdfGridWriter writer = new NetcdfGridWriter(this.getPropertyChangeSupport());
+    		System.out.println("constraints list " +constraintsList.size());
 
-        // if(makeRaster){
-        switch (selPanel.getPanelType()) {
-          case 0:// general
-            constraints.setTrimByIndex(selPanel.getTrimByIndex());
-            constraints.setUseAllValues(selPanel.isUseAllLevels());
-            break;
-          case 1:// ESRI
-            type = ArcType.FEATURE;
-            constraints.setTrimByIndex(selPanel.getTrimByIndex());
-            constraints.setUseAllValues(selPanel.isUseAllLevels());
-            props.setBandDim(constraints.getBandDim());
-            props.setTrimByDim(constraints.getTrimByDim());
-            props.setTrimByValue(selPanel.getTrimByValue());
+    		fm.addPropertyChangeListener(new PropertyChangeListener() {
 
-            if (selPanel.isMakeRaster()) {// RASTER
-              type = ArcType.RASTER;
-              // constraints.setBandDim((String)cbBandDim.getSelectedItem());
-              // constraints.setTrimByIndex(cbTrimBy.getSelectedIndex());
-              // constraints.setTrimByIndex(selPanel.getTrimByIndex());
-              // props.setBandDim(constraints.getBandDim());
-              // props.setTrimByDim(constraints.getTrimByDim());
-              // props.setTrimByValue(selPanel.getTrimByValue());
+    			public void propertyChange(PropertyChangeEvent evt) {
+    				double mbytes = Utils.roundDouble(Utils.Memory.Convert.bytesToMegabytes(((Long) evt.getNewValue()).longValue()), 2);
+    				firePropertyChange("note", null, "Writing File... : " + String.valueOf(mbytes) + " mb");
+    			}
+    		});
+    		fm.startMonitor();
+    		Integer vertexIndex = 1;
+    		boolean isMultGrids = constraintsList.size() > 1;
+    		for(NetcdfConstraints constraints : constraintsList){
+    			// constraints.getBoundingBox().toString2());
+    			NcGridObjectProperties gridProps = props.getGridProperties(vertexIndex-1);
+    			constraints.resetVariables();
+    			for (String s : selPanel.getCblVars().getSelectedItems()) {
+    				// constraints.addVariable(s);//orig
+    				constraints.addVariable(selPanel.getVarNameFromDescription(s));
+    			}
 
-              // ensure that the correct variable dimensions are
-              // used
-              GeoGrid grid = getGridByName(vars.get(0), false);
-              if (grid != null) {
-                constraints.setXDim(grid.getXDimension().getName());
-                constraints.setYDim(grid.getYDimension().getName());
-              }
-              // }else if(constraints.getSelVars().size() > 1){
-            } else if (selPanel.isMakeVector()) {// VECTOR
-              type = ArcType.VECTOR;
-              vars.clear();
-              props.setUVar(selPanel.getVarNameFromDescription(selPanel.getUVar()));
-              props.setVVar(selPanel.getVarNameFromDescription(selPanel.getVVar()));
-              vars.add(props.getUVar());
-              vars.add(props.getVVar());
-            }
-            break;
-          case 2:// OILMAP
-            props.setUVar(selPanel.getUVar());
-            props.setVVar(selPanel.getVVar());
-            props.setSurfLayer(selPanel.getSurfaceLevel());
-            props.setVectorType(selPanel.isVectorType());
-            break;
-        }
+    			vars = constraints.getSelVars();
 
-        // ensure that the zVar tag and tVar tag are null unless one of
-        // the variables has a z dimension
-        boolean hasZ = false;
-        boolean hasT = false;
-        for (String s : vars) {
-          GeoGrid g = getGridByName(s, false);
-          if (g != null) {
-            GridCoordSystem gcs = g.getCoordinateSystem();
-            CoordinateAxis1D vAxis = gcs.getVerticalAxis();
-            if (vAxis != null) {
-              hasZ = true;
-            }
-            if (gcs.hasTimeAxis()) {
-              hasT = true;
-            }
-          }
-        }
-        if (!hasZ) {
-          constraints.setZDim("null");
-        }
-        String sTime;
-        if (!hasT) {
-          constraints.setTimeDim("null");
-          constraints.setTVar("null");
-          sTime = "null";
-        } else {
-          sTime = constraints.getStartTime().toString();
-        }
 
-        // props.setNcPath(ncPath);
-        // props.setOutPath(outname);
-        // props.setStartTime(sTime);
-        // props.setTimeInterval(constraints.getTimeInterval());
-        // props.setTimeUnits(constraints.getTimeUnits());
-        // props.setTime(constraints.getTimeDim());
-        // props.setTVar(constraints.getTVar());
-        // props.setXCoord(constraints.getXDim());
-        // props.setYCoord(constraints.getYDim());
-        // props.setZCoord(constraints.getZDim());
-        // props.setProjection(constraints.getProjection());
-        //
-        //
-        // props.setType(type);
-        // props.setVars(vars);
+    			// ensure that the zVar tag and tVar tag are null unless one of
+    			// the variables has a z dimension
+    			boolean hasZ = false;
+    			boolean hasT = false;
+    			for (String s : vars) {
+    				GeoGrid g = getGridByName(s, false);
+    				if (g != null) {
+    					GridCoordSystem gcs = g.getCoordinateSystem();
+    					CoordinateAxis1D vAxis = gcs.getVerticalAxis();
+    					if (vAxis != null) {
+    						hasZ = true;
+    					}
+    					if (gcs.hasTimeAxis()) {
+    						hasT = true;
+    					}
+    				}
+    			}
+    			if (!hasZ) {
+    				constraints.setZDim("null");
+    			}
+    			if (!hasT) {
+    				constraints.setTimeDim("null");
+    				constraints.setTVar("null");
+    				sTime = "null";
+    			} else {
+    				sTime = constraints.getStartTime().toString();
+    			}
 
-        FileMonitor fm = new FileMonitor(ncPath);
-        fm.addPropertyChangeListener(new PropertyChangeListener() {
 
-          public void propertyChange(PropertyChangeEvent evt) {
-            double mbytes = Utils.roundDouble(Utils.Memory.Convert.bytesToMegabytes(((Long) evt.getNewValue()).longValue()), 2);
-            firePropertyChange("note", null, "Writing File... : " + String.valueOf(mbytes) + " mb");
-          }
-        });
-        fm.startMonitor();
 
-        guiLogger.info("Processing data...");
-        NetcdfGridWriter writer = new NetcdfGridWriter(this.getPropertyChangeSupport());
-        runOK = writer.writeFile(ncPath, gdsList, constraints, type);
+    			guiLogger.info("Processing data...");
 
-        fm.stopMonitor();
 
-        // only write the props file if the nc file was generated properly
-        if (runOK == NetcdfGridWriter.SUCCESSFUL_PROCESS) {
-          firePropertyChange("note", null, "Writing properties file...");
-          Thread.sleep(250);
 
-          props.setNcPath(ncPath);
-          props.setOutPath(outname.replace("-", "_"));
-          props.setStartTime(sTime);
-          props.setTimeInterval(constraints.getTimeInterval());
-          props.setTimeUnits(constraints.getTimeUnits());
-          props.setTime(constraints.getTimeDim());
-          props.setTVar(constraints.getTVar());
-          props.setXCoord(constraints.getXDim());
-          props.setYCoord(constraints.getYDim());
-          props.setZCoord(constraints.getZDim());
-          props.setProjection(constraints.getProjection());
+    			// If selected area is a track line then call writeFile once for each track vertex
 
-          props.setType(type);
-          props.setVars(vars);
+    			// Set up array lists to hold the variables, variable names, and
+    			// coordinate axis
 
-          props.setTimes(calculateTimes());
 
-          props.writeFile();
-          firePropertyChange("done", null, ncPath);
+    			List<Variable> varList = new ArrayList<Variable>();
+    			List<GridDatatype> trimmedGrids = new ArrayList<GridDatatype>();
 
-          // Write text file to track locations
-          History.addEntry(outname, ncPath.replace(".nc", ".xml"));
+    			runOK = writer.prepareToWriteFile(ncPath, gdsList, constraints, type,
+    					varList, polygonVertices, trimmedGrids);
+    			if(polygonVertices != null && trimmedGrids.size() > 0){
+    				GridDatatype grid = trimmedGrids.get(0);
+    				if(grid != null){
+    					Boolean[][] allowedIndices = writer.getIndiciestoInclude(polygonVertices, trimmedGrids.get(0));
+    					GridCoordSystem coordSys = grid.getCoordinateSystem();
+    					if(coordSys != null){
+    						if(coordSys.getXHorizAxis() != null)
+    							xDimNameMap.put(vertexIndex, coordSys.getXHorizAxis().getFullName());
+    						if(coordSys.getYHorizAxis() != null)
+    							yDimNameMap.put(vertexIndex, coordSys.getYHorizAxis().getFullName());
+    						if(coordSys.getVerticalAxis() != null)
+    							zDimNameMap.put(vertexIndex, coordSys.getVerticalAxis().getFullName());
+    					}
+    					includeIndicesMap.put(vertexIndex, allowedIndices);
+    				}
+    			}
+    			
+    			String timeDim = constraints.getTimeDim();
+    			String xDim = constraints.getXDim();
+    			String yDim = constraints.getYDim();
+    			String zDim = constraints.getZDim();
+    			String varName = constraints.getTVar();
+    			
+    			List<String> varForVertex = new ArrayList<String>();
+    			Integer vertForSetProp = null;
+    			 if(isMultGrids){
+    				 if(timeDim != null && !timeDim.equals("") && !timeDim.equals("null"))
+    					 timeDim += vertexIndex;
+    				 if(xDim != null && !xDim.equals("") && !xDim.equals("null"))
+    					 xDim += vertexIndex;
+    				 if(yDim != null && !yDim.equals("") && !yDim.equals("null"))
+    					 yDim += vertexIndex;
+    				 if(zDim != null && !zDim.equals("")  && !zDim.equals("null"))
+    					 zDim += vertexIndex;
+    				 if(varName != null && !varName.equals("")  && !varName.equals("null"))
+    					 varName += vertexIndex;
+					 vertForSetProp = vertexIndex;
+					 for(String v : vars){
+						 varForVertex.add(v+vertexIndex);
+					 }
+    			 }
+    			 else{
+    				 varForVertex.addAll(vars);
+    			 }
+    			 
+     			setProperties(constraints, type, gridProps, varForVertex, vertForSetProp);
 
-        } else if (runOK == NetcdfGridWriter.CANCELLED_PROCESS) {
-          firePropertyChange("cancel", false, true);
-        } else if (runOK == NetcdfGridWriter.UNDEFINED_ERROR) {
-          firePropertyChange("error", false, true);
-        }
+    			gridProps.setStartTime(sTime);
+    			gridProps.setTimeInterval(constraints.getTimeInterval());
+    			gridProps.setTimeUnits(constraints.getTimeUnits());
+    			gridProps.setTime(timeDim);
+    			gridProps.setTVar(varName);
+    			gridProps.setXCoord(xDim);
+    			gridProps.setYCoord(yDim);
+    			gridProps.setZCoord(zDim);
+    			gridProps.setProjection(constraints.getProjection());
+    			gridProps.setVars(varForVertex);
 
-      } catch (Exception ex) {
+    			
+    			
+    			varVertexMap.put(vertexIndex, varList);
+    			vertexIndex++;
+    		}
+
+    		System.out.println("var vertexMap " + varVertexMap.size());
+    		
+    		writer.writerFile(varVertexMap, ncPath, polygonVertices!=null,
+    				includeIndicesMap, xDimNameMap, yDimNameMap, zDimNameMap); //grid,
+
+    		fm.stopMonitor();
+
+
+
+    		//   writer.writerFile(varVertexMap, ncPath, this.polygonVertices);
+
+
+    		// only write the props file if the nc file was generated properly
+    		if (runOK == NetcdfGridWriter.SUCCESSFUL_PROCESS) {
+    			firePropertyChange("note", null, "Writing properties file...");
+    			Thread.sleep(250);
+    			
+    			
+    			for(int consI = 0; consI < 	constraintsList.size(); consI++) {
+    				NcGridObjectProperties gridProps = props.getGridProperties(consI);
+    				calculateTimes(gridProps);
+    			}
+    			props.setOutPath(outname.replace("-", "_"));
+    			
+    			if(selPanel.getPanelType() == 2){
+    				props.setSurfLayer(selPanel.getSurfaceLevel());
+    				props.setVectorType(selPanel.isVectorType());
+    			}
+    			props.writeFile();
+    			firePropertyChange("done", null, ncPath);
+
+    			// Write text file to track locations
+    			History.addEntry(outname, ncPath.replace(".nc", ".xml"));
+
+    		} else if (runOK == NetcdfGridWriter.CANCELLED_PROCESS) {
+    			firePropertyChange("cancel", false, true);
+    		} else if (runOK == NetcdfGridWriter.UNDEFINED_ERROR) {
+    			firePropertyChange("error", false, true);
+    		}
+
+
+    	} catch (Exception ex) {
         logger.error("PD:run:", ex);
       }
 
@@ -1039,18 +1209,79 @@ public class DapWorldwindProcessPanel extends JPanel {
       return null;
     }
 
-    private List<String> calculateTimes() {
+    
+    
+    private void setProperties(NetcdfConstraints constraints, ArcType type, 
+    						  NcGridObjectProperties props, 	List<String> vars, Integer vertexId){
+    	// if(makeRaster){
+		switch (selPanel.getPanelType()) {
+		case 0:// general
+			constraints.setTrimByIndex(selPanel.getTrimByIndex());
+			constraints.setUseAllValues(selPanel.isUseAllLevels());
+			break;
+		case 1:// ESRI
+			type = ArcType.FEATURE;
+			constraints.setTrimByIndex(selPanel.getTrimByIndex());
+			constraints.setUseAllValues(selPanel.isUseAllLevels());
+			props.setBandDim(constraints.getBandDim());
+			props.setTrimByDim(constraints.getTrimByDim());
+			props.setTrimByValue(selPanel.getTrimByValue());
+
+			if (selPanel.isMakeRaster()) {// RASTER
+				type = ArcType.RASTER;
+				// constraints.setBandDim((String)cbBandDim.getSelectedItem());
+				// constraints.setTrimByIndex(cbTrimBy.getSelectedIndex());
+				// constraints.setTrimByIndex(selPanel.getTrimByIndex());
+				// props.setBandDim(constraints.getBandDim());
+				// props.setTrimByDim(constraints.getTrimByDim());
+				// props.setTrimByValue(selPanel.getTrimByValue());
+
+				// ensure that the correct variable dimensions are
+				// used
+				GeoGrid grid = getGridByName(vars.get(0), false);
+				if (grid != null) {
+					constraints.setXDim(grid.getXDimension().getShortName());
+					constraints.setYDim(grid.getYDimension().getShortName());
+				}
+				// }else if(constraints.getSelVars().size() > 1){
+			} else if (selPanel.isMakeVector()) {// VECTOR
+				type = ArcType.VECTOR;
+				vars.clear();
+				String uVar = selPanel.getVarNameFromDescription(selPanel.getUVar());
+				String vVar = selPanel.getVarNameFromDescription(selPanel.getVVar());
+				if(vertexId != null){
+					uVar += vertexId;
+					vVar += vertexId;
+				}
+				props.setUVar(uVar);
+				props.setVVar(vVar);
+				vars.add(props.getUVar());
+				vars.add(props.getVVar());
+			}
+			break;
+		case 2:// OILMAP
+			props.setUVar(selPanel.getUVar());
+			props.setVVar(selPanel.getVVar());
+			
+			break;
+		}
+		props.setType(type);
+
+    }
+    
+    
+    private void calculateTimes(NcGridObjectProperties gridProps) {
       List<String> tStrings = new ArrayList<String>();
       Date[] times;
       Variable tVar = null;
       try {
         NetcdfFile ncfile = NetcdfFile.open(ncPath);
-        tVar = ncfile.findVariable(constraints.getTVar());
+        tVar = ncfile.findVariable(gridProps.getTVar());
       } catch (IOException ex) {
         ex.printStackTrace();
       }
       if (tVar == null) {
-        return tStrings;
+        return;
       }
       try {
         Array arr = tVar.read();
@@ -1076,9 +1307,10 @@ public class DapWorldwindProcessPanel extends JPanel {
 
       } catch (Exception ex) {
         tStrings = new ArrayList<String>();
-        ex.printStackTrace();
+
+      ex.printStackTrace();
       }
-      return tStrings;
+      gridProps.setTimes(tStrings);
     }
   }
 }

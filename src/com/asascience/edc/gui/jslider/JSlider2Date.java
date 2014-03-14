@@ -40,6 +40,8 @@ public class JSlider2Date extends JComponent implements Serializable {
   private JDateChooser s_cal, e_cal;
   private JSpinner s_time, e_time;
   private JSlider2 slider_;
+  private JLabel disableReasonLabel;
+
   private double scale_;
   private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
   private String dateFormatString = "yyyy-MM-dd";
@@ -52,6 +54,20 @@ public class JSlider2Date extends JComponent implements Serializable {
     this(true);
   }
 
+  
+  
+  
+  public void setEnabled(boolean enable){
+	  labelStart_.setEnabled(enable);
+	  labelStop_.setEnabled(enable);
+	  slider_.setEnabled(enable);
+	  s_cal.setEnabled(enable);
+	  e_cal.setEnabled(enable);
+	  s_time.setEnabled(enable);
+	  e_time.setEnabled(enable);
+	  
+  }
+  
   /**
    * Constructs a single or double time slider.
    *
@@ -63,7 +79,7 @@ public class JSlider2Date extends JComponent implements Serializable {
     format_ = new SimpleDateFormat(dateFormatString);
     timeFormat_ = new SimpleDateFormat(timeFormatString);
 
-    setLayout(new MigLayout("insets 0, gap 0, fillx, align center"));
+    setLayout(new MigLayout("insets 0, gap 0, fillx, align center, hidemode 1"));
     
     /* 
      * Slider
@@ -89,7 +105,9 @@ public class JSlider2Date extends JComponent implements Serializable {
       }
     });
     add(slider_, "gap 0, growx, wrap, spanx 2");
-    
+    disableReasonLabel = new JLabel();
+    add(disableReasonLabel, "al center, spanx 2, wrap");
+
     SpinnerModel model;
     JComponent editor;
     
@@ -366,4 +384,18 @@ public class JSlider2Date extends JComponent implements Serializable {
     jf.pack();
     jf.setVisible(true);
   }
+
+
+
+
+public JSlider2 getSlider_() {
+	return slider_;
+}
+
+
+
+
+public JLabel getDisableReasonLabel() {
+	return disableReasonLabel;
+}
 }

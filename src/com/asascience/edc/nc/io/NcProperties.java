@@ -32,42 +32,41 @@ public class NcProperties {
 
   private Document outDoc;
   private String outPath = "";
-  private String ncPath = "";
-  private String startTime = "";
-  private String timeInterval = "";
-  private String timeUnits = "";
-  private String time = "";
-  private List<String> times = new ArrayList<String>();
-  private String xCoord = "";
-  private String yCoord = "";
-  private String zCoord = "";
-  private String trimByValue = "";
-  private String trimByDim = "";
-  private String bandDim = "";
-  private String uVar = "";
-  private String vVar = "";
-  private String tVar = "";
-  private String projection = "";
-  private String isZPositive = "";
+  private NcGridObjectProperties[] gridObjectProperties;
+  
   private int surfLayer = 1;
-  private ArcType type;
   private Vector dims;
-  private List<String> vars;
   private boolean vectorType = false;
   private boolean cancelTask;
   private static Logger logger = Logger.getLogger(NcProperties.class);
   private static Logger guiLogger = Logger.getLogger("com.asascience.log." + NcProperties.class.getName());
-
+  private String xmlPath;
+  private final String GRID_DATA = "grid_data";
+  private final String NC_INFO = "nc_info";
+  private final String TIME_INFO = "timeinfo";
+  private final String DIMENSIONS = "dimensions";
+  private final String VARIABLES = "variables";
   /**
    * Creates a new instance of NcProperties
    */
-  public NcProperties() {
+  public NcProperties(int gridObjects) {
+	  initGridProperties(gridObjects, null);
+
   }
 
-  public NcProperties(String ncpath) {
-    ncPath = ncpath;
+  public NcProperties(String ncpath, int gridObjects) {
+	  initGridProperties(gridObjects, ncpath);
+      xmlPath = ncpath.replace(".nc", ".xml");
+
   }
 
+  private void initGridProperties(int gridObjects, String ncpath){
+	  gridObjectProperties = new NcGridObjectProperties[gridObjects];
+	  for(int i = 0; i < gridObjectProperties.length; i++){
+		  gridObjectProperties[i] = new NcGridObjectProperties();
+		  gridObjectProperties[i].setNcPath(ncpath);
+	  }
+  }
   public void createPointerXml(String xmlPath, String sysPath) {
     Document d = new Document(new Element("asa_ncdata"));
     Element root = d.getRootElement();
@@ -135,10 +134,15 @@ public class NcProperties {
     outDoc = new Document(new Element("asa_ncdata"));
     Element root = outDoc.getRootElement();
     root.addContent(new Element("version"));
-    root.addContent(new Element("nc_info"));
-    root.addContent(new Element("timeinfo"));
-    root.addContent(new Element("dimensions"));
-    root.addContent(new Element("variables"));
+    for(int gridI = 0; gridI < this.gridObjectProperties.length; gridI++){
+    	Element gridData = new Element(GRID_DATA);
+    	gridData.addContent(new Element(NC_INFO));
+    	gridData.addContent(new Element(TIME_INFO));
+    	gridData.addContent(new Element(DIMENSIONS));
+    	gridData.addContent(new Element(VARIABLES));
+        root.addContent(gridData);
+      
+    }
     root.addContent(new Element("output_loc"));
     root.addContent(new Element("vectortype"));
   }
@@ -147,7 +151,6 @@ public class NcProperties {
     try {
 
       XMLOutputter out = new XMLOutputter();
-      String xmlPath = ncPath.replace(".nc", ".xml");
       File xmlFile = new File(xmlPath);
       if (xmlFile.exists()) {
         if (!xmlFile.delete()) {
@@ -157,32 +160,50 @@ public class NcProperties {
       }
       createXml();
       Element root = outDoc.getRootElement();
-      root.getChild("version").setText("6.0");
-      root.getChild("nc_info").setAttribute("filepath", ncPath).setAttribute("type", type.toString()).setAttribute("starttime", startTime).setAttribute("timeinterval", timeInterval).setAttribute(
-              "timeunit", timeUnits).setAttribute("projection", projection);
+      root.getChild("version").setText("7.0");
+      List<Element> grids = root.getChildren(GRID_DATA);
 
-      for (String s : times) {
-        root.getChild("timeinfo").addContent(new Element("timestep").setText(s));
+      int gridI = 0;
+      for(Element gridData : grids){
+    	  Element ncInfo = gridData.getChild(NC_INFO);
+    	  NcGridObjectProperties gridProps = this.gridObjectProperties[gridI];
+    	  ncInfo.setAttribute("filepath", gridProps.ncPath);
+    	  ncInfo.setAttribute("type", gridProps.type.toString());
+    	  ncInfo.setAttribute("starttime", gridProps.startTime);
+    	  ncInfo.setAttribute("timeinterval", gridProps.timeInterval);
+    	  ncInfo.setAttribute("timeunit", gridProps.timeUnits);
+    	  ncInfo.setAttribute("projection", gridProps.projection);
+    	  
+    	  Element timeInfo = gridData.getChild(TIME_INFO);
+    	  for (String s : gridProps.times) {
+    		  timeInfo.addContent(new Element("timestep").setText(s));
+    	  }
+    	  Element dimElem = gridData.getChild("dimensions");
+    	  dimElem.setAttribute("band_dim", gridProps.bandDim);
+    	  dimElem.setAttribute("trim_dim", gridProps.trimByDim);
+    	  dimElem.setAttribute("trim_val", gridProps.trimByValue);
+    	  dimElem.addContent(new Element("time").setText(gridProps.time)).addContent(
+    			  			 new Element("x").setText(gridProps.xCoord)).addContent(
+    			  			 new Element("y").setText(gridProps.yCoord)).addContent(
+    			  			 new Element("z").setAttribute("surfaceLayer", 
+    			  					 String.valueOf(surfLayer)).setText(gridProps.zCoord));
+    	  // .addContent(new Element("trimDim").setText(trimByDim))
+    	  // .addContent(new Element("trimVal").setText(trimByValue));
+    	  Element varElem = gridData.getChild(VARIABLES);
+    	  varElem.setAttribute("u_var", gridProps.uVar);
+    	  varElem.setAttribute("v_var", gridProps.vVar);
+    	  varElem.setAttribute("t_var", gridProps.tVar);
+
+    	  // write other variables
+    	  int num = 1;
+    	  for (Iterator i = gridProps.vars.iterator(); i.hasNext();) {
+    		  gridData.getChild("variables").addContent(new Element("variable").setText((String) i.next()));
+    		  num++;
+    	  }
+    	  // write time variable
+    	  gridData.getChild("variables").addContent(new Element("variableT").setText(gridProps.getTVar()));
+    	  gridI++;
       }
-
-      root.getChild("dimensions").setAttribute("band_dim", bandDim).setAttribute("trim_dim", trimByDim).setAttribute("trim_val", trimByValue).addContent(new Element("time").setText(time)).addContent(
-              new Element("x").setText(xCoord)).addContent(new Element("y").setText(yCoord)).addContent(
-              new Element("z").setAttribute("surfaceLayer", String.valueOf(surfLayer)).setText(zCoord));
-      // .addContent(new Element("trimDim").setText(trimByDim))
-      // .addContent(new Element("trimVal").setText(trimByValue));
-
-      root.getChild("variables").setAttribute("u_var", uVar).setAttribute("v_var", vVar).setAttribute("t_var",
-              tVar);
-
-      // write other variables
-      int num = 1;
-      for (Iterator i = vars.iterator(); i.hasNext();) {
-        root.getChild("variables").addContent(new Element("variable").setText((String) i.next()));
-        num++;
-      }
-      // write time variable
-      root.getChild("variables").addContent(new Element("variableT").setText(getTVar()));
-
       root.getChild("output_loc").setAttribute("filepath", outPath);
 
       root.getChild("vectortype").setText(String.valueOf(vectorType));
@@ -218,78 +239,7 @@ public class NcProperties {
     this.outPath = outPath;
   }
 
-  public String getNcPath() {
-    return ncPath;
-  }
-
-  public void setNcPath(String path) {
-    this.ncPath = path;
-  }
-
-  public String getStartTime() {
-    return startTime;
-  }
-
-  public void setStartTime(String startTime) {
-    this.startTime = startTime;
-  }
-
-  public String getTimeInterval() {
-    return timeInterval;
-  }
-
-  public void setTimeInterval(String timeInterval) {
-    this.timeInterval = timeInterval;
-  }
-
-  public String getTimeUnits() {
-    return timeUnits;
-  }
-
-  public void setTimeUnits(String timeUnits) {
-    this.timeUnits = timeUnits;
-  }
-
-  public String getTime() {
-    return time;
-  }
-
-  public void setTime(String time) {
-    this.time = time;
-  }
-
-  public String getXCoord() {
-    return xCoord;
-  }
-
-  public void setXCoord(String xCoord) {
-    this.xCoord = xCoord;
-  }
-
-  public String getYCoord() {
-    return yCoord;
-  }
-
-  public void setYCoord(String yCoord) {
-    this.yCoord = yCoord;
-  }
-
-  public String getBandDim() {
-    return bandDim;
-  }
-
-  public void setBandDim(String bandDim) {
-    this.bandDim = bandDim;
-  }
-
-  public ArcType getType() {
-    return type;
-  }
-
-  public void setType(ArcType type) {
-    this.type = type;
-  }
-
+ 
   public Vector getDims() {
     return dims;
   }
@@ -298,28 +248,14 @@ public class NcProperties {
     this.dims = dims;
   }
 
-  public List<String> getVars() {
-    return vars;
-  }
 
-  public void setVars(List<String> vars) {
-    this.vars = vars;
-  }
 
-  public String getUVar() {
-    return uVar;
-  }
-
-  public void setUVar(String uVar) {
-    this.uVar = uVar;
-  }
-
-  public String getVVar() {
-    return vVar;
-  }
-
-  public void setVVar(String vVar) {
-    this.vVar = vVar;
+  public NcGridObjectProperties getGridProperties(int propIndex){
+	  NcGridObjectProperties props = null;
+	  if(propIndex >= 0 && propIndex < this.gridObjectProperties.length)
+		  props = this.gridObjectProperties[propIndex];
+	  return props;
+				  
   }
 
   public boolean isCancelTask() {
@@ -330,54 +266,7 @@ public class NcProperties {
     this.cancelTask = cancelTask;
   }
 
-  public String getTVar() {
-    return tVar;
-  }
-
-  public void setTVar(String tVar) {
-    this.tVar = tVar;
-  }
-
-  public String getZCoord() {
-    return zCoord;
-  }
-
-  public void setZCoord(String zCoord) {
-    this.zCoord = zCoord;
-  }
-
-  public String getProjection() {
-    return projection;
-  }
-
-  public void setProjection(String projection) {
-    this.projection = projection;
-  }
-
-  public String getIsZPositive() {
-    return isZPositive;
-  }
-
-  public void setIsZPositive(String isZPositive) {
-    this.isZPositive = isZPositive;
-  }
-
-  public String getTrimByValue() {
-    return trimByValue;
-  }
-
-  public void setTrimByValue(String trimByValue) {
-    this.trimByValue = trimByValue;
-  }
-
-  public String getTrimByDim() {
-    return trimByDim;
-  }
-
-  public void setTrimByDim(String trimByDim) {
-    this.trimByDim = trimByDim;
-  }
-
+ 
   public boolean isVectorType() {
     return vectorType;
   }
@@ -394,11 +283,5 @@ public class NcProperties {
     this.surfLayer = surfLayer;
   }
 
-  public List<String> getTimes() {
-    return times;
-  }
 
-  public void setTimes(List<String> times) {
-    this.times = times;
-  }
 }

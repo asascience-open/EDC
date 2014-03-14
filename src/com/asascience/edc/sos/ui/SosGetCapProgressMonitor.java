@@ -30,30 +30,23 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
   private ListenForCapProgress listener;
   private JButton closeButton;
   private static Logger guiLogger = Logger.getLogger("com.asascience.log." + SosGetCapProgressMonitor.class.getName());
-
+  public final static String TASK_COMPLETE = "taskcomplete";
   class Task extends SwingWorker<Void, Void> {
 
     @Override
     public Void doInBackground() {
       setProgress(0);
       try {
-        sosData.addPropertyChangeListener(listener);
         boolean testCapParse = sosData.parseSosGetCapabilities();
-
         if (!testCapParse || isCancelled()) {
           taskOutput.append(String.format("Can't Read SOS service!\n"));
           return null;
         }
-        if (!isCancelled()) {
-          firePropertyChange("message", null, "Adding sensors to map (this could take awhile)");
-          firePropertyChange("taskcomplete", this, true);
-          firePropertyChange("progress", null, 100);
-        }
+        
       } catch (Exception e) {
         taskOutput.append(String.format("%1$s\n", e.toString()));
         guiLogger.error("Exception", e);
       }
-      sosData.removePropertyChangeListener(listener);
       return null;
     }
 
@@ -63,13 +56,24 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
 
     @Override
     public void done() {
+
+    	if (!isCancelled()) {
+            firePropertyChange("message", null, "Adding sensors to map (this could take awhile)");
+            firePropertyChange(TASK_COMPLETE, null, false);
+            firePropertyChange("progress", null, 100);
+          }
+    	else
+    		firePropertyChange(TASK_COMPLETE, null, true);
       taskOutput.append("Done!\n");
       closeButton.setText("Close");
-      sosData.removePropertyChangeListener(listener);
     }
   }
 
-  public SosGetCapProgressMonitor(SosServer data) {
+  public Task getTask() {
+	return task;
+}
+
+public SosGetCapProgressMonitor(SosServer data) {
     super(new MigLayout("fill"));
 
     listener = new ListenForCapProgress();
@@ -111,6 +115,7 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
     firePropertyChange("closed", false, true);
   }
 
+
   class ListenForCapProgress implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -121,9 +126,9 @@ public class SosGetCapProgressMonitor extends JPanel implements ActionListener, 
       } else if ("message".equals(evt.getPropertyName())) {
         taskOutput.append(String.format("%1$s\n", evt.getNewValue()));
         guiLogger.info((String)evt.getNewValue());
-      } else if ("taskcomplete".equals(evt.getPropertyName())) {
+      } else if (TASK_COMPLETE.equals(evt.getPropertyName())) {
         guiLogger.info("Processing of SOS Server complete");
-        firePropertyChange("taskcomplete", evt.getOldValue(), evt.getNewValue());
+       firePropertyChange(TASK_COMPLETE, evt.getOldValue(), evt.getNewValue());
       }
     }
   }

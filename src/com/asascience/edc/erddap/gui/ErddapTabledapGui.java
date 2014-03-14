@@ -4,13 +4,19 @@ import com.asascience.edc.Configuration;
 import com.asascience.edc.erddap.ErddapDataRequest;
 import com.asascience.edc.erddap.ErddapDataset;
 import com.asascience.edc.erddap.ErddapVariable;
-import com.asascience.edc.map.BoundingBoxPanel;
 import com.asascience.edc.gui.OpendapInterface;
 import com.asascience.edc.gui.jslider.JSlider2Date;
-import com.asascience.edc.map.WorldwindSelectionMap;
+import com.asascience.edc.map.WwPolygonSelection;
+import com.asascience.edc.map.view.BoundingBoxPanel;
+import com.asascience.edc.map.view.SelectionMethodsPanel;
+import com.asascience.edc.map.view.SelectionMethodsPanel.ActiveSelectionSource;
+import com.asascience.edc.map.view.WorldwindSelectionMap;
+import com.asascience.edc.utils.PolygonUtils;
 import com.asascience.edc.utils.WorldwindUtils;
-
+import com.asascience.edc.map.WwTrackLineSelection;
 import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.render.PointPlacemark;
+import gov.nasa.worldwind.render.SurfaceSquare;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -20,6 +26,8 @@ import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -29,6 +37,7 @@ import javax.swing.border.EtchedBorder;
 import net.miginfocom.swing.MigLayout;
 import org.apache.log4j.Logger;
 import ucar.nc2.units.DateUnit;
+import ucar.unidata.geoloc.LatLonRect;
 
 /**
  * ErddapTabledapGui.java
@@ -72,6 +81,8 @@ public class ErddapTabledapGui extends JPanel {
       }
      else{
         mapPanel.makeDataExtentLayer(bboxGui.getBoundingBox(), dataExtentFound,  bboxGui.isDataIs360());
+        mapPanel.getLocationSelectionTool().getTrackLineButton().setEnabled(false);
+
       }
 	  }
   }
@@ -108,15 +119,21 @@ public class ErddapTabledapGui extends JPanel {
         		dataExtentFound = false;
     	  }
       }
+      
+     
       mapPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
         public void propertyChange(PropertyChangeEvent e) {
           String name = e.getPropertyName();
           // Bounding box was drawn
-          if (name.equals("boundsStored")) {
-            bboxGui.setBoundingBox(mapPanel.getSelectedExtent());
+          if (name.equals(SelectionMethodsPanel.BOUNDS_STORED)) {
+        	  List<LatLonRect> bbox = mapPanel.getSelectedExtent();
+          	if(bbox != null && bbox.size() > 0)
+          		bboxGui.setBoundingBox(bbox.get(0));
             updateURL();
           }
+   
+          
         }
       });
       mapStuff.add(mapPanel, "gap 0, grow, wrap");
@@ -135,8 +152,10 @@ public class ErddapTabledapGui extends JPanel {
       // Add either the sensor layer, or the data extent layer
       if (erd.hasLocations()) {
         mapPanel.addSensors(erd.getLocations());
+       
       } else  {
         mapPanel.makeDataExtentLayer(bboxGui.getBoundingBox(), dataExtentFound, bboxGui.isDataIs360());
+        
       }
     }
     if (erd.hasTime()) {
@@ -245,6 +264,33 @@ public class ErddapTabledapGui extends JPanel {
 	    }
 	    return updatedString;
   }
+  
+  
+//  public String getTrackConstraint(boolean isX){
+//  		List<BoundingBox> selectedLocations = mapPanel.getLocationSelectionTool().getTrackSel().getSelectedTrackPoints();
+//  		String constraint;
+//  		if(isX)
+//  			constraint = erd.getX().getName()+ "={";
+//  		else 
+//  			constraint = erd.getY().getName()+ "={";
+//
+//  		boolean first = true;
+//  		for(LatLon pos : selectedLocations){
+//  			if(!first)
+//  				constraint += ",";
+//  			Double val;
+//  			if(isX)
+//  				val = pos.getLongitude().degrees;
+//  			else
+//  				val = pos.getLatitude().degrees;
+//  			constraint += val;
+//  			first = false;
+//  	
+//  		}
+//  		constraint += "}";
+//  		
+//  		return constraint;
+//  }
   private void updateURL() {
     
     ArrayList<String> selections = new ArrayList<String>();
@@ -266,40 +312,71 @@ public class ErddapTabledapGui extends JPanel {
       constraints.add(erd.getTime().getName() + ">=" + fmt.format(dateSlider.getStartDate()));
       constraints.add(erd.getTime().getName() + "<=" + fmt.format(dateSlider.getEndDate()));
     }
+
     
-    // Add the X values
-    if (erd.hasX()) {
-    	double minLon = bboxGui.getBoundingBox().getLonMin();
-    	double maxLon =  bboxGui.getBoundingBox().getLonMax();
-    	try {
-    		if(Double.valueOf(erd.getX().getMax()) > 180.0){ 
-    			minLon =   WorldwindUtils.normLon360(minLon);
-    			maxLon =   WorldwindUtils.normLon360(maxLon);
-    			if(minLon > maxLon) {
-    				maxLon+=360.0;
+    if(erd.hasX() && erd.hasY() && 
+    		mapPanel.getLocationSelectionTool().getActiveSelectionSource() == ActiveSelectionSource.POLYGON &&
+    		mapPanel.getSensorLayer() != null &&
+    		mapPanel.getSensorLayer().getPickedSensors() != null){
+    	List<String> stationQueries = new ArrayList<String>();
+    	for(PointPlacemark pointLoc : mapPanel.getSensorLayer().getPickedSensors()){
+    		String currStation = erd.getX().getName() + "=" + pointLoc.getPosition().getLongitude().degrees+"&";
+    		currStation += erd.getY().getName() + "=" + pointLoc.getPosition().getLatitude().degrees;
+    		stationQueries.add(currStation);
+    	}
+    	request.setFilterByPolygon(true);
+    	request.setSelectedStationLocations(stationQueries);
+
+    }
+    else {
+    	request.setSelectedStationLocations(null);
+    	request.setFilterByPolygon(false);
+
+    	if(mapPanel.getLocationSelectionTool().getActiveSelectionSource() == ActiveSelectionSource.POLYGON &&
+    			mapPanel.getSelectedVertices() != null){
+    		request.setPolygon(PolygonUtils.getPolygonFromVertices(mapPanel.getSelectedVertices()));
+    	
+        	request.setFilterByPolygon(true);
+
+    	}
+    	// Add the X values
+    	if (erd.hasX()) {
+
+    		double minLon = bboxGui.getBoundingBox().getLonMin();
+    		double maxLon =  bboxGui.getBoundingBox().getLonMax();
+    		try {
+    			if(Double.valueOf(erd.getX().getMax()) > 180.0){ 
+    				minLon =   WorldwindUtils.normLon360(minLon);
+    				maxLon =   WorldwindUtils.normLon360(maxLon);
+    				if(minLon > maxLon) {
+    					maxLon+=360.0;
+    				}
+    				if(bboxGui.isDataIs360())
+    					maxLon = 360.0;
     			}
-    			if(bboxGui.isDataIs360())
-    				maxLon = 360.0;
+    			constraints.add(erd.getX().getName() + ">=" + minLon);
+    			constraints.add(erd.getX().getName() + "<=" + maxLon);
     		}
-    		constraints.add(erd.getX().getName() + ">=" + minLon);
-    		constraints.add(erd.getX().getName() + "<=" + maxLon);
+
+    		catch(NumberFormatException e){
+    			guiLogger.warn("No Longitude values defined");
+    		}
+
+
     	}
-    	catch(NumberFormatException e){
-    		guiLogger.warn("No Longitude values defined");
+    	// Add the Y values
+    	if (erd.hasY()) {
+
+    		try{
+    			constraints.add(erd.getY().getName() + ">=" + bboxGui.getBoundingBox().getLatMin());
+    			constraints.add(erd.getY().getName() + "<=" + bboxGui.getBoundingBox().getLatMax());
+    		}
+    		catch(Exception e){
+    			guiLogger.warn("No Latitude values defined");
+    		}
+
     	}
     }
-    
-    // Add the Y values
-    if (erd.hasY()) {
-    	try{
-      constraints.add(erd.getY().getName() + ">=" + bboxGui.getBoundingBox().getLatMin());
-      constraints.add(erd.getY().getName() + "<=" + bboxGui.getBoundingBox().getLatMax());
-    	}
-    	catch(Exception e){
-    		guiLogger.warn("No Latitude values defined");
-    	}
-    }
-    
     String params = selections.toString().replace(" ","").replace("[","").replace("]","");
     if (params.endsWith("&")) {
       params = params.substring(0,params.length() - 1);
@@ -314,6 +391,7 @@ public class ErddapTabledapGui extends JPanel {
 
     request.setBaseUrl(erd.getTabledap());
     request.setParameters(params);
+
     url.setText(request.getRequestUrl());
     
   }
@@ -347,7 +425,7 @@ public class ErddapTabledapGui extends JPanel {
             updateURL();
           }
         });
-        responsePanel.initComponents();
+        responsePanel.initComponents(request.isFilterByPolygon());
         
         newContentPane.setOpaque(true);
         request.setParent(frame);

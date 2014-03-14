@@ -44,7 +44,12 @@ public class ErddapGetDataProgressMonitor extends JPanel implements ActionListen
       setProgress(0);
       try {
         request.addPropertyChangeListener(listener);
-        request.getData();
+        if( !request.isFilterByPolygon())
+        	request.getData();
+        else if(request.getSelectedStationLocations() != null)
+        	request.getDataForPolygon();
+        else 
+        	request.getCsvForPolygon();
       } catch (Exception e) {
         taskOutput.append(String.format("%1$s\n", e.toString()));
       }

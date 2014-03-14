@@ -44,7 +44,7 @@ public class GenericGridReader extends NcGridReader {
 
     String name;
     for (int i = 0; i < sVars.size(); i++) {
-      name = sVars.get(i).getName();
+      name = sVars.get(i).getFullName();
       dataNames.add(name);
 
       if (uNames.contains(name.toLowerCase())) {
