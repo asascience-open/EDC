@@ -46,6 +46,10 @@ public class ErddapGetDataProgressMonitor extends JPanel implements ActionListen
         request.addPropertyChangeListener(listener);
         if( !request.isFilterByPolygon())
         	request.getData();
+        else if(request.isFilterByPolygon() && request.getResponseFormat().endsWith("mat")){
+        	request.getMatlabDataForPolygon();
+        	
+        }
         else if(request.getSelectedStationLocations() != null)
         	request.getDataForPolygon();
         else 

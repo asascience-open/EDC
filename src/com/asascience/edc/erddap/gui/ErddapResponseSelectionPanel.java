@@ -64,7 +64,10 @@ public final class ErddapResponseSelectionPanel extends JPanel implements Action
       responses.add(new ResponseFormat("tsvp", "Download a .tsv file with line 1: name (units). Times are ISO 8601 strings.","",".tsvp",false));
       responses.add(new ResponseFormat("xhtml", "View an XHTML (XML) file with the data in a table. Times are ISO 8601 strings.","",".xhtml",false));
     }
-    
+    else if(Configuration.DISPLAY_TYPE != Configuration.DisplayType.ESRI && isPolygonSelection) {
+        responses.add(new ResponseFormat("mat", "Download a MATLAB binary file.","",".mat",false));
+
+    }
     boolean select = true;
     for (ResponseFormat rf : responses) {
       ResponseFormatRadioButton r = new ResponseFormatRadioButton();

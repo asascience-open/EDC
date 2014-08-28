@@ -25,6 +25,10 @@ import com.asascience.edc.erddap.gui.ErddapGetDatasetsProgressMonitor;
 import com.asascience.edc.erddap.ErddapServer;
 import com.asascience.edc.erddap.gui.ErddapDatasetViewer;
 import com.asascience.edc.ui.combos.HistoryComboBox;
+
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Position;
+
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Frame;
@@ -35,14 +39,18 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -68,13 +76,17 @@ import ucar.nc2.dataset.NetcdfDataset;
 import ucar.util.prefs.ui.ComboBox;
 
 import com.asascience.edc.gui.OpendapInterface;
+import com.asascience.edc.map.WwTrackLineSelection;
 import com.asascience.edc.ui.combos.DirectComboBox;
 import com.asascience.edc.ui.combos.ErddapComboBox;
 import com.asascience.edc.ui.combos.SosComboBox;
+import com.asascience.edc.utils.EdcDateUtils;
 import com.asascience.ui.CheckBoxList;
 import com.asascience.utilities.BusyCursorActions;
 import com.asascience.edc.sos.SosServer;
 import com.asascience.edc.sos.ui.SosGetCapProgressMonitor;
+
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -158,6 +170,8 @@ public class ASACatalogChooser extends JPanel {
   private static Logger logger = Logger.getLogger(ASACatalogChooser.class);
   private static Logger guiLogger = Logger.getLogger("com.asascience.log." + ASACatalogChooser.class.getName());
 
+  
+  
   /**
    * Constructor, with control over whether a comboBox of previous catalogs is
    * shown.

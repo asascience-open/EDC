@@ -9,6 +9,20 @@ import com.asascience.edc.Configuration;
 import com.asascience.edc.CsvProperties;
 import com.asascience.edc.utils.CsvFileUtils;
 import com.asascience.edc.utils.FileSaveUtils;
+import com.jmatio.io.MatFileReader;
+import com.jmatio.io.MatFileWriter;
+import com.jmatio.types.MLArray;
+import com.jmatio.types.MLCell;
+import com.jmatio.types.MLChar;
+import com.jmatio.types.MLDouble;
+import com.jmatio.types.MLInt16;
+import com.jmatio.types.MLInt32;
+import com.jmatio.types.MLInt64;
+import com.jmatio.types.MLInt8;
+import com.jmatio.types.MLNumericArray;
+import com.jmatio.types.MLSingle;
+import com.jmatio.types.MLSparse;
+import com.jmatio.types.MLStructure;
 
 import gov.nasa.worldwind.render.PointPlacemark;
 
@@ -31,7 +45,9 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JFrame;
 
@@ -55,10 +71,12 @@ public class ErddapDataRequest implements PropertyChangeListener {
     private JFrame parent;
     private File saveFile;
     private ErddapDataset erd;
-    
+    private int written;
+    private    Timer stopwatch;
     public ErddapDataRequest(String homeDir, ErddapDataset erd) {
       this.homeDir = homeDir;
       this.erd = erd;
+      stopwatch  = new Timer();
       selectedStationLocations = new ArrayList<String>();
       
       pcs = new PropertyChangeSupport(this);
@@ -143,11 +161,10 @@ public class ErddapDataRequest implements PropertyChangeListener {
     
     public void getDataForPolygon(){
 
-        Timer stopwatch = new Timer();
         File f = null;
                 
         stopwatch.reset();
-
+        stopwatch.start();
         int written = 0;
         try {
         	// Increment the file
@@ -227,12 +244,17 @@ public class ErddapDataRequest implements PropertyChangeListener {
     }
     
     
+    public void filterMatlabForPolygon(){
+    	
+    	
+    	
+    }
+    
     public void getCsvForPolygon(){
-        Timer stopwatch = new Timer();
         File f = null;
                 
         stopwatch.reset();
-
+        stopwatch.start();
         int written = 0;
         try {
           URL u = new URL(getRequestUrl());
@@ -255,7 +277,6 @@ public class ErddapDataRequest implements PropertyChangeListener {
   	        	int currLineNum = 0;
   	        	int xIndex = -1;
   	        	int yIndex = -1;
-  	        	System.out.println("filter by polygon " +filterByPolygon );
   	        	String currLine;
   	        	while ((currLine = bufReader.readLine()) !=  null){
   	        		currLine = currLine + "\n";
@@ -275,11 +296,9 @@ public class ErddapDataRequest implements PropertyChangeListener {
   	        					}
   	        					currIndex++;
   	        				}
-  	        				System.out.println("xindex " +xIndex+ " yindex " +yIndex);
   	        			}
   	        		}
   	        		else if(polygon != null){
-  	        			System.out.println(currLine);
   	        			// make sure the current data is within the polygon
   	        			if(xIndex >= 0 && yIndex >= 0){
   	        					String[] decoded = currLine.split(",");
@@ -303,17 +322,13 @@ public class ErddapDataRequest implements PropertyChangeListener {
   	        							e.printStackTrace();
   	        						}
   	        					}
-  	        					System.out.println("x " + x + " y" + y);
   	        					if(x != null && y != null && polygon.contains(x, y) ){
   	        						byte [] outB = currLine.getBytes();
   	        					    output.write(outB);
 
-  	        						System.out.println("wrote line");
   	        						written += outB.length;
   	        					}
-  	        					else{
-  	        						System.out.println("not including");
-  	        					}
+  	        					
   	        				}
   	        			
   	        		}
@@ -355,43 +370,8 @@ public class ErddapDataRequest implements PropertyChangeListener {
     
     public void getData() {
     
-
-      Timer stopwatch = new Timer();
-      File f = null;
-              
-      stopwatch.reset();
-
-      int written = 0;
-      try {
-        URL u = new URL(getRequestUrl());
-        pcs.firePropertyChange("message", null, "- Making Request (" + getRequestUrl() + ")");
- 
-        // Increment the file
-        File incrementFile = new File(FileSaveUtils.chooseFilename(getSaveFile().getParentFile(), getSaveFile().getName()));
-        pcs.firePropertyChange("message", null, "- Streaming Results to File: " + incrementFile.getAbsolutePath());
-        f = incrementFile;
-        OutputStream output = new BufferedOutputStream(new FileOutputStream(f));
-        written = writeData(output, u);
-  
-        output.close();
-        // Now write the properties file if we need to (ARC)
-        if(written > 0)
-        	writeArcFile( f);
-      } catch (MalformedURLException e) {
-    	  e.printStackTrace();
-
-        pcs.firePropertyChange("message", null, "- BAD URL, skipping sensor");
-      } catch (IOException io) {
-    	  io.printStackTrace();
-    	  if(written == 0)
-    		  pcs.firePropertyChange("message", null, "- NO DATA available for selected range: " + io.getMessage());
-    	  else
-    	       writeArcFile( f);
-      }
-      catch(Exception e){
-    	  pcs.firePropertyChange("message", null, "Exception " + e.getMessage());
-    	  e.printStackTrace();
-      }
+    	Integer written = new Integer(0);
+    	File f = getDataNow();
       pcs.firePropertyChange("message", null, "- Completed " + written + " bytes in " + stopwatch.elapsedTime() + " seconds.");
       pcs.firePropertyChange("progress", null, 100);
       if (f != null) {
@@ -399,6 +379,244 @@ public class ErddapDataRequest implements PropertyChangeListener {
       }
     }
     
+    
+    private File getDataNow(){
+        File f = null;
+                
+        stopwatch.reset();
+        stopwatch.start();
+    
+        try {
+          URL u = new URL(getRequestUrl());
+          pcs.firePropertyChange("message", null, "- Making Request (" + getRequestUrl() + ")");
+   
+          // Increment the file
+          File incrementFile = new File(FileSaveUtils.chooseFilename(getSaveFile().getParentFile(), getSaveFile().getName()));
+          pcs.firePropertyChange("message", null, "- Streaming Results to File: " + incrementFile.getAbsolutePath());
+          f = incrementFile;
+          OutputStream output = new BufferedOutputStream(new FileOutputStream(f));
+          written = writeData(output, u);
+    
+          output.close();
+          // Now write the properties file if we need to (ARC)
+          if(written > 0)
+          	writeArcFile( f);
+        } catch (MalformedURLException e) {
+      	  e.printStackTrace();
+
+          pcs.firePropertyChange("message", null, "- BAD URL, skipping sensor");
+        } catch (IOException io) {
+      	  io.printStackTrace();
+      	  if(written == 0)
+      		  pcs.firePropertyChange("message", null, "- NO DATA available for selected range: " + io.getMessage());
+      	  else
+      	       writeArcFile( f);
+        }
+        catch(Exception e){
+      	  pcs.firePropertyChange("message", null, "Exception " + e.getMessage());
+      	  e.printStackTrace();
+        }
+        return f;
+    }
+    
+	public void getMatlabDataForPolygon(){
+    	File f = getDataNow();
+    	if(f != null && f.exists()){// && written > 0){
+    		try {
+				MatFileReader matReader = new MatFileReader(f.getAbsolutePath());
+				Map<String, MLArray> content = matReader.getContent();
+				if(content != null){
+					
+					MLArray dataset = content.get(this.erd.getId());
+				
+				if(dataset != null && dataset.isStruct()){
+			
+						MLStructure struct = (MLStructure) dataset;
+						MLArray xVar = struct.getField((this.erd.getX().getName()));
+						MLArray yVar = struct.getField((this.erd.getY().getName()));
+						
+						Map<String, ArrayList<Object>>  varInPolygonDataMap = new HashMap<String, ArrayList<Object>>();
+						Map<String, MLArray> varArrayMap = new HashMap<String, MLArray>();
+						for(ErddapVariable var : this.erd.getVariables()){
+							String varName = var.getName();
+							MLArray varArray = struct.getField(varName);
+							if(varArray != null){
+								varInPolygonDataMap.put(varName, new ArrayList<Object>());
+								varArrayMap.put(varName, varArray);
+							}
+						}
+						
+						if(xVar != null && yVar != null){
+							
+							 MLNumericArray<?> xVarArray = (MLNumericArray<?>)xVar;
+							 MLNumericArray<?> yVarArray = (MLNumericArray<?>)yVar;
+
+							 for(int currIndex = 0; currIndex < xVarArray.getSize(); currIndex++){
+							 
+								 
+								 	Double x, y;
+								 	x = Double.valueOf(String.valueOf(xVarArray.get(currIndex)));
+								 	y = Double.valueOf(String.valueOf(yVarArray.get(currIndex)));
+								 	
+								
+
+									if(x != null && y != null && polygon.contains(x, y) ){
+										
+										for(ErddapVariable var : this.erd.getVariables()){
+											String varName = var.getName();
+
+											MLArray varArray = varArrayMap.get(varName);
+											if(varArray != null) {
+												if(varArray instanceof MLNumericArray){
+													varInPolygonDataMap.get(var.getName()).add(
+															((MLNumericArray<?>)varArray).get(currIndex));
+											
+												}
+												else if(varArray instanceof MLChar){
+													varInPolygonDataMap.get(var.getName()).add(
+															((MLChar)varArray).getString(currIndex));
+												}
+												else if(varArray instanceof MLCell){
+													varInPolygonDataMap.get(var.getName()).add(
+															((MLCell)varArray).get(currIndex));
+												}
+											}
+										}
+										
+									}
+						}
+						
+							
+					}
+						MLStructure trimmedStruct = new MLStructure(dataset.name, dataset.getDimensions());
+					
+						for(String varName : 	varInPolygonDataMap.keySet()){
+							MLArray varArray = getNewArrayForVar(varArrayMap.get(varName), 	varInPolygonDataMap.get(varName));
+
+							if(varArray !=  null)
+								trimmedStruct.setField(varName, varArray);
+						}
+						ArrayList<MLArray> structList = new ArrayList<MLArray>();
+						structList.add(trimmedStruct);
+						new MatFileWriter(f.getAbsolutePath(), structList);
+				}
+				
+				
+				
+				
+				
+				}
+			} catch (IOException e) {
+				Log.error("Error writing .mat file");
+				Log.warn("Exception writing .mat file ", e);
+			
+    		}
+
+    	}
+    	   pcs.firePropertyChange("message", null, "- Completed " + written + " bytes in " + stopwatch.elapsedTime() + " seconds.");
+    	      pcs.firePropertyChange("progress", null, 100);
+    	      if (f != null) {
+    	        pcs.firePropertyChange("done", null, f.getAbsolutePath());
+    	      }
+    }
+    
+    
+    private MLArray getNewArrayForVar(MLArray oldArray, ArrayList<Object> varArrayList){
+    	MLArray varArray = null;
+    	int sizeArray = varArrayList.size();
+    		int type = oldArray.getType();
+    		switch(type){
+    		case MLArray.mxDOUBLE_CLASS:
+    			double[][] doubleArray = new double[sizeArray][1];
+    			for(int i = 0; i < sizeArray; i++){
+    				doubleArray[i][0] = (double)(varArrayList.get(i));
+    			}
+    			varArray = new MLDouble(oldArray.name, doubleArray);
+    			break;
+    		case MLArray.mxINT16_CLASS:
+    		case MLArray.mxUINT16_CLASS:
+
+    			short[][] shortArray = new short[sizeArray][1];
+    			for(int i = 0; i < sizeArray; i++){
+    				
+    				shortArray[i][0] = (short)varArrayList.get(i);
+    			}
+    			varArray = new MLInt16(oldArray.name, shortArray);
+    			break;
+    		case MLArray.mxINT8_CLASS:
+    		case MLArray.mxUINT8_CLASS:
+
+    			byte[][] byteArray = new byte[sizeArray][1];
+    			for(int i = 0; i < sizeArray; i++){
+    				
+    				byteArray[i][0] = (byte)varArrayList.get(i);
+    			}
+    			varArray = new MLInt8(oldArray.name, byteArray);
+    			break;
+    		
+    		case MLArray.mxINT32_CLASS:
+    		case MLArray.mxUINT32_CLASS:
+
+
+    			int[][] intArray = new int[sizeArray][1];
+    			for(int i = 0; i < sizeArray; i++){
+    				
+    				intArray[i][0] = (int)varArrayList.get(i);
+    			}
+    			varArray = new MLInt32(oldArray.name, intArray);
+    			
+    			break;
+    		case MLArray.mxINT64_CLASS:
+    		case MLArray.mxUINT64_CLASS:
+
+    			long[][] longArray = new long[sizeArray][1];
+    			for(int i = 0; i < sizeArray; i++){
+    				
+    				longArray[i][0] = (long)varArrayList.get(i);
+    			}
+    			varArray = new MLInt64(oldArray.name, longArray);
+    			break;
+ 
+    		case MLArray.mxSINGLE_CLASS:
+    			Float[] floatArray = new Float[sizeArray];
+    			for(int i = 0; i < sizeArray; i++){
+    				floatArray[i] = (Float)(varArrayList.get(i));
+    			}
+    			varArray = new MLSingle(oldArray.name, floatArray, sizeArray);
+    			break;
+    
+    		case MLArray.mxSPARSE_CLASS:
+    			int dim[] = new int[1];
+				dim[0] = sizeArray;
+    			varArray = new MLSparse(oldArray.name, dim, type, 0);
+    			for(int i = 0; i < sizeArray; i++){
+    				((MLSparse)varArray).setReal((double)varArrayList.get(i), i);
+    			}
+    			break;
+    		case MLArray.mxCHAR_CLASS:
+    			String[] strArray = new String[sizeArray];
+    			for(int i = 0; i < sizeArray; i++){
+    				
+    				strArray[i] = (String)varArrayList.get(i);
+    			}
+    			varArray = new MLChar(oldArray.name, strArray);
+    			break;
+    		
+    		case MLArray.mxCELL_CLASS:
+    			dim = new int[1];
+				dim[0] = sizeArray;
+    			varArray = new MLCell(oldArray.name, dim);
+    			for(int i = 0; i < sizeArray; i++){
+    				((MLCell) varArray).set((MLArray)varArrayList.get(i), i);
+    			}
+    			break;
+    		}    		
+    		
+    	
+   
+    	 return varArray;
+    	
+    }
     private void writeArcFile( File f ){
     	// Now write the properties file if we need to (ARC)
     	if (Configuration.DISPLAY_TYPE == Configuration.DisplayType.ESRI) {

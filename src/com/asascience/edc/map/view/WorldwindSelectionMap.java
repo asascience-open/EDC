@@ -217,7 +217,6 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
 
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
-			System.out.println("Passing on slider event");
 			  pcs.firePropertyChange(evt);
 		}
 

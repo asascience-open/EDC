@@ -138,8 +138,8 @@ public class NetcdfGridWriter {
           Range timeRange = null;
           if (range != null & gcsOrg.hasTimeAxis1D()) {
             CoordinateAxis1DTime timeAxis = gcsOrg.getTimeAxis1D();
-            int startIndex = timeAxis.findTimeIndexFromDate(range.getStart().getDate());
-            int endIndex = timeAxis.findTimeIndexFromDate(range.getEnd().getDate());
+            int startIndex = timeAxis.findTimeIndexFromCalendarDate(range.getStart().getCalendarDate());
+            int endIndex = timeAxis.findTimeIndexFromCalendarDate(range.getEnd().getCalendarDate());
 
             if (startIndex > -1 & endIndex > -1) {
               timeRange = new Range(startIndex, endIndex);
@@ -167,8 +167,6 @@ public class NetcdfGridWriter {
 
           if ((llbb != null) || (timeRange != null) || (stride_h >= 1)) {
             pcs.firePropertyChange("note", null, "Subsetting: " + gridName);
-            ProjectionRect rect = grid.getCoordinateSystem().getBoundingBox();
-            System.out.println(cons.getStartTime()+ " "+ cons.getEndTime());
           //  System.out.println("Grid " + rect.getLowerLeftPoint().getX() + rect.getLowerLeftPoint().getY());
           //  System.out.println("llb " + llbb.getLatMin() + " " + llbb.getLatMax()+","+llbb.getLonMin()+" " +llbb.getLonMax());
             grid = grid.makeSubset(timeRange, levelRange, llbb, 1, stride_h, stride_h);
@@ -322,119 +320,7 @@ public class NetcdfGridWriter {
   }
   
   
-  
-//  public void writeDimensions(NetcdfFileWriter ncWriter, Map<Integer, List<Variable>> varMap){
-//	  Map<String, Dimension> dimNameMap = new HashMap<String, Dimension>();
-//	  Map<String, Variable> dimVariableMap =  new HashMap<String, Variable>();
-//	  Map<String, Dimension> ncDimMap = new HashMap<String, Dimension>();
-//
-//	  Map<String, Variable> varNameMap = new HashMap<String, Variable>();
-//
-//	  // create all of the dimensions
-//	  for(Integer vertex : varMap.keySet()){
-//		  System.out.println("vertex " + vertex);
-//		  for(Variable var : varMap.get(vertex)){
-//			  System.out.println("VAR "+var.getFullName());
-//			  boolean combined = false;
-//			  for(Dimension dim : var.getDimensions()){
-//				  if(dim.getFullName().equals(var.getFullName())){
-//					  System.out.println("  dim "+ dim.getFullName() + " " +dim.getLength());
-//					  Dimension addedDim = dimNameMap.get(dim.getFullName());
-//					  if(addedDim != null){
-//						  addedDim.setLength(addedDim.getLength() + dim.getLength());		
-//						  combined = true;
-//					  }
-//					  else {
-//						  addedDim = dim;
-//					  }
-//					  dimNameMap.put(addedDim.getFullName(), addedDim);
-//					  if(var.getDimensions().size() == 1 && var.getFullName().equals(dim.getFullName()))
-//						  dimVariableMap.put(var.getFullName(), var);
-//
-//				  }
-//			  }
-//		  }		 		 
-//	  }
-//
-//	  
-//	  
-//	  for(Dimension d : dimNameMap.values()){
-//		 Dimension ncDim =  ncWriter.addDimension(null, d.getFullName(), d.getLength());
-//		 ncDimMap.put(d.getFullName(),ncDim);
-//		  System.out.println("added " + d.getFullName()+" "+d.getLength());
-//	  }
-//	  
-//	  for(Integer vertex : varMap.keySet()){
-//		  System.out.println("vertex " + vertex);
-//		  for(Variable var : varMap.get(vertex)){
-//			  Variable addedVar = varNameMap.get(var.getFullName());
-//			  if(addedVar == null){
-//				  List<Dimension> dims = new ArrayList<Dimension>();
-//				  for(Dimension d : var.getDimensions()){
-//					  Dimension currDim = ncDimMap.get(d.getFullName());
-//					  dims.add(currDim);
-//					  System.out.println("var " + var.getShortName()+ " " + currDim.getFullName());
-//				  }
-//				  ncWriter.addVariable(null, var.getShortName(), var.getDataType(), dims);
-//
-//				  varNameMap.put(var.getFullName(), var);
-//			  }
-//
-//
-//		  }
-//	  }
-//	  
-//	  try {
-//		ncWriter.create();
-//	
-//		
-//		for(Variable v : ncWriter.getNetcdfFile().getVariables()){
-//			System.out.println("Variable " + v.toString() + "  " + v.getDimensionsString()+" " + v.getShape().length);
-//			int[] var_origin = new int[v.getShape().length];
-//			for(int i = 0; i < var_origin.length; i++){
-//				var_origin[i] = 0;
-//			}
-//			//	int[] data_origin = new[int]
-//			for(Integer vertex : varMap.keySet()){
-//				Variable vertexVar = null;
-//				for(Variable var : varMap.get(vertex)){
-//					if(var.getFullName().equals(v.getFullName())){
-//						vertexVar = var;
-//						break;
-//					}
-//				}
-//				if(vertexVar != null){
-//						Array vertArray = vertexVar.read();
-//						// write the data to the nc file
-//						try {
-//							ncWriter.write(v, var_origin,vertexVar.read());
-//							int[] shapeArray = vertArray.getShape();
-//							System.out.println(var_origin[0]);
-//							if(shapeArray != null && shapeArray.length >= 1) {
-//								for(int i = 0; i < shapeArray.length; i++) {
-//									var_origin[i] +=  shapeArray[i];
-//								}
-//							}
-//							System.out.println(var_origin[0]  );
-//
-//							
-//							System.out.println("vertex " + vertex + " " + v.getFullName()+ " " + vertArray.getSize() +" " +
-//									vertArray.toString());
-//						} catch (InvalidRangeException e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
-//					}
-//				
-//				
-//			}
-//		}
-//	  } catch (IOException e) {
-//		// TODO Auto-generated catch block
-//		e.printStackTrace();
-//	}
-//  }
-//	 
+ 
   public void writeDimensions(NetcdfFileWriter ncWriter, Map<Integer, List<Variable>> varMap, 
 		  					  Map<Integer, ArrayList<Variable>> vertexVarMap
 		  					  ){
@@ -531,111 +417,7 @@ public class NetcdfGridWriter {
   
   
   
-//  public Map<Integer, Map<NhVariable, Variable>> writeDimensions(
-//		  				NhFileWriter ncWriter, Map<Integer, List<Variable>> varList) throws NhException{
-//
-//	  List<Attribute> attsList = new ArrayList<Attribute>();
-//
-//	  String gdsLoc = "";
-//	  // gather all the global attributes from each of the GridDatasets
-//	  for (GridDataset gds : gdsList) {
-//		  for (Attribute a : gds.getGlobalAttributes()) {
-//			  if (!attsList.contains(a)) {
-//				  attsList.add(a);
-//				  System.out.println("added attribute " + a.getFullName());
-//			  }
-//		  }
-//		  gdsLoc += gds.getLocationURI() + " ; ";
-//	  }
-//
-//	  NhGroup currGroup = ncWriter.getRootGroup();
-//	  NhGroup rootGroup = ncWriter.getRootGroup();
-////	  for(Attribute att : attsList){
-////		  if(att.getDataType().isNumeric())
-////			 rootGroup.addAttribute(att.getShortName(), geVarType(att.getDataType()), att.getNumericValue());
-////		  else
-////			 rootGroup.addAttribute(att.getShortName(), geVarType(att.getDataType()), att.getStringValue());
-////		  }
-//	 rootGroup.addAttribute("History",  NhVariable.TP_STRING_VAR,
-//			  "Translated by ASA (NetcdfGridWriter.java) using the Netcdf-Java CDM; " + "Original Dataset = "
-//					  + gdsLoc + "; Translation date = " + new Date() + ";");
-//
-//	  // create all of the dimensions
-//System.out.println("var list size " + varList.size());
-//	  List<String> dimensionsAdded = new ArrayList<String>();
-//	  Map<String, NhDimension> dimensionMap = new HashMap<String, NhDimension>();
-//	  Map<Integer, Map<NhVariable, Variable>> vertexVarMap = new HashMap<Integer, Map<NhVariable, Variable>>();
-//	  boolean multGroups = varList.keySet().size()  > 1;
-//	  for(Integer vertexId : varList.keySet()){
-//		  Map<NhVariable, Variable> vertexArrayList = new HashMap<NhVariable, Variable>();
-//
-////		  if(varList.size() > 1){
-////			  // create new group 
-////			  currGroup = rootGroup.addGroup("Vertex_"+vertexId);
-////			  currGroup.addAttribute("description", NhVariable.TP_STRING_VAR, "Data for vertex " + vertexId+ " of the track line");
-////		  }
-//		  dimensionsAdded.clear();
-//		  for(	 Variable var : varList.get(vertexId)){
-//			  NhDimension[] dims = new NhDimension[var.getRank()];
-//			  int dimIndex = 0;
-//			  for(Dimension dim : var.getDimensions()){
-//				  if(!dimensionsAdded.contains(dim.getFullName())) {
-//					  NhDimension addedDim = null;
-//					  String dimName = dim.getFullName();
-//					  if(multGroups)
-//						  dimName += vertexId;
-//					  addedDim = currGroup.addDimension(dimName, dim.getLength());
-//					  dimensionMap.put(dim.getFullName(), addedDim);
-//					  dimensionsAdded.add(dim.getFullName());
-//				  }
-//				  dims[dimIndex] = dimensionMap.get(dim.getFullName());
-//				  dimIndex++;
-//			  }
-//			  System.out.println("VAR "  +var.getShortName() + " " + dims.length + " " +currGroup.getName());
-//			  String varName = var.getFullName();
-//			  if(multGroups)
-//				  varName += vertexId; 
-//			  NhVariable vertexVar =  currGroup.addVariable(varName, geVarType(var.getDataType()), 
-//					  dims, null, null, 0);
-//			  //if(vertexVar.getRank() )
-//			  for(Attribute a : var.getAttributes()){
-//				  if(a.getDataType().isNumeric())
-//					  vertexVar.addAttribute(a.getFullName(), geVarType(a.getDataType()), a.getNumericValue());
-//				  else
-//					  vertexVar.addAttribute(a.getFullName(), geVarType(a.getDataType()), a.getStringValue());
-//				  System.out.println("added attribute " + a.getFullName() + " to " +var.getFullName());
-//			  }
-//			  vertexArrayList.put(vertexVar, var);
-//
-//
-//		  }	
-////		  for(Attribute att : attsList){
-////			  if(att.getDataType().isNumeric())
-////				  currGroup.addAttribute(att.getFullName(), geVarType(att.getDataType()), att.getNumericValue());
-////			  else
-////				  currGroup.addAttribute(att.getFullName(), geVarType(att.getDataType()), att.getStringValue());
-////		  }
-//		  vertexVarMap.put(vertexId, vertexArrayList);
-//	  }
-//	  for(Attribute att : attsList){
-//		  if(att.getDataType().isNumeric())
-//			  currGroup.addAttribute(att.getFullName(), geVarType(att.getDataType()), att.getNumericValue());
-//		  else
-//			  currGroup.addAttribute(att.getFullName(), geVarType(att.getDataType()), att.getStringValue());
-//	  }
-//	  //
-//	  //
-//	  System.out.println("About to create");
-//	  //
-//
-//	  ncWriter.endDefine();
-//
-//	  System.out.println("after create");
-//	  return vertexVarMap;
-//
-//}
 
-  
   
   
   

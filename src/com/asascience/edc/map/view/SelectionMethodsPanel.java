@@ -104,7 +104,6 @@ public class SelectionMethodsPanel extends JPanel {
 					hiddenButton.setSelected(true);
 					processSelectionEvent(polygonButton, polygonSel);
 				   bbox = polygonSel.getPolygonBBox();
-		            System.out.println("SET BBOX-llb " + bbox.getLatMin() + " " + bbox.getLatMax()+","+bbox.getLonMin()+" " +bbox.getLonMax());
 		            firePropertyChange(BOUNDS_STORED, false, true);
 
 				}
@@ -116,7 +115,6 @@ public class SelectionMethodsPanel extends JPanel {
 		            firePropertyChange(DapWorldwindProcessPanel.DISABLE_BBOX, true, false);
 		    		firePropertyChange(DapWorldwindProcessPanel.DISABLE_SLIDER, false, true);
 
-		            System.out.println("fire property change");
 
 				}
 				else if(propName.equals(WwPolygonSelection.SELECTION_ADDED)){
@@ -214,7 +212,6 @@ public class SelectionMethodsPanel extends JPanel {
 
 				firePropertyChange(DapWorldwindProcessPanel.DISABLE_SLIDER, 
 										disableSlider, !disableSlider);
-				System.out.println("disable slider");
 			}
 		}
 		  

@@ -147,7 +147,6 @@ public class Utils {
         PrintStream ps = new PrintStream(new FileOutputStream(f, true), true);
         System.setOut(ps);
         System.setErr(ps);
-        System.out.println("\n\n\n-----Start New: " + new Date().toString() + "-----");
       } catch (FileNotFoundException ex) {
         Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, ex);
       }

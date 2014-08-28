@@ -21,8 +21,7 @@ public class TrackLineVertex {
 		this.square = square;
 		this.startTime = startTime;
 		this.endTime = endTime;
-		if(startTime != null && endTime != null)
-		System.out.println("Track line time start " + startTime.toString() + " end " + endTime.toString());
+		
 		initLatLonRect(bbox);
 	}
 

@@ -89,7 +89,6 @@ public class WwPolygonSelection extends WorldWindMapControl {
 	public LatLonRect getPolygonBBox(){
 			  Path2D.Double polygon = new Path2D.Double();
 			 Iterable<? extends LatLon> polygonLocs = this.polygon.getLocations();
-			  System.out.println("selected loc points "+selectedLocs.size());
 			  Iterator polygonI = polygonLocs.iterator();
 			  if(polygonI.hasNext()){
 				  LatLon loc = (LatLon) polygonI.next();
@@ -97,7 +96,6 @@ public class WwPolygonSelection extends WorldWindMapControl {
 				 while(polygonI.hasNext()){
 					 loc = (LatLon) polygonI.next();
 					  polygon.lineTo(loc.latitude.degrees, loc.longitude.degrees);
-					  System.out.println("adding " +loc.longitude.degrees+","+ loc.latitude.degrees);
 
 				  }
 			  }

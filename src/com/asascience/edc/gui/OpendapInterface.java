@@ -103,6 +103,8 @@ import javax.swing.event.ChangeListener;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.jfree.util.Log;
+
 import ucar.nc2.ft.FeatureDatasetFactoryManager;
 
 /**
@@ -237,6 +239,9 @@ public class OpendapInterface {
   // This code should be removed when an update to the jogl library is available
   private void makeMapVisible(Component currentSelection, boolean visible){
 	  WorldwindSelectionMap worldMap = null;
+	  if(currentSelection instanceof JScrollPane)
+		  currentSelection = ((JScrollPane)currentSelection).getViewport().getView();
+	  
 	  if(currentSelection instanceof ErddapTabledapGui)
 		  worldMap = ((ErddapTabledapGui) currentSelection).getMapPanel();
 	  else  if(currentSelection instanceof DapWorldwindProcessPanel )
@@ -244,7 +249,6 @@ public class OpendapInterface {
 
 	  else if(currentSelection instanceof  SosWorldwindProcessPanel)
 		  worldMap = (( SosWorldwindProcessPanel) currentSelection).getMapPanel();
-	  
 	  if(worldMap != null){
 		  if(!visible){
 			  worldMap.removeAll();
@@ -844,6 +848,8 @@ public class OpendapInterface {
     	}
         PropertyConfigurator.configure("log4j.properties");
         TextAreaAppender.setTextArea(logArea);
+    	logger.info("Config File is " + configFile);
+
         Configuration.initialize(System.getProperty("user.dir") + File.separator + configFile);
         History.initialize(System.getProperty("user.dir") + File.separator + "history.txt");
         new OpendapInterface(passArg); 

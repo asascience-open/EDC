@@ -190,7 +190,6 @@ public class DapWorldwindProcessPanel extends JPanel {
           setVariables(((GridReader) ncReader).getGeoGrids());
           // setBandDims();
 
-      	System.out.println("REgular grid " +((GridReader) ncReader).isRegularSpatial());
 
           if (!((GridReader) ncReader).isRegularSpatial()) {
             if (selPanel.getPanelType() == VariableSelectionPanel.ESRI) {
@@ -858,7 +857,6 @@ public class DapWorldwindProcessPanel extends JPanel {
 		  if(requestType == ErrdapRequestType.TRACK_LINE){
 			  processTrackLineRequest(constraintsList,
 					  					selPanel.getPanelType(), dateSlider.getStartDate(), dateSlider.getEndDate());
-			  System.out.println("TRACK LINE - num cons = " +constraintsList.size());
 		  }
 		  else {
 			  // set the start & end date/time
@@ -884,13 +882,14 @@ public class DapWorldwindProcessPanel extends JPanel {
 
 		  }
 		  File outFile = getOutputFile();
-		  if (outFile != null) {
-			  try {
-				  outFile.createNewFile();
-			  } catch (Exception ex) {
-				  ex.printStackTrace();
-			  }
-		  }
+//		  if (outFile != null) {
+//			  try {
+//				  System.out.println("CREATE " +outFile.getName());
+//				  outFile.createNewFile();
+//			  } catch (Exception ex) {
+//				  ex.printStackTrace();
+//			  }
+//		  }
 
 		  ncOutPath = outFile.getAbsolutePath();
 
@@ -912,6 +911,8 @@ public class DapWorldwindProcessPanel extends JPanel {
 			 boolean  passedLocationCheck = false;
 			 boolean   passedTimeCheck = false;
 			 int vertexId = 1;
+			 boolean multTrackPts = trackPts.size() > 1;
+			 boolean isEsri = selPanel.getPanelType() == VariableSelectionPanel.ESRI ? true : false;
 			 for(TrackLineVertex pt : trackPts){
 				 NetcdfConstraints cons = new NetcdfConstraints(constraints);
 				 cons.setBoundingBox(pt.getBoundingBox());
@@ -926,13 +927,20 @@ public class DapWorldwindProcessPanel extends JPanel {
 				 cons.setPanelType(panelType);
 				 String bandDim = cons.getBandDim();
 				 String trimDim = cons.getTrimByDim();
-				 if(bandDim != null && !bandDim.equals("") && !bandDim.equals("null"))
-					 cons.setBandDim(bandDim + vertexId);
-				 if(trimDim != null && !trimDim.equals("") && !trimDim.equals("null"))
-					 cons.setTrimByDim(trimDim + vertexId);
+				 if(bandDim != null && !bandDim.equals("") && !bandDim.equals("null")){
+					 if(multTrackPts && !isEsri)
+						 cons.setBandDim(bandDim + vertexId);
+					 else
+						 cons.setBandDim(bandDim);
+				 }
+				 if(trimDim != null && !trimDim.equals("") && !trimDim.equals("null")) {
+					 if(multTrackPts && !isEsri)
+						 cons.setTrimByDim(trimDim + vertexId);
+					 else
+						 cons.setTrimByDim(trimDim);
+				 }
 				 if(passedLocationCheck || checkLocationExtents(cons)){
 					 passedLocationCheck = true;
-					 System.out.println("passed loc" );
 					 if(passedTimeCheck || checkTimeExtents(cons))
 						 constraintsList.add(cons);
 					 else 
@@ -1017,7 +1025,8 @@ public class DapWorldwindProcessPanel extends JPanel {
     		NcProperties props = new NcProperties(ncPath, constraintsList.size());
     		ArcType type = ArcType.NULL;
     		String sTime = null;
-
+    		String ncExt = ".nc";
+    		boolean isEsri = selPanel.getPanelType() == VariableSelectionPanel.ESRI ? true : false;
     		List<String> vars = null;
     		FileMonitor fm = new FileMonitor(ncPath);
     		Map<Integer, List<Variable>> varVertexMap = new HashMap<Integer, List<Variable>>();
@@ -1025,9 +1034,13 @@ public class DapWorldwindProcessPanel extends JPanel {
     		 Map<Integer, String> xDimNameMap = new HashMap<Integer, String>();
     		 Map<Integer, String> yDimNameMap = new HashMap<Integer, String>();
     		 Map<Integer, String> zDimNameMap = new HashMap<Integer, String>();
-
+    		 File ncFilePath = new File(ncPath);
+    		 
+    		 String baseFilePath = ncFilePath.getParent() + File.separator;
+    		 String baseFileName = ncFilePath.getName();
+    		 baseFileName = baseFileName.substring(0, baseFileName.length() - ncExt.length());
+    				 
     		NetcdfGridWriter writer = new NetcdfGridWriter(this.getPropertyChangeSupport());
-    		System.out.println("constraints list " +constraintsList.size());
 
     		fm.addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -1093,9 +1106,14 @@ public class DapWorldwindProcessPanel extends JPanel {
 
     			List<Variable> varList = new ArrayList<Variable>();
     			List<GridDatatype> trimmedGrids = new ArrayList<GridDatatype>();
-
+    			if(isEsri && isMultGrids){
+    				ncPath = baseFilePath + baseFileName + vertexIndex + ncExt;
+    				gridProps.setNcPath(ncPath);
+    			}
     			runOK = writer.prepareToWriteFile(ncPath, gdsList, constraints, type,
     					varList, polygonVertices, trimmedGrids);
+    		
+    			
     			if(polygonVertices != null && trimmedGrids.size() > 0){
     				GridDatatype grid = trimmedGrids.get(0);
     				if(grid != null){
@@ -1121,7 +1139,7 @@ public class DapWorldwindProcessPanel extends JPanel {
     			
     			List<String> varForVertex = new ArrayList<String>();
     			Integer vertForSetProp = null;
-    			 if(isMultGrids){
+    			 if(isMultGrids && !isEsri){
     				 if(timeDim != null && !timeDim.equals("") && !timeDim.equals("null"))
     					 timeDim += vertexIndex;
     				 if(xDim != null && !xDim.equals("") && !xDim.equals("null"))
@@ -1153,18 +1171,34 @@ public class DapWorldwindProcessPanel extends JPanel {
     			gridProps.setZCoord(zDim);
     			gridProps.setProjection(constraints.getProjection());
     			gridProps.setVars(varForVertex);
-
-    			
-    			
     			varVertexMap.put(vertexIndex, varList);
+
+    			if(isEsri){
+    				// write a separate file for each track point
+    				writer.writerFile(varVertexMap, ncPath, polygonVertices!=null,
+    	    				includeIndicesMap, xDimNameMap, yDimNameMap, zDimNameMap); //grid,
+    				varVertexMap.clear();
+    				xDimNameMap.clear();
+    				yDimNameMap.clear();
+    				zDimNameMap.clear();
+    				
+        			
+        			calculateTimes(gridProps);
+        				
+        			
+    			}
+    			
     			vertexIndex++;
     		}
 
-    		System.out.println("var vertexMap " + varVertexMap.size());
-    		
-    		writer.writerFile(varVertexMap, ncPath, polygonVertices!=null,
+    		if(!isEsri)
+    			writer.writerFile(varVertexMap, ncPath, polygonVertices!=null,
     				includeIndicesMap, xDimNameMap, yDimNameMap, zDimNameMap); //grid,
 
+    		else{
+    			ncPath = baseFilePath + baseFileName + ncExt;
+	
+    		}
     		fm.stopMonitor();
 
 
@@ -1177,10 +1211,11 @@ public class DapWorldwindProcessPanel extends JPanel {
     			firePropertyChange("note", null, "Writing properties file...");
     			Thread.sleep(250);
     			
-    			
-    			for(int consI = 0; consI < 	constraintsList.size(); consI++) {
-    				NcGridObjectProperties gridProps = props.getGridProperties(consI);
-    				calculateTimes(gridProps);
+    			if(!isEsri){
+    				for(int consI = 0; consI < 	constraintsList.size(); consI++) {
+    					NcGridObjectProperties gridProps = props.getGridProperties(consI);
+    					calculateTimes(gridProps);
+    				}
     			}
     			props.setOutPath(outname.replace("-", "_"));
     			
