@@ -7,6 +7,8 @@ import com.asascience.edc.map.WwPolygonSelection;
 import com.asascience.edc.map.WwTrackLineSelection;
 import com.asascience.edc.map.view.SelectionMethodsPanel.ActiveSelectionSource;
 import com.asascience.edc.sos.SensorContainer;
+
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -29,6 +31,7 @@ import com.bbn.openmap.MapHandler;
 import com.bbn.openmap.MouseDelegator;
 import com.bbn.openmap.gui.OMToolSet;
 import com.bbn.openmap.gui.ToolPanel;
+
 import gov.nasa.worldwind.BasicModel;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.event.RenderingExceptionListener;
@@ -54,7 +57,9 @@ import gov.nasa.worldwind.view.orbit.BasicOrbitView;
 import gov.nasa.worldwind.view.orbit.BasicOrbitViewLimits;
 import gov.nasa.worldwind.view.orbit.FlatOrbitView;
 import gov.nasa.worldwind.view.orbit.OrbitViewLimits;
+
 import java.util.List;
+
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
@@ -174,7 +179,7 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
     makeGlobe();
     //makeFlat();
 
-    add(mapCanvas, "gap 0, grow, wrap");
+ 
 
     // Toolbar
     toolbar = new JPanel(new MigLayout("gap 0, fill"));
@@ -240,11 +245,12 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
 				}
     	
     });
- 
     toolbar.add(locationSelectionTool);
-
+    add(mapCanvas, "gap 0,top, grow,wrap");
     add(toolbar, "gap 0, growx");
 
+    validate();
+    repaint();
   }
 
   private void updateSelectedSosFromTrack(){

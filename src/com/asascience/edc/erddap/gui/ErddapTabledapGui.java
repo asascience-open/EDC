@@ -85,6 +85,7 @@ public class ErddapTabledapGui extends JPanel {
 
       }
 	  }
+	  
   }
   private void initComponents() {
     setLayout(new MigLayout("gap 0, fill"));
@@ -331,14 +332,6 @@ public class ErddapTabledapGui extends JPanel {
     else {
     	request.setSelectedStationLocations(null);
     	request.setFilterByPolygon(false);
-
-    	if(mapPanel.getLocationSelectionTool().getActiveSelectionSource() == ActiveSelectionSource.POLYGON &&
-    			mapPanel.getSelectedVertices() != null){
-    		request.setPolygon(PolygonUtils.getPolygonFromVertices(mapPanel.getSelectedVertices()));
-    	
-        	request.setFilterByPolygon(true);
-
-    	}
     	// Add the X values
     	if (erd.hasX()) {
 

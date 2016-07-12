@@ -107,6 +107,7 @@ public class DapWorldwindProcessPanel extends JPanel {
   private JLabel lblDateIncrement;
   private JLabel lblNumDatesSelected;
   private JLabel lblNcName;
+  private JPanel pageTopPanel;
   public static final String DISABLE_BBOX = "disableBBOX";
   public static final String DISABLE_SLIDER = "disableSlider";
   private static Logger logger = Logger.getLogger(Configuration.class);
@@ -222,6 +223,8 @@ public class DapWorldwindProcessPanel extends JPanel {
                   JOptionPane.WARNING_MESSAGE);
           break;
       }
+      this.pageTopPanel.revalidate();
+      this.pageTopPanel.repaint();
     } catch (IOException ex) {
       logger.error("SPP:initData:", ex);
     } catch (Exception ex) {
@@ -250,7 +253,7 @@ public class DapWorldwindProcessPanel extends JPanel {
       setLayout(new MigLayout("gap 0, fill"));
       setBorder(new EtchedBorder());
       
-      JPanel pageTopPanel = new JPanel(new MigLayout("gap 0, fill"));
+      pageTopPanel = new JPanel(new MigLayout("gap 0, fill"));
 
       lblNcName = new JLabel("NetCDF Filename:");
       btnAddDataset = new JButton("Add Dataset");

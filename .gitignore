@@ -16,3 +16,4 @@ history.txt
 .project
 .settings/org.eclipse.jdt.core.prefs
 javadoc/*
+/bin/

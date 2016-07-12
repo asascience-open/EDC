@@ -17,6 +17,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -36,7 +37,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -47,6 +47,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.ScrollPaneConstants;
@@ -94,8 +95,10 @@ import com.asascience.ui.JCloseableTabbedPane;
 import com.asascience.utilities.Utils;
 import com.asascience.utilities.exception.InitializationFailedException;
 import com.bbn.openmap.Layer;
+
 import java.awt.ScrollPane;
 import java.util.Arrays;
+
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
@@ -134,6 +137,7 @@ public class OpendapInterface {
   private OMLayerPanel omLayerPanel;
   private JSplitPane horizSplit;
   private Color defaultBackground;
+  private Rectangle prevMap;
   private static Logger logger = Logger.getLogger("com.asascience.edc");
   private static Logger guiLogger = Logger.getLogger("com.asascience.log");
   private static JTextArea logArea = new JTextArea();
@@ -214,34 +218,36 @@ public class OpendapInterface {
 
     //constraints = new NetcdfConstraints();
     createAndShowGUI();
-    addChangeListener(new ChangeListener (){
-    
-    	@Override
-    	public void stateChanged(ChangeEvent arg0) {
-    	if((System.getProperty("os.name").contains("OS X")) && 
-    	   (currentSelection != tabbedPane.getSelectedComponent())){
-    			makeMapVisible(currentSelection,false);
-    			currentSelection = tabbedPane.getSelectedComponent();
-    			makeMapVisible(currentSelection, true);
-    		
-    		}
-    	}
-    	
-    });
+//    addChangeListener(new ChangeListener (){
+//    
+//    	@Override
+//    	public void stateChanged(ChangeEvent arg0) {
+//    	if((System.getProperty("os.name").contains("OS X")) && 
+//    	   (currentSelection != tabbedPane.getSelectedComponent())){
+//    			makeMapVisible(currentSelection,false);
+//    			currentSelection = tabbedPane.getSelectedComponent();
+//    			makeMapVisible(currentSelection, true);
+//    		
+//    		
+//    		}
+//    	}
+//    	
+//    });
     
   }
 
   // This code is needed due to an issue with the jogl library and
-  // Java 7 on the mac os. The world map will appear on top of
+  // Java 7/8 on the mac os. The world map will appear on top of
   // all tabs regardless of which tab is selected. In order to 
   // get around this the worldwind map is removed when a tab is selected
   // that does not contain a map
   // This code should be removed when an update to the jogl library is available
-  private void makeMapVisible(Component currentSelection, boolean visible){
+  private void makeMapVisible(Component origCurrentSelection, boolean visible){
 	  WorldwindSelectionMap worldMap = null;
-	  if(currentSelection instanceof JScrollPane)
-		  currentSelection = ((JScrollPane)currentSelection).getViewport().getView();
-	  
+	  Component currentSelection= origCurrentSelection;
+	  if(origCurrentSelection instanceof JScrollPane) {
+		  currentSelection = ((JScrollPane)origCurrentSelection).getViewport().getView();
+	  }
 	  if(currentSelection instanceof ErddapTabledapGui)
 		  worldMap = ((ErddapTabledapGui) currentSelection).getMapPanel();
 	  else  if(currentSelection instanceof DapWorldwindProcessPanel )
@@ -250,7 +256,8 @@ public class OpendapInterface {
 	  else if(currentSelection instanceof  SosWorldwindProcessPanel)
 		  worldMap = (( SosWorldwindProcessPanel) currentSelection).getMapPanel();
 	  if(worldMap != null){
-		  if(!visible){
+		  worldMap.setVisible(visible);
+		 if(!visible){
 			  worldMap.removeAll();
 		  }
 		  else {
@@ -266,8 +273,15 @@ public class OpendapInterface {
 			  else if(currentSelection instanceof  SosWorldwindProcessPanel){
 				  (( SosWorldwindProcessPanel) currentSelection).initData();
 			  }
+
+			
+
 			}
 		  }
+		 if(mainFrame != null){
+			mainFrame.validate();
+			mainFrame.repaint();
+		 }
 	  }
 
   }
@@ -664,6 +678,10 @@ public class OpendapInterface {
           JScrollPane spScrollPane = new JScrollPane(spPanel);
           tabbedPane.addTabClose("Grid - Subset & Process", spScrollPane);
           tabbedPane.setSelectedComponent(spScrollPane);
+          spPanel.validate();
+          spPanel.repaint();
+
+	
           return true;
         } else {
           if (addToSpp != null) {
