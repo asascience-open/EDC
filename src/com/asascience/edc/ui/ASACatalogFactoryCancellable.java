@@ -26,9 +26,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.apache.http.HttpResponse;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 import thredds.catalog.CatalogSetCallback;
 import thredds.catalog.InvCatalogFactory;
@@ -167,17 +170,20 @@ public class ASACatalogFactoryCancellable extends InvCatalogFactory {
         return;
       }
 
-      GetMethod m = null;
-      try {
-        m = new GetMethod(catalogName);
-        m.setFollowRedirects(true);
+     HttpGet m = null;
+     CloseableHttpClient client = null;
+     try {
+   
+              m = new HttpGet(catalogName);
+              RequestConfig requestConfig = RequestConfig.custom().setRedirectsEnabled(true).build();
+              m.setConfig(requestConfig);
+              client = HttpClients.createDefault();
+            //  HttpClient client = new DefaultHttpClient();^M
+              HttpResponse httpResponse = client.execute(m);
+              InputStream stream = httpResponse.getEntity().getContent();
+               catalog = ASACatalogFactoryCancellable.super.readXML(stream, catalogURI);
 
-        HttpClient client = new HttpClient();
-        client.executeMethod(m);
-        InputStream stream = m.getResponseBodyAsStream();
-        catalog = ASACatalogFactoryCancellable.super.readXML(stream, catalogURI);
-
-      } catch (IOException e) {
+             } catch (IOException e) {
         catalog = new InvCatalogImpl(catalogName, null, null);
         catalog.appendErrorMessage("**Fatal:  InvCatalogFactory.readXML IOException on URL (" + catalogName
                 + ") " + e.getMessage() + "\n", true);
@@ -189,6 +195,13 @@ public class ASACatalogFactoryCancellable extends InvCatalogFactory {
       } finally {
         if (null != m) {
           m.releaseConnection();
+        }
+        if(client != null){
+        	try {
+        		client.close();
+        	} catch (IOException e) {
+
+        	}
         }
       }
 

@@ -54,7 +54,7 @@ import javax.swing.ScrollPaneConstants;
 
 import net.miginfocom.swing.MigLayout;
 
-import org.apache.commons.httpclient.auth.CredentialsProvider;
+import org.apache.http.client.CredentialsProvider;
 
 import ucar.nc2.ui.widget.FileManager;
 import ucar.nc2.ui.widget.UrlAuthenticatorDialog;
@@ -840,7 +840,7 @@ public class OpendapInterface {
         logger.error("Dataset not recognized as a Feature Dataset: " + ncdataset.getLocation());
         guiLogger.error("Dataset not recognized as a Feature Dataset: " + ncdataset.getLocation());
       }
-    } catch (IOException ioe) {
+    } catch (NullPointerException | IOException ioe) {
       logger.error("Dataset not recognized as a GRID Dataset: " + ncdataset.getLocation(), ioe);
       guiLogger.error("Dataset not recognized as a GRID Dataset: " + ncdataset.getLocation(), ioe);
     }
