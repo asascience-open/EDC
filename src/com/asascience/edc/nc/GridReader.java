@@ -150,8 +150,10 @@ public class GridReader extends NcReaderBase {
       List<Parameter> params = geoGrid.getProjection().getProjectionParameters();
       StringBuilder sbuff = new StringBuilder();
       for (Parameter p : params) {
-        sbuff.append(p.toString());
-        sbuff.append(" ; ");
+    	  if(!p.toString().trim().startsWith("earth_radius")){
+    		  sbuff.append(p.toString());
+    		  sbuff.append(" ; ");
+    	  }
       }
       // String proj = geoGrid.getProjection().getClassName();
       String proj = sbuff.toString();

@@ -125,6 +125,9 @@
     <copy todir="dist/data">
       <fileset dir="data"/>
     </copy>
+	<copy todir="dist/lib">
+	       <fileset dir="lib"/>
+	</copy>
     <copy file="EDC_WIN.bat" todir="dist"/>
     <copy file="EDC_MAC.command" todir="dist"/>
     <copy file="EDC_MAC_preLion.command" todir="dist"/>
