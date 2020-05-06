@@ -15,6 +15,7 @@ import javax.swing.border.EtchedBorder;
 import net.miginfocom.swing.MigLayout;
 
 import com.asascience.edc.sos.requests.ResponseFormat;
+import com.asascience.edc.utils.AoiUtils;
 import com.asascience.utilities.Utils;
 import gov.nasa.worldwind.render.PointPlacemark;
 import java.awt.Dimension;
@@ -51,11 +52,14 @@ public class SosWorldwindProcessPanel extends JPanel {
   private BoundingBoxPanel bboxGui;
   private boolean variableSelected;
   private boolean sensorSelected;
-
-  public SosWorldwindProcessPanel(OpendapInterface caller, SosServer sosd, String homeDir, String sysDir) {
+  private AoiUtils aoiUtils;
+  
+  public SosWorldwindProcessPanel(OpendapInterface caller, SosServer sosd, String homeDir, 
+		  String sysDir,ucar.util.prefs.PreferencesExt prefs) {
     this.sosServer = sosd;
     this.sysDir = Utils.appendSeparator(sysDir);
     this.parent = caller;
+    aoiUtils = new AoiUtils(prefs);
     initComponents();
   }
 
@@ -168,14 +172,8 @@ public class SosWorldwindProcessPanel extends JPanel {
 
       // BBOX panel with bboxchange event
       bboxGui = new BoundingBoxPanel();
-      bboxGui.addPropertyChangeListener(new PropertyChangeListener() {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-          if (evt.getPropertyName().equals("bboxchange")) {
-            mapPanel.makeSelectedExtentLayer(bboxGui.getBoundingBox());
-          }
-        }
-      });
+      bboxGui.addPropertyChangeListener(aoiUtils.getPropertyChangeListener(mapPanel, bboxGui));
+      bboxGui.createAoiSubmenu(aoiUtils.getAoiList());
       pageEndPanel.add(bboxGui, "gap 0, growy");
       
       // TIME panel

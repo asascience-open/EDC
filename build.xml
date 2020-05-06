@@ -37,6 +37,7 @@
 	        <pathelement location="./lib/jersey-core-1.6.jar"/>
 	        <pathelement location="./lib/jersey-json-1.6.jar"/>
 	        <pathelement location="./lib/jettison-1.1.jar"/>
+	    	<pathelement location="./lib/wwj_2.0/worldwind-2.0.0-https-patch.jar"/>
 	        <pathelement location="./lib/wwj_2.0/gluegen-rt-natives-linux-amd64.jar"/>
 	        <pathelement location="./lib/wwj_2.0/gluegen-rt.jar"/>
 	        <pathelement location="./lib/wwj_2.0/gluegen-rt-natives-linux-i586.jar"/>
@@ -50,6 +51,7 @@
 	        <pathelement location="./lib/wwj_2.0/jogl-all-natives-windows-amd64.jar"/>
 	        <pathelement location="./lib/wwj_2.0/jogl-all-natives-windows-i586.jar"/>
 	        <pathelement location="./lib/wwj_2.0/worldwind_2.0.jar"/>
+	        
 	        <pathelement location="./lib/jcalendar-1.4.jar"/>
 	        <pathelement location="./lib/swingx-core-1.6.2.jar"/>
 	        <pathelement location="./lib/junit_4/junit-4.5-src.jar"/>

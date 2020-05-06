@@ -8,6 +8,7 @@
  */
 package com.asascience.openmap.ui;
 
+import com.asascience.edc.Configuration;
 import com.asascience.openmap.layer.BasemapLayer;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -78,7 +79,7 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
   public static final String AOI_REMALL = "aoiremall";
   public static final String AOI_MANUAL = "aoimanual";
   protected PropertyChangeSupport pcs;
-  protected GeoConstraints geoCons;
+  //protected GeoConstraints geoCons;
   protected String dataDir;
   protected MapHandler mHandler;
   private LayerHandler layerHandler;
@@ -89,10 +90,10 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
   protected OMToolSet tools;
   protected ToolPanel toolPanel;
   protected MouseDelegator mouseDelegator;
-  protected AreaSelectionMouseMode asmm;
+ // protected AreaSelectionMouseMode asmm;
   protected ExtentRectangleLayer selectedExtent;
   protected ExtentRectangleLayer dataExtent;
-  protected boolean showAOIButton = false;
+  protected boolean showAOIButton = true;
 
   /**
    * Creates a new instance of OMSelectionMapPanel
@@ -101,21 +102,21 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
    * @param dataDir
    * @param showAOIButton
    */
-  public OMSelectionMapPanel(GeoConstraints cons, String dataDir, boolean showAOIButton) {
-    this.dataDir = Utils.appendSeparator(dataDir);
+  public OMSelectionMapPanel(GeoConstraints cons,  boolean showAOIButton) {
+    this.dataDir = Configuration.OUTPUT_LOCATION;
     this.showAOIButton = showAOIButton;
-    geoCons = cons;
-    if (geoCons == null) {
-      System.err.println("geoCons == null");
-    }
-
+   // geoCons = cons;
+   // if (geoCons == null) {
+   //   System.err.println("geoCons == null");
+   // }
+//
     pcs = new PropertyChangeSupport(this);
 
     initComponents();
   }
 
   public OMSelectionMapPanel(GeoConstraints cons, String dataDir) {
-    this(cons, dataDir, false);
+    this(cons, true);
   }
   protected JPopupMenu aoiMenu;
   protected JButton aoiButton;
@@ -156,10 +157,10 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
     mHandler.add(new PanMouseMode2());
     mHandler.add(new MeasureMouseMode());
     mHandler.add(new InformationMouseMode());
-    asmm = new AreaSelectionMouseMode(true, geoCons);
-    asmm.addPropertyChangeListener(this);
-    mHandler.add(asmm);
-    mouseDelegator.setActiveMouseMode(asmm);
+  //  asmm = new AreaSelectionMouseMode(true, geoCons);
+  //  asmm.addPropertyChangeListener(this);
+  //  mHandler.add(asmm);
+  //  mouseDelegator.setActiveMouseMode(asmm);
 
     mHandler.add(new StandardMapMouseInterpreter());
     mHandler.add(new MouseModeButtonPanel());
@@ -254,10 +255,10 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
     mBean.setMinimumSize(new Dimension(200, 200));
   }
 
-  public void resetGeoCons(GeoConstraints geoCons) {
-    this.geoCons = geoCons;
-    asmm.setGeoCons(geoCons);
-  }
+  //public void resetGeoCons(GeoConstraints geoCons) {
+  //  this.geoCons = geoCons;
+ //   asmm.setGeoCons(geoCons);
+ // }
 
   public void zoomToSelectedExtent(DataBounds db) {
     LatLonPoint lr = new LatLonPoint(db.getMin().getY(), db.getMax().getX());
@@ -374,7 +375,7 @@ public class OMSelectionMapPanel extends BasicMapPanel implements PropertyChange
     // User drew a bounding box to select an area
     if (propName.equals("boundsStored")) {
       if ((Boolean) evt.getNewValue()) {
-        makeSelectedExtentLayer(geoCons.getBoundingBox());
+      //  makeSelectedExtentLayer(geoCons.getBoundingBox());
 //        if (sensorLayer != null) {
 //          sensorLayer.setPickedByBBOX(geoCons.getBoundingBox());
 //        }

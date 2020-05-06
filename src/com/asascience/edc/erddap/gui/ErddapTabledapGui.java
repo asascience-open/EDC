@@ -11,6 +11,7 @@ import com.asascience.edc.map.view.BoundingBoxPanel;
 import com.asascience.edc.map.view.SelectionMethodsPanel;
 import com.asascience.edc.map.view.SelectionMethodsPanel.ActiveSelectionSource;
 import com.asascience.edc.map.view.WorldwindSelectionMap;
+import com.asascience.edc.utils.AoiUtils;
 import com.asascience.edc.utils.PolygonUtils;
 import com.asascience.edc.utils.WorldwindUtils;
 import com.asascience.edc.map.WwTrackLineSelection;
@@ -56,10 +57,13 @@ public class ErddapTabledapGui extends JPanel {
   private BoundingBoxPanel bboxGui;
   private JSlider2Date dateSlider;
   private String homeDir;
+  private AoiUtils aoiUtils;
   private static Logger guiLogger = Logger.getLogger("com.asascience.log." + ErddapTabledapGui.class.getName());
   private boolean dataExtentFound;
-  public ErddapTabledapGui(ErddapDataset erd, OpendapInterface parent, String homeDir) {
+  public ErddapTabledapGui(ErddapDataset erd, OpendapInterface parent, String homeDir,
+		  ucar.util.prefs.PreferencesExt prefs) {
     this.erd = erd;
+    aoiUtils = new AoiUtils(prefs);
     this.parent = parent;
     this.request = new ErddapDataRequest(homeDir, erd);
     this.homeDir = homeDir;
@@ -120,7 +124,8 @@ public class ErddapTabledapGui extends JPanel {
         		dataExtentFound = false;
     	  }
       }
-      
+      bboxGui.addPropertyChangeListener(aoiUtils.getPropertyChangeListener(mapPanel, bboxGui));
+      bboxGui.createAoiSubmenu(aoiUtils.getAoiList());
      
       mapPanel.addPropertyChangeListener(new PropertyChangeListener() {
 

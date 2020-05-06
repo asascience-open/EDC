@@ -71,7 +71,9 @@ import com.asascience.edc.nc.NetcdfConstraints;
 import com.asascience.edc.nc.io.NcGridObjectProperties;
 import com.asascience.edc.nc.io.NcProperties;
 import com.asascience.edc.nc.io.NetcdfGridWriter;
+import com.asascience.edc.utils.AoiUtils;
 import com.asascience.edc.utils.FileSaveUtils;
+import com.asascience.openmap.utilities.listener.AOIPropertyChangeListener;
 import com.asascience.ui.IndeterminateProgressDialog;
 import com.asascience.utilities.FileMonitor;
 import com.asascience.utilities.Utils;
@@ -86,8 +88,7 @@ import org.apache.log4j.Logger;
  */
 public class DapWorldwindProcessPanel extends JPanel {
 
-  public static final String AOI_LIST = "aoilist";
-  private PreferencesExt mainPrefs;
+
   private JFrame mainFrame;
   private NetcdfConstraints constraints;
   private WorldwindSelectionMap mapPanel;
@@ -96,7 +97,7 @@ public class DapWorldwindProcessPanel extends JPanel {
   private List<GridDataset> gdsList;
   protected NcReaderBase ncReader;
   private OpendapInterface parent;
-  private List aoiList;
+
   private String homeDir;
   private String sysDir;
   private String ncOutPath;
@@ -112,7 +113,7 @@ public class DapWorldwindProcessPanel extends JPanel {
   public static final String DISABLE_SLIDER = "disableSlider";
   private static Logger logger = Logger.getLogger(Configuration.class);
   private static Logger guiLogger = Logger.getLogger("com.asascience.log." + DapWorldwindProcessPanel.class.getName());
-
+  private AoiUtils aoiUtils;
   
 	public enum ErrdapRequestType{
 		BOUNDING_BOX,
@@ -135,7 +136,7 @@ public class DapWorldwindProcessPanel extends JPanel {
           NetcdfConstraints cons, NetcdfDataset ncd, String homeDir, String sysDir) {
     // try {
 
-    this.mainPrefs = prefs;
+    aoiUtils = new AoiUtils(prefs);
     this.mainFrame = caller.getMainFrame();
     this.parent = caller;
     this.constraints = cons;
@@ -143,8 +144,6 @@ public class DapWorldwindProcessPanel extends JPanel {
     this.homeDir = Utils.appendSeparator(homeDir);
     this.sysDir = Utils.appendSeparator(sysDir);
 
-    // retrieve the aoiList from the preferences
-    aoiList = (ArrayList) prefs.getList(AOI_LIST, null);
 
     initComponents();
   }
@@ -340,15 +339,8 @@ public class DapWorldwindProcessPanel extends JPanel {
 
       // BBOX panel
       bboxGui = new BoundingBoxPanel();
-      bboxGui.addPropertyChangeListener(new PropertyChangeListener() {
-
-        public void propertyChange(PropertyChangeEvent evt) {
-          if (evt.getPropertyName().equals("bboxchange")) {
-            mapPanel.makeSelectedExtentLayer(bboxGui.getBoundingBox());
-          }
-         
-        }
-      });
+      bboxGui.addPropertyChangeListener(aoiUtils.getPropertyChangeListener(mapPanel, bboxGui));
+      bboxGui.createAoiSubmenu(aoiUtils.getAoiList());
       pageEndPanel.add(bboxGui, "gap 0, growy");
 
       // TIME panel
@@ -624,11 +616,6 @@ public class DapWorldwindProcessPanel extends JPanel {
     return false;
   }
 
-  public void saveAois() {
-    if (mainPrefs != null) {
-      mainPrefs.putList(AOI_LIST, aoiList);
-    }
-  }
 
   public void setNcName(String name, String location) {
     lblNcName.setText("NetCDF Filename:  " + name);
@@ -898,7 +885,7 @@ public class DapWorldwindProcessPanel extends JPanel {
 
 		  IndeterminateProgressDialog pd = new IndeterminateProgressDialog(mainFrame, 
 				  "Progress", new ImageIcon(new ImageIcon
-						  (this.getClass().getResource("/resources/images/ASA.png")).getImage()));
+						  (this.getClass().getResource("/resources/images/edc.png")).getImage()));
 		  ProcessDataTask pdt = new ProcessDataTask("Processing Data...", ncOutPath, 
 				  userOutname, constraintsList, polygonVertices, requestType);
 		  pdt.addPropertyChangeListener(new ProcessPropertyListener());

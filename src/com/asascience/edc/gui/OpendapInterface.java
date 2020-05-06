@@ -37,6 +37,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -309,7 +310,7 @@ public class OpendapInterface {
 
     mainFrame = new JFrame("Environmental Data Connector");
     mainFrame.setLayout(new MigLayout("fill"));
-    ImageIcon icon = new ImageIcon(this.getClass().getResource("/resources/images/ASA.png"));
+    ImageIcon icon = new ImageIcon(this.getClass().getResource("/resources/images/edc.png"));
     if(icon != null)
     	mainFrame.setIconImage(icon.getImage());
     Rectangle bounds = (Rectangle) prefs.getBean(FRAME_SIZE, new Rectangle(100, 50, 800, 600));
@@ -371,7 +372,7 @@ public class OpendapInterface {
     currentSelection = tabbedPane.getSelectedComponent();
     // The Bottom-Right images
     ImagePanel noaaPanel = new ImagePanel(new ImageIcon(this.getClass().getResource("/resources/images/NOAA.png")).getImage());
-    ImagePanel asaPanel = new ImagePanel(new ImageIcon(this.getClass().getResource("/resources/images/ASAIMG.png")).getImage());
+    ImagePanel asaPanel = new ImagePanel(new ImageIcon(this.getClass().getResource("/resources/images/rps.png")).getImage());
     noaaPanel.setLayout(new MigLayout("insets 0"));
     asaPanel.setLayout(new MigLayout("insets 0"));
 
@@ -622,7 +623,7 @@ public class OpendapInterface {
   public boolean openSOSDataset(SosServer sosData, boolean taskCancelled) {
     try {
       if (!taskCancelled) {
-        sosPanel = new SosWorldwindProcessPanel(this, sosData, homeDir, sysDir);
+        sosPanel = new SosWorldwindProcessPanel(this, sosData, homeDir, sysDir,prefs);
       }
       if (taskCancelled || !sosPanel.initData()) {
         return false;
@@ -652,7 +653,7 @@ public class OpendapInterface {
 
   public void openTabledap(ErddapDataset erd) {
     erd.buildVariables();
-    ErddapTabledapGui tdg = new ErddapTabledapGui(erd, this, homeDir);
+    ErddapTabledapGui tdg = new ErddapTabledapGui(erd, this, homeDir,prefs);
     tabbedPane.addTabClose("ERDDAP - Subset & Process", tdg);
     tabbedPane.setSelectedComponent(tdg);
   }
@@ -867,9 +868,15 @@ public class OpendapInterface {
         PropertyConfigurator.configure("log4j.properties");
         TextAreaAppender.setTextArea(logArea);
     	logger.info("Config File is " + configFile);
-
+    	logger.info(System.getenv("PATH"));
         Configuration.initialize(System.getProperty("user.dir") + File.separator + configFile);
         History.initialize(System.getProperty("user.dir") + File.separator + "history.txt");
+//        try {
+//			System.setErr(new PrintStream(System.getProperty("user.dir") + File.separator + "log"+File.separator+"std.err"));
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
         new OpendapInterface(passArg); 
       }
     });
