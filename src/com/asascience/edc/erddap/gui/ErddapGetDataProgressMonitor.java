@@ -1,8 +1,5 @@
 package com.asascience.edc.erddap.gui;
 
-import com.asascience.edc.erddap.ErddapDataRequest;
-import com.asascience.edc.gui.FileBrowser;
-import com.asascience.edc.utils.FileSaveUtils;
 import java.awt.Cursor;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -11,6 +8,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -18,8 +16,14 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
-import net.miginfocom.swing.MigLayout;
+
 import org.apache.log4j.Logger;
+
+import com.asascience.edc.erddap.ErddapDataRequest;
+import com.asascience.edc.gui.FileBrowser;
+import com.asascience.edc.utils.FileSaveUtils;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * ErddapGetDataProgressMonitor.java

@@ -4,8 +4,8 @@
 
 <project name="EDC" default="dist" basedir=".">
   <description>Builds, tests, and runs the project EDC_Standalone.</description>
-	 <property name="target" value="1.6"/>
-	    <property name="source" value="1.7"/>
+	 <property name="target" value="11"/>
+	    <property name="source" value="11"/>
 		<property name="src" location="src"/>
 		<property name="dist" location="dist"/>
 		<property name="build" location="build"/>
@@ -16,7 +16,7 @@
 		</path>
 	
 	    <path id="classpath">
-	    	<pathelement location="./lib/jaxp-ri-1.4.jar"/>
+	    	<pathelement location="./lib/jaxp-ri-1.4.1.jar"/>
 	    	<pathelement location="./lib/netcdfAll-4.6.6.jar"/>
 	        <pathelement location="./lib/AsaComponents.jar"/>
 	    	<pathelement location="./lib/jmatio-1.1-SNAPSHOT.jar"/>
@@ -36,21 +36,21 @@
 	        <pathelement location="./lib/jersey-client-1.6.jar"/>
 	        <pathelement location="./lib/jersey-core-1.6.jar"/>
 	        <pathelement location="./lib/jersey-json-1.6.jar"/>
-	        <pathelement location="./lib/jettison-1.1.jar"/>
-	    	<pathelement location="./lib/wwj_2.0/worldwind-2.0.0-https-patch.jar"/>
-	        <pathelement location="./lib/wwj_2.0/gluegen-rt-natives-linux-amd64.jar"/>
-	        <pathelement location="./lib/wwj_2.0/gluegen-rt.jar"/>
-	        <pathelement location="./lib/wwj_2.0/gluegen-rt-natives-linux-i586.jar"/>
-	        <pathelement location="./lib/wwj_2.0/gluegen-rt-natives-macosx-universal.jar"/>
-	        <pathelement location="./lib/wwj_2.0/gluegen-rt-natives-windows-amd64.jar"/>
-	        <pathelement location="./lib/wwj_2.0/gluegen-rt-natives-windows-i586.jar"/>
-	        <pathelement location="./lib/wwj_2.0/jogl-all.jar"/>
-	        <pathelement location="./lib/wwj_2.0/jogl-all-natives-linux-amd64.jar"/>
-	        <pathelement location="./lib/wwj_2.0/jogl-all-natives-linux-i586.jar"/>
-	        <pathelement location="./lib/wwj_2.0/jogl-all-natives-macosx-universal.jar"/>
-	        <pathelement location="./lib/wwj_2.0/jogl-all-natives-windows-amd64.jar"/>
-	        <pathelement location="./lib/wwj_2.0/jogl-all-natives-windows-i586.jar"/>
-	        <pathelement location="./lib/wwj_2.0/worldwind_2.0.jar"/>
+	        <pathelement location="./lib/jettison-1.4.1.jar"/>
+	    	<!--<pathelement location="worldwind-2.0.0-https-patch.jar"/>-->
+	        <pathelement location="./lib/wwj_2.2/gluegen-rt-natives-linux-amd64.jar"/>
+	        <pathelement location="./lib/wwj_2.2/gluegen-rt.jar"/>
+	        <!--<pathelement location="./lib/wwj_2.2/gluegen-rt-natives-linux-i586.jar"/> -->
+	        <pathelement location="./lib/wwj_2.2/gluegen-rt-natives-macosx-universal.jar"/>
+	        <pathelement location="./lib/wwj_2.2/gluegen-rt-natives-windows-amd64.jar"/>
+	        <!--<pathelement location="./lib/wwj_2.2/gluegen-rt-natives-windows-i586.jar"/> -->
+	        <pathelement location="./lib/wwj_2.2/jogl-all.jar"/>
+	        <pathelement location="./lib/wwj_2.2/jogl-all-natives-linux-amd64.jar"/>
+	        <pathelement location="./lib/wwj_2.2/jogl-all-natives-linux-i586.jar"/>
+	        <pathelement location="./lib/wwj_2.2/jogl-all-natives-macosx-universal.jar"/>
+	        <pathelement location="./lib/wwj_2.2/jogl-all-natives-windows-amd64.jar"/>
+	        <!--<pathelement location="./lib/wwj_2.2/jogl-all-natives-windows-i586.jar"/>-->
+	        <pathelement location="./lib/wwj_2.2/worldwind.jar"/>
 	        
 	        <pathelement location="./lib/jcalendar-1.4.jar"/>
 	        <pathelement location="./lib/swingx-core-1.6.2.jar"/>
@@ -108,8 +108,8 @@
 	 		 			<attribute name="Main-Class" value="com.asascience.edc.gui.OpendapInterface"/>
 	 		 		 	            <attribute name="Built-Date" value="${TODAY}"/>
 	 		 		 	            <attribute name="Class-Path" value="${jar.classpath}" />
-	 		 		 	        	<attribute name="Specification-Vendor" value="Applied Science Associates, Inc."/>
-	 		 		 	        	<attribute name="Implementation-Vendor" value="Applied Science Associates, Inc."/>
+	 		 		 	        	<attribute name="Specification-Vendor" value="RPS"/>
+	 		 		 	        	<attribute name="Implementation-Vendor" value="RPS"/>
 	 		 	   </manifest>
 	 	
 	<!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
@@ -119,8 +119,8 @@
 	 			<attribute name="Main-Class" value="com.asascience.edc.gui.OpendapInterface"/>
 	 		 	            <attribute name="Built-Date" value="${TODAY}"/>
 	 		 	            <attribute name="Class-Path" value="${jar.classpath}" />
-	 		 	        	<attribute name="Specification-Vendor" value="Applied Science Associates, Inc."/>
-	 		 	        	<attribute name="Implementation-Vendor" value="Applied Science Associates, Inc."/>
+	 		 	        	<attribute name="Specification-Vendor" value="RPS"/>
+	 		 	        	<attribute name="Implementation-Vendor" value="RPS"/>
 	 	   </manifest>
 	 	</jar>
 

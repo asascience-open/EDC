@@ -2,46 +2,24 @@ package com.asascience.edc.map;
 
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.JFileChooser;
-
-import com.asascience.edc.utils.EdcDateUtils;
-
-import ucar.unidata.geoloc.LatLonPoint;
-import ucar.unidata.geoloc.LatLonPointImpl;
-import ucar.unidata.geoloc.LatLonRect;
-
-
-
 import gov.nasa.worldwind.WorldWindow;
-
 import gov.nasa.worldwind.event.PositionEvent;
 import gov.nasa.worldwind.event.PositionListener;
 import gov.nasa.worldwind.geom.LatLon;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
-import gov.nasa.worldwind.render.BasicShapeAttributes;
-import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.Polyline;
-import gov.nasa.worldwind.render.ShapeAttributes;
 import gov.nasa.worldwind.render.SurfacePolygon;
+import ucar.unidata.geoloc.LatLonPointImpl;
+import ucar.unidata.geoloc.LatLonRect;
 
 public class WwPolygonSelection extends WorldWindMapControl {
 	List<Position> positions;

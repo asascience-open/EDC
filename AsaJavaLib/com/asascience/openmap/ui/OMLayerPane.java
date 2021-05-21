@@ -32,9 +32,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 
-import net.miginfocom.swing.MigLayout;
-import ucar.unidata.geoloc.LatLonRect;
-
 import com.asascience.openmap.layer.ASALayer;
 import com.asascience.openmap.layer.IncidentLocLayer;
 import com.asascience.openmap.layer.TimeLayer;
@@ -53,6 +50,9 @@ import com.bbn.openmap.layer.etopo.ETOPOLayer;
 import com.bbn.openmap.layer.shape.ShapeLayer;
 import com.bbn.openmap.omGraphics.DrawingAttributes;
 import com.bbn.openmap.proj.Proj;
+
+import net.miginfocom.swing.MigLayout;
+import ucar.unidata.geoloc.LatLonRect;
 
 /**
  * 

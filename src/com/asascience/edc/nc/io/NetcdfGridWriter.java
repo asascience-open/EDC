@@ -8,7 +8,6 @@
  */
 package com.asascience.edc.nc.io;
 
-import java.awt.Polygon;
 import java.awt.geom.Path2D;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -18,42 +17,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ucar.nc2.units.DateRange;
-import ucar.ma2.Array;
-import ucar.ma2.ArrayDouble;
-import ucar.ma2.ArrayDouble.D1;
-import ucar.ma2.DataType;
-import ucar.ma2.Index;
-import ucar.ma2.Index2D;
-import ucar.ma2.Index3D;
-import ucar.ma2.Index4D;
-import ucar.ma2.InvalidRangeException;
-import ucar.ma2.Range;
-import ucar.nc2.Attribute;
-import ucar.nc2.Dimension;
-import ucar.nc2.FileWriter;
-import ucar.nc2.Group;
-import ucar.nc2.NetcdfFileWriteable;
-import ucar.nc2.NetcdfFileWriter;
-import ucar.nc2.Variable;
-import ucar.nc2.dataset.CoordinateAxis;
-import ucar.nc2.dataset.CoordinateAxis1D;
-import ucar.nc2.dataset.CoordinateAxis1DTime;
-import ucar.nc2.dt.GridCoordSystem;
-import ucar.nc2.dt.GridDatatype;
-import ucar.nc2.dt.grid.GridDataset;
-import ucar.unidata.geoloc.LatLonPoint;
-import ucar.unidata.geoloc.LatLonPointImpl;
-import ucar.unidata.geoloc.LatLonRect;
-import ucar.unidata.geoloc.ProjectionRect;
+import org.apache.log4j.Logger;
 
 import com.asascience.edc.ArcType;
 import com.asascience.edc.nc.NetcdfConstraints;
 import com.asascience.edc.utils.PolygonUtils;
 
-
-import org.apache.log4j.Logger;
+import ucar.ma2.Array;
+import ucar.ma2.DataType;
+import ucar.ma2.Index;
+import ucar.ma2.InvalidRangeException;
+import ucar.ma2.Range;
+import ucar.nc2.Attribute;
+import ucar.nc2.Dimension;
+import ucar.nc2.Group;
+import ucar.nc2.NetcdfFileWriter;
+import ucar.nc2.Variable;
 import ucar.nc2.constants.AxisType;
+import ucar.nc2.dataset.CoordinateAxis;
+import ucar.nc2.dataset.CoordinateAxis1DTime;
+import ucar.nc2.dt.GridCoordSystem;
+import ucar.nc2.dt.GridDatatype;
+import ucar.nc2.dt.grid.GridDataset;
+import ucar.nc2.units.DateRange;
+import ucar.unidata.geoloc.LatLonPoint;
+import ucar.unidata.geoloc.LatLonPointImpl;
+import ucar.unidata.geoloc.LatLonRect;
 
 /**
  * 

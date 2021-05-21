@@ -8,7 +8,6 @@
  */
 package com.asascience.edc.ui;
 
-import com.asascience.edc.ui.ASAThreddsDatasetChooser;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 

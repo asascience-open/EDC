@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.apache.http.HttpResponse;
 
+import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -36,8 +36,8 @@ import org.apache.http.impl.client.HttpClients;
 import thredds.catalog.CatalogSetCallback;
 import thredds.catalog.InvCatalogFactory;
 import thredds.catalog.InvCatalogImpl;
-import ucar.nc2.ui.widget.ProgressMonitorTask;
 import ucar.nc2.ui.widget.ProgressMonitor;
+import ucar.nc2.ui.widget.ProgressMonitorTask;
 
 /**
  * A subclass of InvCatalogFactory that allows the reading of a catalog to be

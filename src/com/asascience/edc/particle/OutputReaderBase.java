@@ -14,10 +14,10 @@ package com.asascience.edc.particle;
 import java.io.File;
 import java.util.List;
 
+import com.asascience.utilities.BinarySearch;
+
 import ucar.nc2.util.CancelTask;
 import ucar.unidata.geoloc.LatLonRect;
-
-import com.asascience.utilities.BinarySearch;
 
 /**
  * 

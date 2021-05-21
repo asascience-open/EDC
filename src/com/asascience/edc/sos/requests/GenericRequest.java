@@ -1,14 +1,5 @@
 package com.asascience.edc.sos.requests;
 
-import cern.colt.Timer;
-import com.asascience.edc.sos.SensorContainer;
-import com.asascience.edc.sos.map.SensorPoint;
-import com.asascience.edc.sos.VariableContainer;
-import com.asascience.edc.utils.FileSaveUtils;
-import gov.nasa.worldwind.render.PointPlacemark;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,13 +9,12 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import javax.swing.JFrame;
-import org.apache.commons.lang.StringUtils;
+
+import com.asascience.edc.sos.SensorContainer;
+import com.asascience.edc.utils.FileSaveUtils;
+
+import cern.colt.Timer;
 
 /**
  * GenericRequest.java

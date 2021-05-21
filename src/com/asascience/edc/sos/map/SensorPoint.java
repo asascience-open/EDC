@@ -1,12 +1,13 @@
 package com.asascience.edc.sos.map;
 
-import com.asascience.edc.sos.SensorContainer;
-import com.bbn.openmap.omGraphics.OMPoint;
 import java.awt.Color;
 import java.awt.Paint;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+
+import com.asascience.edc.sos.SensorContainer;
+import com.bbn.openmap.omGraphics.OMPoint;
 
 /**
  * SensorPoint.java

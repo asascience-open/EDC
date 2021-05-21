@@ -16,8 +16,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import ucar.unidata.geoloc.LatLonPointImpl;
-
 import com.asascience.openmap.layer.VectorLayer;
 import com.asascience.openmap.layer.asa.CixVectorLayer;
 import com.asascience.openmap.layer.nc.grid.GenericGridLayer;
@@ -30,6 +28,8 @@ import com.asascience.utilities.io.DetermineNcType;
 import com.asascience.utilities.io.NcFileType;
 import com.bbn.openmap.LatLonPoint;
 import com.bbn.openmap.Layer;
+
+import ucar.unidata.geoloc.LatLonPointImpl;
 
 /**
  * 

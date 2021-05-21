@@ -36,7 +36,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.event.EventListenerList;
+
+import com.asascience.edc.gui.OpendapInterface;
+import com.asascience.ui.JCloseableTabbedPane;
 
 import thredds.catalog.DatasetFilter;
 import thredds.catalog.InvAccess;
@@ -45,9 +47,6 @@ import thredds.catalog.InvCatalogFactory;
 import thredds.catalog.InvDataset;
 import thredds.catalog.ServiceType;
 import ucar.util.prefs.PreferencesExt;
-
-import com.asascience.edc.gui.OpendapInterface;
-import com.asascience.ui.JCloseableTabbedPane;
 
 /**
  * A Swing widget for THREDDS clients that combines a CatalogChooser, a

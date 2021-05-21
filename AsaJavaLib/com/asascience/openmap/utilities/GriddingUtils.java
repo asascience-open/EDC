@@ -16,10 +16,10 @@ import java.util.Arrays;
 
 import javax.swing.JOptionPane;
 
+import com.bbn.openmap.proj.Length;
+
 import cern.colt.matrix.DoubleMatrix3D;
 import cern.colt.matrix.impl.SparseDoubleMatrix3D;
-
-import com.bbn.openmap.proj.Length;
 
 /**
  * 

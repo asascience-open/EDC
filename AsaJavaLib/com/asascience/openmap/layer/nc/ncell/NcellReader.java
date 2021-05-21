@@ -18,6 +18,9 @@ import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.asascience.utilities.BinarySearch;
+import com.asascience.utilities.Vector3D;
+
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
@@ -25,9 +28,6 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 import ucar.nc2.units.DateUnit;
 import ucar.nc2.units.TimeUnit;
-
-import com.asascience.utilities.BinarySearch;
-import com.asascience.utilities.Vector3D;
 
 /**
  * 

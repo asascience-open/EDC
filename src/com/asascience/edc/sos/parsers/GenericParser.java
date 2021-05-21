@@ -1,32 +1,31 @@
 package com.asascience.edc.sos.parsers;
 
-import com.asascience.edc.sos.SosServer;
-import cern.colt.Timer;
-import com.asascience.edc.Configuration;
 import java.beans.PropertyChangeEvent;
-import java.util.Date;
-import java.util.List;
-
-import org.jdom.Document;
-import com.asascience.edc.sos.SensorContainer;
-import com.asascience.edc.sos.map.SensorPoint;
-import com.asascience.edc.sos.VariableContainer;
-import com.asascience.edc.sos.requests.ResponseFormat;
-import com.asascience.edc.utils.EdcDateUtils;
-
-import gov.nasa.worldwind.render.PointPlacemark;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
+
 import org.jdom.Attribute;
+import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.xpath.XPath;
+
+import com.asascience.edc.Configuration;
+import com.asascience.edc.sos.SensorContainer;
+import com.asascience.edc.sos.SosServer;
+import com.asascience.edc.sos.VariableContainer;
+import com.asascience.edc.sos.map.SensorPoint;
+import com.asascience.edc.sos.requests.ResponseFormat;
+import com.asascience.edc.utils.EdcDateUtils;
+
+import cern.colt.Timer;
+import gov.nasa.worldwind.render.PointPlacemark;
 import ucar.unidata.geoloc.LatLonPointImpl;
 import ucar.unidata.geoloc.LatLonRect;
-import org.apache.commons.lang.time.DateUtils;
 
 /**
  * GenericParser.java

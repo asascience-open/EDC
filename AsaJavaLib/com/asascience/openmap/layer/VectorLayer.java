@@ -35,13 +35,8 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.jdom.Element;
 import org.softsmithy.lib.swing.JDoubleField;
-
-import ucar.unidata.geoloc.LatLonPointImpl;
-import ucar.unidata.geoloc.LatLonRect;
 
 import com.asascience.openmap.mousemode.InformationMouseMode;
 import com.asascience.openmap.mousemode.TidalHarmonicsMouseMode;
@@ -64,6 +59,10 @@ import com.bbn.openmap.gui.BasicMapPanel;
 import com.bbn.openmap.omGraphics.OMGraphic;
 import com.bbn.openmap.omGraphics.OMGraphicList;
 import com.bbn.openmap.util.DataBounds;
+
+import net.miginfocom.swing.MigLayout;
+import ucar.unidata.geoloc.LatLonPointImpl;
+import ucar.unidata.geoloc.LatLonRect;
 
 /**
  * 

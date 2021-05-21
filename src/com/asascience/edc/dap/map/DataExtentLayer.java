@@ -3,10 +3,8 @@ package com.asascience.edc.dap.map;
 import com.asascience.edc.utils.WorldwindUtils;
 
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.geom.Position;
-import ucar.unidata.geoloc.LatLonRect;
-import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.RenderableLayer;
@@ -16,8 +14,7 @@ import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.ShapeAttributes;
 import gov.nasa.worldwind.render.SurfacePolygon;
 import gov.nasa.worldwind.render.SurfaceSector;
-import java.util.ArrayList;
-import java.util.List;
+import ucar.unidata.geoloc.LatLonRect;
 
 /**
  * DataExtentLayer.java

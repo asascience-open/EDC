@@ -1,10 +1,10 @@
 package com.asascience.edc.erddap.gui;
 
-import com.asascience.edc.erddap.ErddapDataset;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URI;
+
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -12,6 +12,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+
+import com.asascience.edc.erddap.ErddapDataset;
+
 import net.miginfocom.swing.MigLayout;
 
 /**

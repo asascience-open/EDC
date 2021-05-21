@@ -1,11 +1,11 @@
 package com.asascience.edc.sos.ui;
 
-import com.asascience.edc.sos.SosServer;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -13,8 +13,12 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
-import net.miginfocom.swing.MigLayout;
+
 import org.apache.log4j.Logger;
+
+import com.asascience.edc.sos.SosServer;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * SosGetCapProgressMonitor.java

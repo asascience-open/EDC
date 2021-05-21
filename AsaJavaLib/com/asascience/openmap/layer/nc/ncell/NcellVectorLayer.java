@@ -25,13 +25,13 @@ import javax.swing.JPanel;
 import javax.swing.ToolTipManager;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.asascience.openmap.layer.VectorLayer;
 import com.asascience.openmap.omgraphic.OMGridCell;
 import com.asascience.openmap.utilities.MapUtils;
 import com.asascience.utilities.Utils;
 import com.bbn.openmap.util.DataBounds;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * 

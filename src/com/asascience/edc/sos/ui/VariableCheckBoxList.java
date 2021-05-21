@@ -8,7 +8,6 @@
  */
 package com.asascience.edc.sos.ui;
 
-import com.asascience.edc.sos.VariableContainer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -19,6 +18,8 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+
+import com.asascience.edc.sos.VariableContainer;
 
 import net.miginfocom.swing.MigLayout;
 

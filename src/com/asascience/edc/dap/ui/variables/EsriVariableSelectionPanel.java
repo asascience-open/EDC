@@ -8,8 +8,6 @@
  */
 package com.asascience.edc.dap.ui.variables;
 
-import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -26,13 +24,14 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
+import com.asascience.edc.nc.NetcdfConstraints;
+import com.asascience.ui.CheckBoxList;
+
 import net.miginfocom.swing.MigLayout;
 import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.dt.GridCoordSystem;
 import ucar.nc2.dt.grid.GeoGrid;
-
-import com.asascience.edc.nc.NetcdfConstraints;
-import com.asascience.ui.CheckBoxList;
 
 /**
  * Extends <CODE>SelectionPanelBase</CODE> to add specific functionality for use

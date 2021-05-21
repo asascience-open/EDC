@@ -1,9 +1,5 @@
 package com.asascience.edc.map.view;
 
-import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.render.SurfacePolygon;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -11,8 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -28,11 +22,15 @@ import javax.swing.JToggleButton;
 
 import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
 import com.asascience.edc.map.WorldWindMapControl;
-import com.asascience.edc.map.WwPolygonSelection;
 import com.asascience.edc.map.WorldwindBoundingBoxBuilder;
+import com.asascience.edc.map.WwPolygonSelection;
 import com.asascience.edc.map.WwTrackLineSelection;
 import com.asascience.edc.utils.WorldwindUtils;
 
+import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.render.SurfacePolygon;
 import net.miginfocom.swing.MigLayout;
 import ucar.unidata.geoloc.LatLonPoint;
 import ucar.unidata.geoloc.LatLonPointImpl;

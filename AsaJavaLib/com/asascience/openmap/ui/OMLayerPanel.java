@@ -20,13 +20,13 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.bbn.openmap.Layer;
 import com.bbn.openmap.LayerHandler;
 import com.bbn.openmap.event.LayerEvent;
 import com.bbn.openmap.event.LayerListener;
 import com.bbn.openmap.gui.BasicMapPanel;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * 

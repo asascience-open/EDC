@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -12,8 +13,10 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
-import net.miginfocom.swing.MigLayout;
+
 import org.apache.log4j.Logger;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * ErddapGetDatasetsProgresMonitor.java

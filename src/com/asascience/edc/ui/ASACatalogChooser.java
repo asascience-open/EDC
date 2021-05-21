@@ -20,18 +20,13 @@
  */
 package com.asascience.edc.ui;
 
-import com.asascience.edc.erddap.ErddapDataset;
-import com.asascience.edc.erddap.gui.ErddapGetDatasetsProgressMonitor;
-import com.asascience.edc.erddap.ErddapServer;
-import com.asascience.edc.erddap.gui.ErddapDatasetViewer;
-import com.asascience.edc.ui.combos.HistoryComboBox;
-
-import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.geom.Position;
-
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -39,28 +34,43 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
+import javax.swing.plaf.basic.BasicTabbedPaneUI;
+
+import org.apache.log4j.Logger;
+
+import com.asascience.edc.erddap.ErddapDataset;
+import com.asascience.edc.erddap.ErddapServer;
+import com.asascience.edc.erddap.gui.ErddapDatasetViewer;
+import com.asascience.edc.erddap.gui.ErddapGetDatasetsProgressMonitor;
+import com.asascience.edc.gui.OpendapInterface;
+import com.asascience.edc.sos.SosServer;
+import com.asascience.edc.sos.ui.SosGetCapProgressMonitor;
+import com.asascience.edc.ui.combos.DirectComboBox;
+import com.asascience.edc.ui.combos.ErddapComboBox;
+import com.asascience.edc.ui.combos.HistoryComboBox;
+import com.asascience.edc.ui.combos.SosComboBox;
+import com.asascience.ui.CheckBoxList;
+import com.asascience.utilities.BusyCursorActions;
 
 import net.miginfocom.swing.MigLayout;
 import thredds.catalog.DatasetFilter;
@@ -71,30 +81,9 @@ import thredds.catalog.InvCatalogRef;
 import thredds.catalog.InvDataset;
 import thredds.catalog.InvDatasetImpl;
 import thredds.ui.catalog.ThreddsDatasetChooser;
-import ucar.nc2.ui.widget.HtmlBrowser;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.ui.widget.HtmlBrowser;
 import ucar.util.prefs.ui.ComboBox;
-
-import com.asascience.edc.gui.OpendapInterface;
-import com.asascience.edc.map.WwTrackLineSelection;
-import com.asascience.edc.ui.combos.DirectComboBox;
-import com.asascience.edc.ui.combos.ErddapComboBox;
-import com.asascience.edc.ui.combos.SosComboBox;
-import com.asascience.edc.utils.EdcDateUtils;
-import com.asascience.ui.CheckBoxList;
-import com.asascience.utilities.BusyCursorActions;
-import com.asascience.edc.sos.SosServer;
-import com.asascience.edc.sos.ui.SosGetCapProgressMonitor;
-
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingWorker;
-import javax.swing.plaf.basic.BasicTabbedPaneUI;
-import org.apache.log4j.Logger;
 
 /**
  * A Swing widget for THREDDS clients to access and choose from Dataset
@@ -222,8 +211,9 @@ public class ASACatalogChooser extends JPanel {
         if (evt.getPropertyName().equals("griddap")) {
           erd = (ErddapDataset) evt.getNewValue();
           try {
-            guiLogger.error("Opening GRIDDAP dataset: " + erd.getGriddap());
-            daDataset = NetcdfDataset.openDataset(erd.getGriddap());
+        	String erdGriddapUrl = erd.getGriddap();
+            guiLogger.error("Opening GRIDDAP dataset: " + erdGriddapUrl);
+            daDataset = NetcdfDataset.openDataset(erdGriddapUrl);
             daDataset.setTitle(erd.getTitle());
 
             if (odapInterface.openDataset(daDataset)) {

@@ -1,7 +1,7 @@
 package com.asascience.edc.erddap.gui;
 
-import com.asascience.edc.erddap.ErddapDataset;
 import java.util.List;
+
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -9,6 +9,9 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import com.asascience.edc.erddap.ErddapDataset;
+
 import net.miginfocom.swing.MigLayout;
 
 /**

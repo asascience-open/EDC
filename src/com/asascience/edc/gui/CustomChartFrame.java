@@ -22,12 +22,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.WindowConstants;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 
 import com.asascience.utilities.Utils;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * 

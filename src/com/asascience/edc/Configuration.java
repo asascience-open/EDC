@@ -12,8 +12,8 @@
 package com.asascience.edc;
 
 import java.io.File;
-import org.apache.log4j.Logger;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;

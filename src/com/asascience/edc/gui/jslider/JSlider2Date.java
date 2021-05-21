@@ -3,7 +3,6 @@
  */
 package com.asascience.edc.gui.jslider;
 
-import com.toedter.calendar.JDateChooser;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -12,6 +11,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -19,6 +19,9 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SpinnerModel;
+
+import com.toedter.calendar.JDateChooser;
+
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -123,9 +126,11 @@ public class JSlider2Date extends JComponent implements Serializable {
 
       public void propertyChange(PropertyChangeEvent evt) {
         Date d = (Date)s_cal.getMinSelectableDate().clone();
+        Date cD = s_cal.getDate();
+        Date nD = (Date)evt.getNewValue();
         d.setTime(d.getTime() + ((long)((slider_.getMinValue()*scale_) * 86400000)));
-        if (s_cal.getDate() != null && !s_cal.getDate().equals(d)) {
-          setStartDate(s_cal.getDate());
+        if (nD != null && !nD.equals(d)) {
+          setStartDate(nD);
         }
       }
     });
@@ -181,15 +186,22 @@ public class JSlider2Date extends JComponent implements Serializable {
   
   public void setStartDate(Date d) {
     Date oldDate = s_cal.getDate();
-    if (oldDate == null || !s_cal.getDate().equals(d)) {
+    if (oldDate == null || oldDate.compareTo(d) != 0) {
       s_cal.setDate(d);
       s_time.setValue(d);
     }
-    double min = (JSlider2Date.offsetInDays(d, s_cal.getMinSelectableDate())) / scale_;
-    if (min != slider_.getMinValue()) {
-      slider_.setMinValue(min);
-    }
-    pcs.fireIndexedPropertyChange("date", 0, oldDate, d);
+      Date minSel =s_cal.getMinSelectableDate();
+      double offset = JSlider2Date.offsetInDays(d, minSel);
+      double  min = offset / scale_;
+      double currMin = slider_.getMinValue();
+      if(min > 1) min = 1;
+      if(min < 0) min = 0;
+      if (min != currMin) {
+    	  slider_.setMinValue(min);
+      }
+      pcs.fireIndexedPropertyChange("date", 0, oldDate, d);
+    
+    
   }
   
   public void setEndDate(Date d) {
@@ -198,7 +210,8 @@ public class JSlider2Date extends JComponent implements Serializable {
       e_cal.setDate(d);
       e_time.setValue(d);
     }
-    double max = (JSlider2Date.offsetInDays(d, s_cal.getMinSelectableDate())) / scale_;
+    double max= (JSlider2Date.offsetInDays(d, s_cal.getMinSelectableDate())) / scale_;
+     
     if (max != slider_.getMaxValue()) {
       slider_.setMaxValue(max);
     }

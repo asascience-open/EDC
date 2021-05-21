@@ -21,11 +21,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.jdom.JDOMException;
 
 import com.asascience.ui.OptionDialogBase;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * 

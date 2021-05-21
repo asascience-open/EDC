@@ -15,6 +15,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.asascience.openmap.layer.nc.NetcdfKeysBase;
+import com.asascience.openmap.omgraphic.OMParticle;
+import com.asascience.utilities.exception.InitializationFailedException;
+import com.bbn.openmap.proj.Projection;
+
 import ucar.ma2.Array;
 import ucar.ma2.Index;
 import ucar.ma2.InvalidRangeException;
@@ -23,11 +28,6 @@ import ucar.nc2.Variable;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.unidata.geoloc.LatLonPointImpl;
 import ucar.unidata.geoloc.LatLonRect;
-
-import com.asascience.openmap.layer.nc.NetcdfKeysBase;
-import com.asascience.openmap.omgraphic.OMParticle;
-import com.asascience.utilities.exception.InitializationFailedException;
-import com.bbn.openmap.proj.Projection;
 
 /**
  * 

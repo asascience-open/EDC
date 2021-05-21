@@ -22,11 +22,11 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.asascience.edc.particle.ParticleOutputLayer;
 import com.asascience.ui.OptionDialogBase;
 import com.asascience.utilities.filefilter.NcFileFilter;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * 

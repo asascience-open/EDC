@@ -9,9 +9,13 @@
 package com.asascience.edc.sos;
 
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Date;
 
 import org.jdom.Document;
 import org.jdom.JDOMException;
@@ -19,9 +23,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
-import cern.colt.Timer;
 import com.asascience.edc.sos.parsers.GenericParser;
-
 import com.asascience.edc.sos.requests.GenericRequest;
 import com.asascience.edc.sos.requests.ResponseFormat;
 import com.asascience.edc.sos.requests.SosRequest;
@@ -31,10 +33,8 @@ import com.asascience.edc.sos.requests.custom.DifToCSV;
 import com.asascience.edc.sos.requests.custom.DifToNetCDF;
 import com.asascience.edc.sos.requests.custom.SweToCSV;
 import com.asascience.edc.sos.requests.custom.SweToNetCDF;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.File;
-import java.util.Date;
+
+import cern.colt.Timer;
 
 //import com.sun.xml.internal.fastinfoset.util.StringArray;
 /**

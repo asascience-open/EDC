@@ -8,24 +8,21 @@
  */
 package com.asascience.edc.dap.ui;
 
-import com.asascience.edc.dap.ui.variables.GeneralVariableSelectionPanel;
-import com.asascience.edc.dap.ui.variables.EsriVariableSelectionPanel;
-import com.asascience.edc.dap.ui.variables.OilmapVariableSelectionPanel;
-import com.asascience.edc.dap.ui.variables.VariableSelectionPanel;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.Path2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.text.CharacterIterator;
 import java.text.SimpleDateFormat;
+import java.text.StringCharacterIterator;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.TimeZone;
 
 import javax.swing.ImageIcon;
@@ -36,11 +33,37 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 
+import org.apache.log4j.Logger;
+
+import com.asascience.edc.ArcType;
+import com.asascience.edc.Configuration;
+import com.asascience.edc.History;
+import com.asascience.edc.dap.ui.variables.EsriVariableSelectionPanel;
+import com.asascience.edc.dap.ui.variables.GeneralVariableSelectionPanel;
+import com.asascience.edc.dap.ui.variables.OilmapVariableSelectionPanel;
+import com.asascience.edc.dap.ui.variables.VariableSelectionPanel;
+import com.asascience.edc.gui.OpendapInterface;
+import com.asascience.edc.gui.jslider.JSlider2Date;
+import com.asascience.edc.map.TrackLineVertex;
+import com.asascience.edc.map.view.BoundingBoxPanel;
+import com.asascience.edc.map.view.SelectionMethodsPanel;
+import com.asascience.edc.map.view.SelectionMethodsPanel.ActiveSelectionSource;
+import com.asascience.edc.map.view.WorldwindSelectionMap;
+import com.asascience.edc.nc.GridReader;
+import com.asascience.edc.nc.NcReaderBase;
+import com.asascience.edc.nc.NetcdfConstraints;
+import com.asascience.edc.nc.io.NcGridObjectProperties;
+import com.asascience.edc.nc.io.NcProperties;
+import com.asascience.edc.nc.io.NetcdfGridWriter;
+import com.asascience.edc.utils.AoiUtils;
+import com.asascience.edc.utils.FileSaveUtils;
+import com.asascience.ui.IndeterminateProgressDialog;
+import com.asascience.utilities.FileMonitor;
+import com.asascience.utilities.Utils;
+
 import net.miginfocom.swing.MigLayout;
 import ucar.ma2.Array;
 import ucar.ma2.IndexIterator;
-import ucar.nc2.Attribute;
-import ucar.nc2.FileWriter;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 import ucar.nc2.dataset.CoordinateAxis;
@@ -53,34 +76,6 @@ import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.units.DateUnit;
 import ucar.unidata.geoloc.LatLonPointImpl;
 import ucar.unidata.geoloc.LatLonRect;
-import ucar.util.prefs.PreferencesExt;
-
-import com.asascience.edc.ArcType;
-import com.asascience.edc.Configuration;
-import com.asascience.edc.History;
-import com.asascience.edc.gui.OpendapInterface;
-import com.asascience.edc.gui.jslider.JSlider2Date;
-import com.asascience.edc.map.TrackLineVertex;
-import com.asascience.edc.map.view.BoundingBoxPanel;
-import com.asascience.edc.map.view.SelectionMethodsPanel;
-import com.asascience.edc.map.view.WorldwindSelectionMap;
-import com.asascience.edc.map.view.SelectionMethodsPanel.ActiveSelectionSource;
-import com.asascience.edc.nc.GridReader;
-import com.asascience.edc.nc.NcReaderBase;
-import com.asascience.edc.nc.NetcdfConstraints;
-import com.asascience.edc.nc.io.NcGridObjectProperties;
-import com.asascience.edc.nc.io.NcProperties;
-import com.asascience.edc.nc.io.NetcdfGridWriter;
-import com.asascience.edc.utils.AoiUtils;
-import com.asascience.edc.utils.FileSaveUtils;
-import com.asascience.openmap.utilities.listener.AOIPropertyChangeListener;
-import com.asascience.ui.IndeterminateProgressDialog;
-import com.asascience.utilities.FileMonitor;
-import com.asascience.utilities.Utils;
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
-import java.util.Random;
-import org.apache.log4j.Logger;
 
 /**
  * 

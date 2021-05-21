@@ -4,34 +4,10 @@
  */
 package com.asascience.edc.erddap;
 
-import cern.colt.Timer;
-import com.asascience.edc.Configuration;
-import com.asascience.edc.CsvProperties;
-import com.asascience.edc.utils.CsvFileUtils;
-import com.asascience.edc.utils.FileSaveUtils;
-import com.jmatio.io.MatFileReader;
-import com.jmatio.io.MatFileWriter;
-import com.jmatio.types.MLArray;
-import com.jmatio.types.MLCell;
-import com.jmatio.types.MLChar;
-import com.jmatio.types.MLDouble;
-import com.jmatio.types.MLInt16;
-import com.jmatio.types.MLInt32;
-import com.jmatio.types.MLInt64;
-import com.jmatio.types.MLInt8;
-import com.jmatio.types.MLNumericArray;
-import com.jmatio.types.MLSingle;
-import com.jmatio.types.MLSparse;
-import com.jmatio.types.MLStructure;
-
-import gov.nasa.worldwind.render.PointPlacemark;
-
 import java.awt.geom.Path2D;
-import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -52,6 +28,27 @@ import java.util.Map;
 import javax.swing.JFrame;
 
 import org.jfree.util.Log;
+
+import com.asascience.edc.Configuration;
+import com.asascience.edc.CsvProperties;
+import com.asascience.edc.utils.CsvFileUtils;
+import com.asascience.edc.utils.FileSaveUtils;
+import com.jmatio.io.MatFileReader;
+import com.jmatio.io.MatFileWriter;
+import com.jmatio.types.MLArray;
+import com.jmatio.types.MLCell;
+import com.jmatio.types.MLChar;
+import com.jmatio.types.MLDouble;
+import com.jmatio.types.MLInt16;
+import com.jmatio.types.MLInt32;
+import com.jmatio.types.MLInt64;
+import com.jmatio.types.MLInt8;
+import com.jmatio.types.MLNumericArray;
+import com.jmatio.types.MLSingle;
+import com.jmatio.types.MLSparse;
+import com.jmatio.types.MLStructure;
+
+import cern.colt.Timer;
 
 /**
  *

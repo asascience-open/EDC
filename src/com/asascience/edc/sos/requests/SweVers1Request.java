@@ -1,32 +1,20 @@
 package com.asascience.edc.sos.requests;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-
-import ucar.nc2.NetcdfFile;
-
-import cern.colt.Timer;
-
 import com.asascience.edc.sos.SensorContainer;
-import com.asascience.edc.sos.VariableContainer;
 import com.asascience.ioos.exception.IoosSosParserException;
 import com.asascience.ioos.model.GetObservation;
 import com.asascience.ioos.netcdf.CreateNetcdf;
-
 import com.asascience.ioos.parser.GetObservationParser;
+
+import cern.colt.Timer;
+import ucar.nc2.NetcdfFile;
 
 public class SweVers1Request extends SosRequest {
 

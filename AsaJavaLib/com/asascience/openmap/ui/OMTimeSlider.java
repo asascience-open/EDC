@@ -38,14 +38,14 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.asascience.openmap.layer.TimeLayer;
 import com.asascience.ui.CheckBoxList;
 import com.asascience.ui.OptionDialogBase;
 import com.asascience.utilities.Utils;
 import com.bbn.openmap.Layer;
 import com.bbn.openmap.gui.OMComponentPanel;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * 

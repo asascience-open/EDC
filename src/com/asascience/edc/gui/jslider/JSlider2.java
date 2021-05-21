@@ -10,19 +10,26 @@
 
 package com.asascience.edc.gui.jslider;
 
-import javax.swing.*;
-import javax.swing.border.EtchedBorder;
-import java.awt.event.*;
-import java.beans.*;
-import java.awt.Dimension;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.FontMetrics;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
-import gov.noaa.pmel.util.Range;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.border.EtchedBorder;
+
 import gov.noaa.pmel.swing.beans.SliderHandle;
+import gov.noaa.pmel.util.Range;
 
 /**
  * JSlider2 provides the graphical input and feedback

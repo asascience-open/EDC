@@ -8,16 +8,17 @@
  */
 package com.asascience.edc;
 
-import com.asascience.edc.utils.FileSaveUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import org.apache.log4j.Logger;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
+
+import com.asascience.edc.utils.FileSaveUtils;
 
 /**
  * 

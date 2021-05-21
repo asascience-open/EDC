@@ -15,6 +15,8 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
 
+import com.asascience.utilities.Vector3D;
+
 import ucar.ma2.Array;
 import ucar.ma2.Index;
 import ucar.ma2.InvalidRangeException;
@@ -24,8 +26,6 @@ import ucar.nc2.VariableSimpleIF;
 import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.dataset.CoordinateAxis1DTime;
 import ucar.nc2.dt.grid.GeoGrid;
-
-import com.asascience.utilities.Vector3D;
 
 /**
  * 

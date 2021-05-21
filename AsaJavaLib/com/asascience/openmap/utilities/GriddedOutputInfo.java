@@ -14,10 +14,10 @@ package com.asascience.openmap.utilities;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
 
+import com.bbn.openmap.proj.Length;
+
 import ucar.unidata.geoloc.LatLonPointImpl;
 import ucar.unidata.geoloc.LatLonRect;
-
-import com.bbn.openmap.proj.Length;
 
 /**
  * 

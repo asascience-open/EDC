@@ -1,17 +1,18 @@
 package com.asascience.edc.sos.ui;
 
-import com.asascience.edc.gui.ResponseFormatRadioButton;
-import com.asascience.edc.sos.requests.ResponseFormat;
-import com.asascience.ui.RadioList;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
+
 import javax.swing.BorderFactory;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+
+import com.asascience.edc.gui.ResponseFormatRadioButton;
+import com.asascience.edc.sos.requests.ResponseFormat;
+import com.asascience.ui.RadioList;
+
 import net.miginfocom.swing.MigLayout;
 
 /**

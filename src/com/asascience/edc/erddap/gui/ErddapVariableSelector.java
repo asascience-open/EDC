@@ -5,13 +5,16 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import net.miginfocom.swing.MigLayout;
+
 import org.apache.commons.lang.ArrayUtils;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * ErddapVariableSelector.java

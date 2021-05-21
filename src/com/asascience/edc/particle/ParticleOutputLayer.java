@@ -35,8 +35,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -67,6 +65,8 @@ import com.bbn.openmap.event.MapMouseListener;
 import com.bbn.openmap.omGraphics.OMGraphic;
 import com.bbn.openmap.omGraphics.OMGraphicList;
 import com.bbn.openmap.proj.Projection;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * 

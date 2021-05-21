@@ -8,7 +8,6 @@
  */
 package com.asascience.edc.dap.ui.variables;
 
-import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,12 +20,13 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
+import com.asascience.edc.nc.NetcdfConstraints;
+import com.asascience.ui.CheckBoxList;
+
 import net.miginfocom.swing.MigLayout;
 import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.dt.GridCoordSystem;
-
-import com.asascience.edc.nc.NetcdfConstraints;
-import com.asascience.ui.CheckBoxList;
 
 /**
  * 

@@ -1,18 +1,21 @@
 package com.asascience.edc.sos.ui;
 
-import com.asascience.edc.sos.SensorContainer;
-import com.asascience.edc.sos.map.SensorPoint;
-import gov.nasa.worldwind.render.PointPlacemark;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EtchedBorder;
+
+import com.asascience.edc.sos.SensorContainer;
+import com.asascience.edc.sos.map.SensorPoint;
+
+import gov.nasa.worldwind.render.PointPlacemark;
 import net.miginfocom.swing.MigLayout;
 
 /**

@@ -1,7 +1,5 @@
 package com.asascience.edc.sos.requests;
 
-import gov.nasa.worldwind.render.PointPlacemark;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -19,6 +17,8 @@ import org.apache.commons.lang.StringUtils;
 import com.asascience.edc.sos.SensorContainer;
 import com.asascience.edc.sos.VariableContainer;
 import com.asascience.edc.sos.map.SensorPoint;
+
+import gov.nasa.worldwind.render.PointPlacemark;
 
 
 /**

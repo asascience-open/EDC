@@ -4,13 +4,14 @@
  */
 package com.asascience.edc.utils;
 
-import com.csvreader.CsvReader;
-import com.csvreader.CsvWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.csvreader.CsvReader;
+import com.csvreader.CsvWriter;
 
 /**
  *

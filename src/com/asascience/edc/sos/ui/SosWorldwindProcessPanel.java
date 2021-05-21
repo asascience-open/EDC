@@ -1,23 +1,5 @@
 package com.asascience.edc.sos.ui;
 
-import com.asascience.edc.Configuration;
-import com.asascience.edc.sos.SosServer;
-import com.asascience.edc.gui.OpendapInterface;
-import com.asascience.edc.gui.jslider.JSlider2Date;
-import com.asascience.edc.map.view.BoundingBoxPanel;
-import com.asascience.edc.map.view.SelectionMethodsPanel;
-import com.asascience.edc.map.view.WorldwindSelectionMap;
-
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.border.EtchedBorder;
-
-import net.miginfocom.swing.MigLayout;
-
-import com.asascience.edc.sos.requests.ResponseFormat;
-import com.asascience.edc.utils.AoiUtils;
-import com.asascience.utilities.Utils;
-import gov.nasa.worldwind.render.PointPlacemark;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,10 +9,27 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.border.EtchedBorder;
 
+import com.asascience.edc.Configuration;
+import com.asascience.edc.gui.OpendapInterface;
+import com.asascience.edc.gui.jslider.JSlider2Date;
+import com.asascience.edc.map.view.BoundingBoxPanel;
+import com.asascience.edc.map.view.SelectionMethodsPanel;
+import com.asascience.edc.map.view.WorldwindSelectionMap;
+import com.asascience.edc.sos.SosServer;
+import com.asascience.edc.sos.requests.ResponseFormat;
+import com.asascience.edc.utils.AoiUtils;
+import com.asascience.utilities.Utils;
+
+import gov.nasa.worldwind.render.PointPlacemark;
+import net.miginfocom.swing.MigLayout;
 import ucar.unidata.geoloc.LatLonRect;
 
 /**

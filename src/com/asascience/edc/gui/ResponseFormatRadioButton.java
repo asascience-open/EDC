@@ -1,7 +1,8 @@
 package com.asascience.edc.gui;
 
-import com.asascience.edc.sos.requests.ResponseFormat;
 import javax.swing.JRadioButton;
+
+import com.asascience.edc.sos.requests.ResponseFormat;
 
 /**
  * ResponseFormatRadioButton.java

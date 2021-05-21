@@ -8,13 +8,13 @@
  */
 package com.asascience.openmap.layer;
 
+import java.io.File;
 import java.util.Properties;
 
 import com.bbn.openmap.event.ProjectionEvent;
 import com.bbn.openmap.layer.shape.ShapeLayer;
 import com.bbn.openmap.omGraphics.DrawingAttributes;
 import com.bbn.openmap.proj.Projection;
-import java.io.File;
 
 /**
  * 

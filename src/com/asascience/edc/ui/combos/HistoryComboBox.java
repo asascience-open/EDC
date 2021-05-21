@@ -42,9 +42,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
+import ucar.util.prefs.PersistenceManager;
 import ucar.util.prefs.PreferencesExt;
 import ucar.util.prefs.ui.ComboBox;
-import ucar.util.prefs.PersistenceManager;
 import ucar.util.prefs.ui.PrefPanel;
 
 /**

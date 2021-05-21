@@ -8,31 +8,26 @@
  */
 package com.asascience.edc.nc;
 
-import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Date;
 import java.util.Formatter;
+import java.util.List;
 
-import ucar.ma2.InvalidRangeException;
-import ucar.ma2.Range;
+import org.apache.log4j.Logger;
+
 import ucar.nc2.NetcdfFile;
+import ucar.nc2.constants.FeatureType;
 import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.dataset.CoordinateAxis1DTime;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dt.GridCoordSystem;
-import ucar.nc2.ft.FeatureDatasetFactoryManager;
+import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GeoGrid;
 import ucar.nc2.dt.grid.GridDataset;
-import ucar.unidata.util.Parameter;
-
-import com.asascience.edc.nc.io.NetcdfGridWriter;
-import org.apache.log4j.Logger;
-import ucar.nc2.constants.FeatureType;
-import ucar.nc2.dt.GridDatatype;
+import ucar.nc2.ft.FeatureDatasetFactoryManager;
 import ucar.nc2.util.CancelTask;
+import ucar.unidata.util.Parameter;
 
 /**
  * 
@@ -80,8 +75,14 @@ public class GridReader extends NcReaderBase {
     Formatter errlog = new Formatter();
     CancelTask cancelTask = null;
     //gds = (GridDataset) TypedDatasetFactory.open(thredds.catalog.DataType.GRID, ncd, this, errlog);
-    System.out.println("grid reader "+ ncFile.getLocation());
-    gds = (GridDataset) FeatureDatasetFactoryManager.open(FeatureType.GRID, ncFile.getLocation(), cancelTask, errlog);
+    String ncLoc = ncFile.getLocation();
+    // netCDf java will change dods to http -- which won't work for secure sites, changing it here to https
+    if (ncLoc.startsWith("dods:")) { 
+    	   ncLoc = "https:" + ncLoc.substring(5); 
+    	 }
+    System.out.println("grid reader "+ ncLoc);
+    
+    gds = (GridDataset) FeatureDatasetFactoryManager.open(FeatureType.GRID, ncLoc, cancelTask, errlog);
     //gds = GridDataset.open(ncd.getLocation());
 
     // String loc = ncd.getLocation().replace("dods", "http");
@@ -112,8 +113,8 @@ public class GridReader extends NcReaderBase {
 
         return NcReaderBase.INVALID_BOUNDS;
       }
-      startTime = gds.getStartDate();
-      endTime = gds.getEndDate();
+      startTime = gds.getCalendarDateStart().toDate();
+      endTime = gds.getCalendarDateEnd().toDate();
       // sVars = gds.getDataVariables();
 
       //gds.getGrids();

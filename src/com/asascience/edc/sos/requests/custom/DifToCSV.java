@@ -1,13 +1,6 @@
 package com.asascience.edc.sos.requests.custom;
 
 
-import org.jdom.Document;
-import cern.colt.Timer;
-import com.asascience.edc.sos.SensorContainer;
-import com.asascience.edc.sos.requests.GenericRequest;
-import com.asascience.edc.sos.requests.SosRequest;
-import com.asascience.edc.utils.CsvFileUtils;
-import com.asascience.edc.utils.FileSaveUtils;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -16,18 +9,27 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 
 import org.jdom.Content;
+import org.jdom.Document;
 import org.jdom.JDOMException;
-import org.jdom.Text;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.jdom.transform.JDOMResult;
 import org.jdom.transform.JDOMSource;
+
+import com.asascience.edc.sos.SensorContainer;
+import com.asascience.edc.sos.requests.GenericRequest;
+import com.asascience.edc.sos.requests.SosRequest;
+import com.asascience.edc.utils.CsvFileUtils;
+import com.asascience.edc.utils.FileSaveUtils;
+
+import cern.colt.Timer;
 
 /**
  * DifToCSV.java

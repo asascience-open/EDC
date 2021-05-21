@@ -1,18 +1,21 @@
 package com.asascience.edc.erddap.gui;
 
-import com.asascience.edc.Configuration;
-import com.asascience.edc.sos.requests.ResponseFormat;
-import com.asascience.edc.gui.ResponseFormatRadioButton;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+
+import com.asascience.edc.Configuration;
+import com.asascience.edc.gui.ResponseFormatRadioButton;
+import com.asascience.edc.sos.requests.ResponseFormat;
+
 import net.miginfocom.swing.MigLayout;
 
 /**

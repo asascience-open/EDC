@@ -16,10 +16,10 @@ import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.asascience.openmap.ui.OMLayerPane;
 import com.bbn.openmap.Layer;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * 

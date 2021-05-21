@@ -17,7 +17,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -37,8 +36,8 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -48,24 +47,16 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
-
-import net.miginfocom.swing.MigLayout;
+import javax.swing.SwingWorker;
+import javax.swing.event.ChangeListener;
 
 import org.apache.http.client.CredentialsProvider;
-
-import ucar.nc2.ui.widget.FileManager;
-import ucar.nc2.ui.widget.UrlAuthenticatorDialog;
-import ucar.nc2.util.net.URLStreamHandlerFactory;
-import ucar.nc2.util.net.HttpClientManager;
-import ucar.nc2.constants.FeatureType;
-import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.thredds.ThreddsDataFactory;
-import ucar.util.prefs.PreferencesExt;
-import ucar.util.prefs.XMLStore;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 import com.asascience.edc.Configuration;
 import com.asascience.edc.History;
@@ -79,6 +70,8 @@ import com.asascience.edc.nc.NetcdfConstraints;
 import com.asascience.edc.nc.io.NcProperties;
 import com.asascience.edc.particle.ParticleOutputLayer;
 import com.asascience.edc.particle.ParticleOutputReader;
+import com.asascience.edc.sos.SosServer;
+import com.asascience.edc.sos.ui.SosWorldwindProcessPanel;
 import com.asascience.edc.ui.ASAThreddsDatasetChooser;
 import com.asascience.openmap.layer.TimeLayer;
 import com.asascience.openmap.layer.VectorLayer;
@@ -88,8 +81,6 @@ import com.asascience.openmap.ui.OMLayerPanel;
 import com.asascience.openmap.ui.OMTimeSlider;
 import com.asascience.openmap.utilities.MapUtils;
 import com.asascience.openmap.utilities.listener.VectorInterrogationPropertyListener;
-import com.asascience.edc.sos.SosServer;
-import com.asascience.edc.sos.ui.SosWorldwindProcessPanel;
 import com.asascience.ui.ErrorDisplayDialog;
 import com.asascience.ui.ImagePanel;
 import com.asascience.ui.JCloseableTabbedPane;
@@ -97,19 +88,17 @@ import com.asascience.utilities.Utils;
 import com.asascience.utilities.exception.InitializationFailedException;
 import com.bbn.openmap.Layer;
 
-import java.awt.ScrollPane;
-import java.util.Arrays;
-
-import javax.swing.JTextArea;
-import javax.swing.SwingWorker;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-import org.jfree.util.Log;
-
+import net.miginfocom.swing.MigLayout;
+import ucar.nc2.constants.FeatureType;
+import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.ft.FeatureDatasetFactoryManager;
+import ucar.nc2.thredds.ThreddsDataFactory;
+import ucar.nc2.ui.widget.FileManager;
+import ucar.nc2.ui.widget.UrlAuthenticatorDialog;
+import ucar.nc2.util.net.HttpClientManager;
+import ucar.nc2.util.net.URLStreamHandlerFactory;
+import ucar.util.prefs.PreferencesExt;
+import ucar.util.prefs.XMLStore;
 
 /**
  * 
@@ -859,6 +848,8 @@ public class OpendapInterface {
         // read and apply the parameters from the configuration file
     	String passArg = null;
     	String configFile = "edcconfig.xml";
+    	
+
     	if(pass != null){
     		if(pass.length > 0 && pass[0] != null && !pass[0].equals(""))
     			passArg = pass[0];
@@ -868,7 +859,6 @@ public class OpendapInterface {
         PropertyConfigurator.configure("log4j.properties");
         TextAreaAppender.setTextArea(logArea);
     	logger.info("Config File is " + configFile);
-    	logger.info(System.getenv("PATH"));
         Configuration.initialize(System.getProperty("user.dir") + File.separator + configFile);
         History.initialize(System.getProperty("user.dir") + File.separator + "history.txt");
 //        try {

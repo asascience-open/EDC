@@ -9,7 +9,6 @@
 **/
 package com.asascience.edc.gui.jslider;
 
-import gov.noaa.pmel.util.Range2D;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,12 +17,16 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.text.DecimalFormat;
+
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import net.miginfocom.swing.MigLayout;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.softsmithy.lib.swing.JDoubleField;
+
+import gov.noaa.pmel.util.Range2D;
+import net.miginfocom.swing.MigLayout;
 
 /**
  *

@@ -8,9 +8,6 @@
  */
 package com.asascience.edc.sos.ui;
 
-import com.asascience.edc.sos.SensorContainer;
-import com.asascience.edc.sos.map.SensorPoint;
-import gov.nasa.worldwind.render.PointPlacemark;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -22,6 +19,9 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
+import com.asascience.edc.sos.map.SensorPoint;
+
+import gov.nasa.worldwind.render.PointPlacemark;
 import net.miginfocom.swing.MigLayout;
 
 /**

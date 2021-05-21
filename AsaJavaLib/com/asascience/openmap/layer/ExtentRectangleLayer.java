@@ -16,8 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import ucar.unidata.geoloc.LatLonRect;
-
 import com.asascience.openmap.mousemode.InformationMouseMode;
 import com.bbn.openmap.LatLonPoint;
 import com.bbn.openmap.event.MapMouseListener;
@@ -26,6 +24,8 @@ import com.bbn.openmap.omGraphics.DrawingAttributes;
 import com.bbn.openmap.omGraphics.OMGraphic;
 import com.bbn.openmap.omGraphics.OMGraphicList;
 import com.bbn.openmap.omGraphics.OMRect;
+
+import ucar.unidata.geoloc.LatLonRect;
 
 /**
  * 

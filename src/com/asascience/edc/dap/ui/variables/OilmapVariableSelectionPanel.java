@@ -11,7 +11,6 @@
  */
 package com.asascience.edc.dap.ui.variables;
 
-import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,15 +31,16 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+import org.apache.log4j.Logger;
+
+import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
+import com.asascience.edc.nc.NetcdfConstraints;
+import com.asascience.ui.CheckBoxList;
+
 import net.miginfocom.swing.MigLayout;
 import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.dt.GridCoordSystem;
 import ucar.nc2.dt.grid.GeoGrid;
-
-import com.asascience.edc.nc.NetcdfConstraints;
-import com.asascience.ui.CheckBoxList;
-import com.asascience.utilities.Utils;
-import org.apache.log4j.Logger;
 
 /**
  * 

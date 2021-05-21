@@ -1,8 +1,5 @@
 package com.asascience.edc.erddap.gui;
 
-import com.asascience.edc.erddap.ErddapVariable;
-import com.asascience.edc.gui.jslider.ErddapJSlider2Double;
-import gov.noaa.pmel.swing.JSlider2Date;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -10,9 +7,15 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import com.asascience.edc.erddap.ErddapVariable;
+import com.asascience.edc.gui.jslider.ErddapJSlider2Double;
+
+import gov.noaa.pmel.swing.JSlider2Date;
 import net.miginfocom.swing.MigLayout;
 
 /**

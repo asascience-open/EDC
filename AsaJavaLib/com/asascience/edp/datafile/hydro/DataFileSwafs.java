@@ -9,19 +9,18 @@
 package com.asascience.edp.datafile.hydro;
 
 import java.io.IOException;
+import java.util.Formatter;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
-import java.util.Formatter;
 
+import ucar.nc2.constants.FeatureType;
 import ucar.nc2.dataset.CoordinateAxis1D;
-import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dt.GridCoordSystem;
-import ucar.nc2.ft.FeatureDatasetFactoryManager;
+import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GeoGrid;
 import ucar.nc2.dt.grid.GridDataset;
-import ucar.nc2.dt.GridDatatype;
+import ucar.nc2.ft.FeatureDatasetFactoryManager;
 import ucar.nc2.util.CancelTask;
-import ucar.nc2.constants.FeatureType;
 
 /**
  * 

@@ -11,25 +11,25 @@ package com.asascience.openmap.layer.nc.grid;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Formatter;
+import java.util.List;
+
+import com.asascience.utilities.Utils;
 
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.VariableSimpleIF;
+import ucar.nc2.constants.FeatureType;
 import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.dataset.CoordinateAxis1DTime;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dt.GridCoordSystem;
-import ucar.nc2.ft.FeatureDatasetFactoryManager;
+import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GeoGrid;
 import ucar.nc2.dt.grid.GridDataset;
-import ucar.unidata.geoloc.LatLonRect;
-import ucar.nc2.dt.GridDatatype;
+import ucar.nc2.ft.FeatureDatasetFactoryManager;
 import ucar.nc2.util.CancelTask;
-import ucar.nc2.constants.FeatureType;
-
-import com.asascience.utilities.Utils;
+import ucar.unidata.geoloc.LatLonRect;
 
 /**
  * 

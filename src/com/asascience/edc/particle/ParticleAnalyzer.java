@@ -13,9 +13,9 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
-import ucar.nc2.dt.grid.GeoGrid;
-
 import com.asascience.openmap.layer.nc.grid.GenericGridReader;
+
+import ucar.nc2.dt.grid.GeoGrid;
 
 /**
  * 

@@ -8,8 +8,6 @@
  */
 package com.asascience.openmap.ui;
 
-import com.asascience.edc.Configuration;
-import com.asascience.openmap.layer.BasemapLayer;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -34,15 +32,11 @@ import javax.swing.JRootPane;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 
-import net.miginfocom.swing.MigLayout;
-
 import org.softsmithy.lib.swing.JDoubleField;
 
-import ucar.unidata.geoloc.LatLonPointImpl;
-import ucar.unidata.geoloc.LatLonRect;
-
+import com.asascience.edc.Configuration;
+import com.asascience.openmap.layer.BasemapLayer;
 import com.asascience.openmap.layer.ExtentRectangleLayer;
-import com.asascience.openmap.mousemode.AreaSelectionMouseMode;
 import com.asascience.openmap.mousemode.InformationMouseMode;
 import com.asascience.openmap.mousemode.MeasureMouseMode;
 import com.asascience.openmap.mousemode.NavMouseMode3;
@@ -50,7 +44,6 @@ import com.asascience.openmap.mousemode.PanMouseMode2;
 import com.asascience.openmap.utilities.GeoConstraints;
 //import com.asascience.edc.sos.map.SosLayer;
 import com.asascience.utilities.NumFieldUtilities;
-import com.asascience.utilities.Utils;
 import com.bbn.openmap.InformationDelegator;
 import com.bbn.openmap.LatLonPoint;
 import com.bbn.openmap.LayerHandler;
@@ -66,6 +59,10 @@ import com.bbn.openmap.layer.shape.ShapeLayer;
 import com.bbn.openmap.omGraphics.event.StandardMapMouseInterpreter;
 import com.bbn.openmap.proj.ProjectionStack;
 import com.bbn.openmap.util.DataBounds;
+
+import net.miginfocom.swing.MigLayout;
+import ucar.unidata.geoloc.LatLonPointImpl;
+import ucar.unidata.geoloc.LatLonRect;
 
 /**
  * 

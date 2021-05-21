@@ -1,22 +1,18 @@
 package com.asascience.edc.map;
 
-import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.avlist.AVListImpl;
-import gov.nasa.worldwind.event.PositionEvent;
-import gov.nasa.worldwind.event.PositionListener;
-import gov.nasa.worldwind.geom.Angle;
-import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.layers.RenderableLayer;
-import gov.nasa.worldwind.render.BasicShapeAttributes;
-import gov.nasa.worldwind.render.Material;
-import gov.nasa.worldwind.render.ShapeAttributes;
-import gov.nasa.worldwind.render.SurfacePolygon;
-
-import java.awt.event.*;
-import java.util.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.util.ArrayList;
 
 import com.asascience.edc.utils.WorldwindUtils;
+
+import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.event.PositionEvent;
+import gov.nasa.worldwind.event.PositionListener;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.layers.RenderableLayer;
+import gov.nasa.worldwind.render.SurfacePolygon;
 
 /**
  * WorldwindBoundingBoxBuilder.java

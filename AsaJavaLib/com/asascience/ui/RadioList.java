@@ -5,17 +5,19 @@
 
 package com.asascience.ui;
 
-import com.asascience.edc.gui.ResponseFormatRadioButton;
-import com.asascience.edc.sos.requests.ResponseFormat;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Enumeration;
 import java.util.List;
+
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+
+import com.asascience.edc.gui.ResponseFormatRadioButton;
+import com.asascience.edc.sos.requests.ResponseFormat;
 
 /**
  *

@@ -1,24 +1,5 @@
 package com.asascience.edc.erddap.gui;
 
-import com.asascience.edc.Configuration;
-import com.asascience.edc.erddap.ErddapDataRequest;
-import com.asascience.edc.erddap.ErddapDataset;
-import com.asascience.edc.erddap.ErddapVariable;
-import com.asascience.edc.gui.OpendapInterface;
-import com.asascience.edc.gui.jslider.JSlider2Date;
-import com.asascience.edc.map.WwPolygonSelection;
-import com.asascience.edc.map.view.BoundingBoxPanel;
-import com.asascience.edc.map.view.SelectionMethodsPanel;
-import com.asascience.edc.map.view.SelectionMethodsPanel.ActiveSelectionSource;
-import com.asascience.edc.map.view.WorldwindSelectionMap;
-import com.asascience.edc.utils.AoiUtils;
-import com.asascience.edc.utils.PolygonUtils;
-import com.asascience.edc.utils.WorldwindUtils;
-import com.asascience.edc.map.WwTrackLineSelection;
-import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.render.PointPlacemark;
-import gov.nasa.worldwind.render.SurfaceSquare;
-
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,8 +16,24 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
-import net.miginfocom.swing.MigLayout;
+
 import org.apache.log4j.Logger;
+
+import com.asascience.edc.Configuration;
+import com.asascience.edc.erddap.ErddapDataRequest;
+import com.asascience.edc.erddap.ErddapDataset;
+import com.asascience.edc.erddap.ErddapVariable;
+import com.asascience.edc.gui.OpendapInterface;
+import com.asascience.edc.gui.jslider.JSlider2Date;
+import com.asascience.edc.map.view.BoundingBoxPanel;
+import com.asascience.edc.map.view.SelectionMethodsPanel;
+import com.asascience.edc.map.view.SelectionMethodsPanel.ActiveSelectionSource;
+import com.asascience.edc.map.view.WorldwindSelectionMap;
+import com.asascience.edc.utils.AoiUtils;
+import com.asascience.edc.utils.WorldwindUtils;
+
+import gov.nasa.worldwind.render.PointPlacemark;
+import net.miginfocom.swing.MigLayout;
 import ucar.nc2.units.DateUnit;
 import ucar.unidata.geoloc.LatLonRect;
 

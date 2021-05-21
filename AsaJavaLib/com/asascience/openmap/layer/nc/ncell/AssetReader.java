@@ -14,12 +14,12 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
+import com.asascience.utilities.BinarySearch;
+
 import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
-
-import com.asascience.utilities.BinarySearch;
 
 /**
  * 

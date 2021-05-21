@@ -46,8 +46,8 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import net.miginfocom.swing.MigLayout;
 
+import net.miginfocom.swing.MigLayout;
 import thredds.catalog.CatalogSetCallback;
 import thredds.catalog.DatasetFilter;
 import thredds.catalog.InvCatalogImpl;

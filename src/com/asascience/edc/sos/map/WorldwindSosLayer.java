@@ -1,14 +1,5 @@
 package com.asascience.edc.sos.map;
 
-import com.asascience.edc.sos.SensorContainer;
-import com.asascience.edc.utils.WorldwindUtils;
-import gov.nasa.worldwind.WorldWind;
-import gov.nasa.worldwind.event.SelectEvent;
-import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.layers.RenderableLayer;
-import gov.nasa.worldwind.render.PointPlacemark;
-import gov.nasa.worldwind.render.PointPlacemarkAttributes;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.geom.Line2D;
@@ -18,9 +9,19 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import ucar.unidata.geoloc.LatLonRect;
+
+import com.asascience.edc.sos.SensorContainer;
+import com.asascience.edc.utils.WorldwindUtils;
 import com.asascience.utilities.Utils;
+
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.layers.RenderableLayer;
+import gov.nasa.worldwind.render.PointPlacemark;
+import gov.nasa.worldwind.render.PointPlacemarkAttributes;
+import ucar.unidata.geoloc.LatLonRect;
 
 /**
  * WorldwindSosLayer.java

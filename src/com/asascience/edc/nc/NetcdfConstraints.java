@@ -15,11 +15,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import ucar.unidata.geoloc.LatLonPointImpl;
-import ucar.unidata.geoloc.LatLonRect;
+import org.apache.log4j.Logger;
 
 import com.asascience.openmap.utilities.GeoConstraints;
-import org.apache.log4j.Logger;
+
+import ucar.unidata.geoloc.LatLonPointImpl;
+import ucar.unidata.geoloc.LatLonRect;
 
 /**
  * 

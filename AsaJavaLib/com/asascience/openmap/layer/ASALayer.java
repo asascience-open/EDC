@@ -11,9 +11,9 @@
  */
 package com.asascience.openmap.layer;
 
-import ucar.unidata.geoloc.LatLonRect;
-
 import com.bbn.openmap.layer.OMGraphicHandlerLayer;
+
+import ucar.unidata.geoloc.LatLonRect;
 
 /**
  * 

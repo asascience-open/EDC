@@ -1,15 +1,18 @@
 package com.asascience.edc.erddap.gui;
 
-import com.asascience.edc.erddap.ErddapDataset;
-import com.asascience.edc.erddap.ErddapServer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import com.asascience.edc.erddap.ErddapDataset;
+import com.asascience.edc.erddap.ErddapServer;
+
 import net.miginfocom.swing.MigLayout;
 
 /**

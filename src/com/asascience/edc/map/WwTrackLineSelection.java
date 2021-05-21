@@ -1,18 +1,5 @@
 package com.asascience.edc.map;
 
-import gov.nasa.worldwind.WorldWindow;
-import gov.nasa.worldwind.event.PositionEvent;
-import gov.nasa.worldwind.event.PositionListener;
-import gov.nasa.worldwind.geom.LatLon;
-import gov.nasa.worldwind.geom.Position;
-import gov.nasa.worldwind.layers.RenderableLayer;
-import gov.nasa.worldwind.render.PointPlacemark;
-import gov.nasa.worldwind.render.PointPlacemarkAttributes;
-import gov.nasa.worldwind.render.SurfaceCircle;
-import gov.nasa.worldwind.render.SurfacePolyline;
-import gov.nasa.worldwind.render.SurfaceSquare;
-
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -29,8 +16,16 @@ import java.util.List;
 
 import javax.swing.JFileChooser;
 
-import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
 import com.asascience.edc.utils.EdcDateUtils;
+
+import gov.nasa.worldwind.WorldWindow;
+import gov.nasa.worldwind.event.PositionEvent;
+import gov.nasa.worldwind.event.PositionListener;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.layers.RenderableLayer;
+import gov.nasa.worldwind.render.SurfacePolyline;
+import gov.nasa.worldwind.render.SurfaceSquare;
 
 
 

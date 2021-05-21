@@ -4,16 +4,21 @@
 
 package com.asascience.edc.gui.jslider;
 
-import javax.swing.*;
-import java.awt.event.*;
-import java.beans.*;
+import java.awt.BorderLayout;
 //import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
-import java.awt.BorderLayout;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.text.DecimalFormat;
+
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import gov.noaa.pmel.util.Range2D;
 

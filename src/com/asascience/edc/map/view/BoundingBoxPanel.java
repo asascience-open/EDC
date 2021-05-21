@@ -1,9 +1,5 @@
 package com.asascience.edc.map.view;
 
-import com.asascience.edc.map.view.BoundingBoxPanel.BBoxChanged;
-import com.asascience.edc.nc.NetcdfConstraints;
-import com.asascience.openmap.ui.OMSelectionMapPanel;
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -22,8 +18,10 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.border.EtchedBorder;
-import net.miginfocom.swing.MigLayout;
+
 import org.softsmithy.lib.swing.JDoubleField;
+
+import net.miginfocom.swing.MigLayout;
 import ucar.unidata.geoloc.LatLonPointImpl;
 import ucar.unidata.geoloc.LatLonRect;
 

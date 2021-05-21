@@ -14,9 +14,9 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import net.miginfocom.swing.MigLayout;
-
 import com.asascience.utilities.Utils;
+
+import net.miginfocom.swing.MigLayout;
 
 /**
  * 

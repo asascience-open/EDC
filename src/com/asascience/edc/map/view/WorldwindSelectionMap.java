@@ -1,5 +1,21 @@
 package com.asascience.edc.map.view;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import javax.swing.JButton;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.border.EtchedBorder;
+
 import com.asascience.edc.dap.map.DataExtentLayer;
 import com.asascience.edc.dap.ui.DapWorldwindProcessPanel;
 import com.asascience.edc.map.BoundingBox;
@@ -7,32 +23,14 @@ import com.asascience.edc.map.WwPolygonSelection;
 import com.asascience.edc.map.WwTrackLineSelection;
 import com.asascience.edc.map.view.SelectionMethodsPanel.ActiveSelectionSource;
 import com.asascience.edc.sos.SensorContainer;
-
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Properties;
-
-import javax.swing.JButton;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-
-import net.miginfocom.swing.MigLayout;
-
 import com.asascience.edc.sos.map.WorldwindSosLayer;
 import com.asascience.utilities.Utils;
-import com.bbn.openmap.LatLonPoint;
 import com.bbn.openmap.MapBean;
 import com.bbn.openmap.MapHandler;
 import com.bbn.openmap.MouseDelegator;
 import com.bbn.openmap.gui.OMToolSet;
 import com.bbn.openmap.gui.ToolPanel;
-
-import gov.nasa.worldwind.BasicModel;
+import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.event.RenderingExceptionListener;
 import gov.nasa.worldwind.event.SelectEvent;
@@ -52,18 +50,11 @@ import gov.nasa.worldwind.layers.SkyGradientLayer;
 import gov.nasa.worldwind.layers.ViewControlsLayer;
 import gov.nasa.worldwind.layers.ViewControlsSelectListener;
 import gov.nasa.worldwind.render.PointPlacemark;
-import gov.nasa.worldwind.render.SurfaceSquare;
 import gov.nasa.worldwind.view.orbit.BasicOrbitView;
 import gov.nasa.worldwind.view.orbit.BasicOrbitViewLimits;
 import gov.nasa.worldwind.view.orbit.FlatOrbitView;
 import gov.nasa.worldwind.view.orbit.OrbitViewLimits;
-
-import java.util.List;
-
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.border.EtchedBorder;
-
+import net.miginfocom.swing.MigLayout;
 import ucar.unidata.geoloc.LatLonPointImpl;
 import ucar.unidata.geoloc.LatLonRect;
 
@@ -248,9 +239,9 @@ public class WorldwindSelectionMap extends JPanel implements PropertyChangeListe
     toolbar.add(locationSelectionTool);
     add(mapCanvas, "gap 0,top, grow,wrap");
     add(toolbar, "gap 0, growx");
-
     validate();
     repaint();
+
   }
 
   private void updateSelectedSosFromTrack(){

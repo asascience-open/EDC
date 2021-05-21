@@ -1,5 +1,20 @@
 package com.asascience.edc.erddap.gui;
 
+import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+
+import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
+
 import com.asascience.edc.erddap.ErddapDataset;
 import com.asascience.edc.erddap.ErddapServer;
 import com.sun.jersey.api.client.Client;
@@ -7,19 +22,8 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.json.JSONConfiguration;
-import java.awt.Cursor;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import javax.swing.AbstractAction;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
+
 import net.miginfocom.swing.MigLayout;
-import org.apache.log4j.Logger;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
  * ErddapDatasetSearch.java
